@@ -9,10 +9,12 @@
 
 <meta name="theme-color" content="#EFEAE0" />
 <meta name="mobile-web-app-capable" content="yes" />
+
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="บัญชี" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzJBMjUyMSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0VGRUFFMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
+
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzJBMjUyMSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0VGRUFFMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
 <style>
   :root{
@@ -56,6 +58,24 @@
     cursor:pointer; text-decoration:underline; padding:0;
   }
   .error-banner{ margin:12px 20px 0; font-size:13px; color:var(--expense); background:#F5E7E2; border-radius:8px; padding:8px 12px; display:none; }
+  .backup-banner{
+    margin:12px 20px 0; font-size:12.5px; color:var(--ink); background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:8px 12px; display:none;
+    align-items:center; justify-content:space-between; gap:10px;
+  }
+  .backup-banner.show{ display:flex; }
+  .backup-banner button{
+    font-family:inherit; font-size:12px; color:var(--ink); background:var(--paper);
+    border:1px solid var(--line); border-radius:6px; padding:4px 10px; cursor:pointer; white-space:nowrap;
+  }
+  .backup-banner .dismiss{ background:none; border:none; color:var(--faint); font-size:14px; padding:0 2px; }
+  .search-row{ display:flex; gap:8px; margin:0 0 10px; }
+  .search-row input{
+    flex:1; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:8px;
+    padding:7px 10px; background:var(--surface); color:var(--ink);
+  }
+  .cat-chip-wrap.orphan{ border-style:dashed; }
+  .cat-chip-wrap.orphan .cat-chip-label{ color:var(--faint); font-style:italic; }
   .toast{
     position:fixed; bottom:calc(96px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:var(--ink); color:#fff;
     font-size:13px; padding:9px 16px; border-radius:20px; opacity:0; transition:opacity .25s; z-index:20; pointer-events:none;
@@ -179,6 +199,13 @@
   </header>
 
   <div class="error-banner" id="errorBanner">บันทึกไม่สำเร็จ ลองใหม่อีกที</div>
+  <div class="backup-banner" id="backupBanner">
+    <span>ยังไม่ได้สำรองข้อมูลเดือนนี้ กดสำรองไว้กันข้อมูลหายนะ</span>
+    <span style="display:flex; gap:6px; align-items:center;">
+      <button id="backupNowBtn" type="button">สำรองเลย</button>
+      <button class="dismiss" id="backupDismissBtn" type="button" aria-label="ปิด">✕</button>
+    </span>
+  </div>
 
   <div class="breakdown-section" id="breakdownSection"></div>
 
@@ -192,6 +219,9 @@
         <option value="saving">เฉพาะออม/ลงทุน</option>
       </select>
       <span style="color:var(--faint); font-size:12px" id="countLabel">0 รายการ</span>
+    </div>
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="ค้นหาหมวดหรือโน้ต..." autocomplete="off" />
     </div>
     <div id="listContainer"></div>
   </div>
@@ -237,14 +267,26 @@ const DEFAULT_CATS = {
 
 const ENTRIES_KEY = "finance_tracker_entries_v1";
 const CATS_KEY = "finance_tracker_categories_v1";
+const LAST_CAT_KEY = "finance_tracker_last_cat_v1";
+const BACKUP_KEY = "finance_tracker_last_backup_v1";
 
 let entries = [];
 let CATS_BY_TYPE = { income: [...DEFAULT_CATS.income], expense: [...DEFAULT_CATS.expense], saving: [...DEFAULT_CATS.saving] };
+let lastUsedCat = { income: "", expense: "", saving: "" };
 let selectedMonth = "";
 let typeFilter = "all";
+let searchQuery = "";
 let formType = "expense";
 let selectedCategory = "";
+let orphanCategory = null; // category from an existing entry that no longer exists in CATS_BY_TYPE; kept visible so editing doesn't silently reassign it
 let editingId = null;
+
+function makeId(){
+  if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
+}
+// รวมเงินด้วยหน่วยสตางค์ (integer) ก่อน แล้วค่อยหารคืนเป็นบาท กันปัญหา floating point เพี้ยนสะสม เช่น 0.1+0.2
+function toCents(n){ return Math.round(Number(n || 0) * 100); }
 
 function todayISO(){
   const d = new Date();
@@ -308,6 +350,32 @@ function loadCategories(){
 function saveCategories(){
   try{ localStorage.setItem(CATS_KEY, JSON.stringify(CATS_BY_TYPE)); }catch(e){}
 }
+function loadLastCat(){
+  try{
+    const raw = localStorage.getItem(LAST_CAT_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      lastUsedCat = { income: parsed.income || "", expense: parsed.expense || "", saving: parsed.saving || "" };
+    }
+  }catch(e){ /* keep defaults */ }
+}
+function saveLastCat(){
+  try{ localStorage.setItem(LAST_CAT_KEY, JSON.stringify(lastUsedCat)); }catch(e){}
+}
+function getLastBackup(){
+  try{ return localStorage.getItem(BACKUP_KEY) || ""; }catch(e){ return ""; }
+}
+function setLastBackup(iso){
+  try{ localStorage.setItem(BACKUP_KEY, iso); }catch(e){}
+}
+function refreshBackupBanner(){
+  const banner = document.getElementById("backupBanner");
+  if(!entries.length){ banner.classList.remove("show"); return; }
+  const lastBackup = getLastBackup();
+  const staleBackup = !lastBackup || monthKey(lastBackup) !== monthKey(todayISO());
+  const dismissedThisMonth = sessionStorage.getItem("backupDismissedMonth") === monthKey(todayISO());
+  banner.classList.toggle("show", staleBackup && !dismissedThisMonth);
+}
 
 function getMonths(){
   const set = new Set(entries.map(e => monthKey(e.date)));
@@ -326,7 +394,7 @@ function getMonthEntries(){
 }
 function getTotals(){
   const me = getMonthEntries();
-  const sumOf = t => me.filter(e => e.type === t).reduce((s,e) => s + Number(e.amount), 0);
+  const sumOf = t => me.filter(e => e.type === t).reduce((s,e) => s + toCents(e.amount), 0) / 100;
   const income = sumOf("income"), expense = sumOf("expense"), saving = sumOf("saving");
   return { income, expense, saving, balance: income - expense - saving };
 }
@@ -336,13 +404,14 @@ function getByCategory(type, totals){
   const totalForType = totals[type];
   return cats.map(cat => ({
     cat,
-    amount: me.filter(e => e.type === type && e.category === cat).reduce((s,e) => s + Number(e.amount), 0)
+    amount: me.filter(e => e.type === type && e.category === cat).reduce((s,e) => s + toCents(e.amount), 0) / 100
   })).filter(c => c.amount > 0)
     .sort((a,b) => b.amount - a.amount)
     .map(c => ({ ...c, pct: totalForType ? Math.round((c.amount/totalForType)*100) : 0 }));
 }
 
 function render(){
+  refreshBackupBanner();
   const months = getMonths();
   const monthSelect = document.getElementById("monthSelect");
   monthSelect.innerHTML = months.map(m => `<option value="${m}" ${m===selectedMonth?"selected":""}>${monthLabel(m)}</option>`).join("");
@@ -350,7 +419,7 @@ function render(){
   const totals = getTotals();
   document.getElementById("balanceNum").textContent = (totals.balance<0?"-":"") + "฿" + fmt(Math.abs(totals.balance));
   document.getElementById("balanceNum").style.color = totals.balance<0 ? "var(--expense)" : "var(--ink)";
-  const netWorth = totals.income - totals.expense;
+  const netWorth = totals.income - totals.expense; // เงินออมยังเป็นของเรา จึงไม่ถูกหักออกจากมูลค่าสุทธิ
   document.getElementById("netWorthNum").textContent =
     "มูลค่าสุทธิ (รวมเงินออม): " + (netWorth<0?"-":"") + "฿" + fmt(Math.abs(netWorth));
   document.getElementById("pillIncome").textContent = "฿"+fmt(totals.income);
@@ -380,8 +449,10 @@ function render(){
   }).join("");
 
   document.getElementById("typeFilter").value = typeFilter;
+  const q = searchQuery.trim().toLowerCase();
   const me = [...getMonthEntries()]
     .filter(e => typeFilter==="all" || e.type===typeFilter)
+    .filter(e => !q || e.category.toLowerCase().includes(q) || (e.note || "").toLowerCase().includes(q))
     .sort((a,b) => b.date.localeCompare(a.date));
   document.getElementById("countLabel").textContent = me.length + " รายการ";
   const listContainer = document.getElementById("listContainer");
@@ -436,17 +507,27 @@ function render(){
 function renderCatGrid(){
   const cats = CATS_BY_TYPE[formType];
   const catGrid = document.getElementById("catGrid");
-  catGrid.innerHTML = cats.map(c => {
+  // ถ้าหมวดเดิมของรายการที่กำลังแก้ไขถูกลบไปแล้ว ให้แสดงเป็นชิปชั่วคราว (orphan) แทนการเปลี่ยนหมวดให้เงียบๆ
+  const showOrphan = orphanCategory && !cats.includes(orphanCategory);
+  const chips = showOrphan ? [{ name: orphanCategory, orphan: true }, ...cats.map(c => ({ name: c, orphan: false }))]
+                            : cats.map(c => ({ name: c, orphan: false }));
+  catGrid.innerHTML = chips.map(({ name: c, orphan }) => {
     const sel = selectedCategory===c ? "selected-"+formType : "";
-    return `<span class="cat-chip-wrap ${sel}">
-      <button type="button" class="cat-chip-label" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>
-      <button type="button" class="cat-chip-del" data-cat="${escapeHtml(c)}" aria-label="ลบหมวด ${escapeHtml(c)}">×</button>
+    const delBtn = orphan
+      ? ""
+      : `<button type="button" class="cat-chip-del" data-cat="${escapeHtml(c)}" aria-label="ลบหมวด ${escapeHtml(c)}">×</button>`;
+    const label = orphan ? `${escapeHtml(c)} (หมวดถูกลบ)` : escapeHtml(c);
+    return `<span class="cat-chip-wrap ${sel} ${orphan?"orphan":""}">
+      <button type="button" class="cat-chip-label" data-cat="${escapeHtml(c)}">${label}</button>
+      ${delBtn}
     </span>`;
   }).join("") + `<button type="button" class="cat-chip add-chip" id="addCatBtn">+ เพิ่มหมวด</button>`;
 
   catGrid.querySelectorAll(".cat-chip-label").forEach(btn => {
     btn.addEventListener("click", () => {
       selectedCategory = btn.dataset.cat;
+      // เลือกหมวดจริงแล้ว ไม่ต้องเตือนเรื่องหมวดที่ถูกลบอีก
+      if(cats.includes(selectedCategory)) orphanCategory = null;
       renderCatGrid();
     });
   });
@@ -465,7 +546,10 @@ function renderCatGrid(){
       if(!confirm(msg)) return;
       CATS_BY_TYPE[formType] = CATS_BY_TYPE[formType].filter(x => x !== cat);
       saveCategories();
-      if(selectedCategory === cat) selectedCategory = CATS_BY_TYPE[formType][0];
+      if(selectedCategory === cat){
+        orphanCategory = null;
+        selectedCategory = CATS_BY_TYPE[formType][0] || "";
+      }
       renderCatGrid();
     });
   });
@@ -474,6 +558,7 @@ function renderCatGrid(){
     if(!name) return;
     const trimmed = name.trim();
     if(!trimmed) return;
+    orphanCategory = null;
     if(CATS_BY_TYPE[formType].includes(trimmed)){
       selectedCategory = trimmed;
       renderCatGrid();
@@ -486,10 +571,22 @@ function renderCatGrid(){
   });
 }
 
-function setFormType(t){
+function setFormType(t, isInit){
   formType = t;
   const cats = CATS_BY_TYPE[t] || [];
-  if(!cats.includes(selectedCategory)) selectedCategory = cats.length ? cats[0] : "";
+  if(!cats.includes(selectedCategory)){
+    if(isInit && selectedCategory){
+      // กำลังเปิดฟอร์มแก้ไขรายการเดิม และหมวดของรายการนั้นถูกลบไปแล้ว — คงค่าไว้เป็น orphan แทนการสลับเงียบๆ
+      orphanCategory = selectedCategory;
+    }else{
+      // รายการใหม่ หรือผู้ใช้กดสลับประเภทเอง — เลือกหมวดล่าสุดที่เคยใช้กับประเภทนี้ ถ้ามี ไม่งั้นเลือกหมวดแรก
+      orphanCategory = null;
+      const last = lastUsedCat[t];
+      selectedCategory = (last && cats.includes(last)) ? last : (cats.length ? cats[0] : "");
+    }
+  }else{
+    orphanCategory = null;
+  }
   document.querySelectorAll(".type-btn").forEach(b => {
     b.classList.remove("active-expense","active-income","active-saving");
     if(b.dataset.type===t) b.classList.add("active-"+t);
@@ -506,7 +603,8 @@ function openForm(entry){
   document.getElementById("amount").value = entry ? entry.amount : "";
   document.getElementById("note").value = entry ? (entry.note || "") : "";
   selectedCategory = entry ? entry.category : "";
-  setFormType(entry ? entry.type : "expense");
+  orphanCategory = null;
+  setFormType(entry ? entry.type : "expense", true);
   const v = parseFloat(document.getElementById("amount").value);
   document.getElementById("submitBtn").disabled = !v || v<=0;
   document.getElementById("amount").focus();
@@ -537,7 +635,7 @@ document.getElementById("typeFilter").addEventListener("change", (e) => {
 document.getElementById("submitBtn").addEventListener("click", () => {
   let amount = parseFloat(document.getElementById("amount").value);
   if(!amount || amount<=0) return;
-  amount = Math.round(amount * 100) / 100;
+  amount = Math.round(amount * 100) / 100; // ตัดเศษทศนิยมเกิน 2 ตำแหน่ง กันสตางค์เพี้ยนจาก floating point
   const date = document.getElementById("date").value || todayISO();
   const note = document.getElementById("note").value.trim();
 
@@ -547,12 +645,26 @@ document.getElementById("submitBtn").addEventListener("click", () => {
       entries[idx] = { ...entries[idx], type: formType, category: selectedCategory, amount, date, note };
     }
   }else{
-    entries.unshift({ id: Date.now().toString(), type: formType, category: selectedCategory, amount, date, note });
+    entries.unshift({ id: makeId(), type: formType, category: selectedCategory, amount, date, note });
   }
+  lastUsedCat[formType] = selectedCategory;
+  saveLastCat();
   saveEntries();
   closeForm();
   selectedMonth = monthKey(date);
   render();
+});
+
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  searchQuery = e.target.value;
+  render();
+});
+document.getElementById("backupNowBtn").addEventListener("click", () => {
+  document.getElementById("exportBtn").click();
+});
+document.getElementById("backupDismissBtn").addEventListener("click", () => {
+  sessionStorage.setItem("backupDismissedMonth", monthKey(todayISO()));
+  document.getElementById("backupBanner").classList.remove("show");
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
@@ -566,6 +678,8 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  setLastBackup(todayISO());
+  refreshBackupBanner();
   showToast("ดาวน์โหลดไฟล์สำรองแล้ว");
 });
 
@@ -606,6 +720,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 loadEntries();
 loadCategories();
+loadLastCat();
 selectedMonth = monthKey(todayISO());
 render();
 </script>
