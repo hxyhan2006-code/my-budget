@@ -30,6 +30,8 @@
     --income:#3F6C51;
     --expense:#8C3B2E;
     --saving:#3A5A6B;
+    --transfer:#6B5B3A;
+    --locked:#8C6B3A;
   }
   *{box-sizing:border-box;}
   body{
@@ -55,6 +57,26 @@
   .pill{
     display:flex; align-items:center; gap:5px; font-size:12.5px;
     background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:6px 10px;
+  }
+  .networth-card{
+    margin:0 0 14px; padding:12px 14px; background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  }
+  .networth-top{ display:flex; justify-content:space-between; align-items:baseline; }
+  .networth-label{ font-size:12px; color:var(--faint); }
+  .networth-num{ font-size:26px; font-weight:600; }
+  .networth-sub{ display:flex; justify-content:space-between; font-size:12px; color:var(--faint); margin-top:6px; }
+  .networth-sub .real{ color:var(--income); font-weight:600; }
+  .accounts-toggle{
+    font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none;
+    cursor:pointer; text-decoration:underline; padding:8px 0 0; display:block;
+  }
+  .account-row{ display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-top:1px solid var(--line); }
+  .account-row:first-child{ border-top:none; }
+  .account-row .acc-name{ display:flex; align-items:center; gap:6px; }
+  .account-row .acc-actions{ display:flex; gap:4px; }
+  .manage-accounts-btn{
+    font-family:inherit; font-size:12px; color:var(--faint); background:var(--paper); border:1px solid var(--line);
+    border-radius:8px; padding:5px 10px; cursor:pointer; margin-top:8px;
   }
   .backup-row{ display:flex; gap:14px; }
   .backup-link{
@@ -85,6 +107,18 @@
     font-size:13px; padding:9px 16px; border-radius:20px; opacity:0; transition:opacity .25s; z-index:20; pointer-events:none;
   }
   .toast.show{ opacity:1; }
+  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:10px; }
+  .stat-box{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:9px 11px; }
+  .stat-box-label{ font-size:11px; color:var(--faint); }
+  .stat-box-num{ font-size:15px; font-weight:600; margin-top:2px; }
+  .range-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .range-row select{ flex:1; }
+  .custom-range-row{ display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .custom-range-row input{
+    flex:1; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:8px;
+    padding:6px 8px; background:var(--surface); color:var(--ink);
+  }
+  .analysis-section{ padding:6px 20px 18px; }
   .breakdown-section{ padding:18px 20px 6px; display:flex; flex-direction:column; gap:20px; }
   .section-label{ font-size:13px; color:var(--faint); }
   .bar-row{ margin-bottom:10px; }
@@ -95,6 +129,33 @@
     font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none;
     cursor:pointer; text-decoration:underline; padding:6px 0 0; display:block;
   }
+  /* ===== Phase 5: Cash Flow Forecast ===== */
+  .forecast-disclaimer{ font-size:12.5px; color:var(--faint); margin:0 0 12px; }
+  .forecast-warning{
+    background:rgba(140,59,46,0.08); border:1px solid var(--expense); border-radius:10px;
+    padding:10px 12px; margin-top:10px;
+  }
+  .timeline-row{ display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line); align-items:flex-start; }
+  .timeline-row:first-child{ border-top:none; }
+  .timeline-date{ font-size:12px; color:var(--faint); min-width:44px; padding-top:1px; flex-shrink:0; }
+  .compare-vs-row{ display:flex; align-items:center; gap:10px; margin:10px 0 14px; }
+  .compare-period-pill{ flex:1; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 6px; font-size:12.5px; }
+  .compare-vs-label{ font-size:11px; color:var(--faint); flex-shrink:0; }
+  .compare-headline-grid{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .compare-headline-row{ display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; gap:8px; }
+  .compare-headline-label{ font-size:13px; color:var(--faint); flex:1; }
+  .compare-headline-val{ font-size:16px; font-weight:600; }
+  .compare-headline-change{ font-size:12.5px; font-weight:600; white-space:nowrap; }
+  .compare-detail-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-top:1px solid var(--line); gap:4px; }
+  .compare-detail-row:first-child{ border-top:none; }
+  .compare-detail-col{ flex:1; text-align:right; }
+  .compare-cat-row{ padding:8px 0; border-top:1px solid var(--line); }
+  .compare-cat-row:first-child{ border-top:none; }
+  .compare-cat-top{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:2px; gap:8px; }
+  .compare-cat-sub{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--faint); }
+  .insight-box{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
+  .insight-box div{ margin-bottom:4px; }
+  .insight-box div:last-child{ margin-bottom:0; }
   .list-section{ padding:10px 20px 0; }
   .list-header-row{ display:flex; justify-content:space-between; align-items:baseline; margin:8px 0; }
   .empty-state{
@@ -139,6 +200,13 @@
   .type-btn.active-expense{ background:var(--expense); color:#fff; border-color:transparent; }
   .type-btn.active-income{ background:var(--income); color:#fff; border-color:transparent; }
   .type-btn.active-saving{ background:var(--saving); color:#fff; border-color:transparent; }
+  .type-btn.active-transfer{ background:var(--transfer); color:#fff; border-color:transparent; }
+  select.field-select{
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; background:var(--surface); color:var(--ink);
+  }
+  .transfer-arrow{ text-align:center; font-size:18px; color:var(--faint); margin:2px 0; }
+  .list-cat.transfer-label{ color:var(--transfer); }
   label.field-label{ display:block; font-size:12px; color:var(--faint); margin-top:14px; margin-bottom:6px; }
   input#amount{
     width:100%; font-size:28px; font-weight:600; border:none; border-bottom:2px solid var(--line);
@@ -175,6 +243,18 @@
     width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
     padding:8px 10px; background:var(--surface); color:var(--ink);
   }
+  .text-input{
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; background:var(--surface); color:var(--ink); margin-bottom:2px;
+  }
+  .upcoming-item{ padding:12px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .upcoming-item:first-child{ border-top:none; }
+  .upcoming-actions{ display:flex; gap:6px; flex-direction:column; align-items:flex-end; }
+  .small-btn{
+    font-family:inherit; font-size:11.5px; color:var(--ink); background:var(--paper); border:1px solid var(--line);
+    border-radius:8px; padding:5px 9px; cursor:pointer; white-space:nowrap;
+  }
+  .small-btn.primary{ background:var(--ink); color:#fff; border-color:transparent; }
   #submitBtn{
     width:100%; margin-top:22px; padding:13px 0; border-radius:12px; border:none; color:#fff;
     font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;
@@ -199,6 +279,33 @@
       <div class="pill"><span style="color:var(--faint)">ออก</span><span class="mono" style="color:var(--expense);font-weight:600" id="pillExpense">฿0</span></div>
       <div class="pill"><span style="color:var(--faint)">ออม</span><span class="mono" style="color:var(--saving);font-weight:600" id="pillSaving">฿0</span></div>
     </div>
+    <div class="networth-card">
+      <div class="networth-top">
+        <span class="networth-label">เงินทั้งหมด (ทุกบัญชี)</span>
+        <span class="mono networth-num" id="totalMoneyNum">฿0</span>
+      </div>
+      <div class="networth-sub"><span>กันไว้</span><span class="mono" id="reservedNum">฿0</span></div>
+      <div class="networth-sub"><span>ใช้ได้จริง</span><span class="mono real" id="availableNum">฿0</span></div>
+      <div class="networth-sub"><span>คนอื่นติดเงิน</span><span class="mono" id="receivablesNum">฿0</span></div>
+      <div id="accountsList"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="manage-accounts-btn" id="manageAccountsBtn">จัดการบัญชี</button>
+        <button class="manage-accounts-btn" id="manageReservedBtn">เงินกันไว้</button>
+        <button class="manage-accounts-btn" id="manageLoansBtn">เงินให้ยืม</button>
+        <button class="manage-accounts-btn" id="manageRecurringBtn">ค่าใช้จ่ายประจำ</button>
+        <button class="manage-accounts-btn" id="openForecastBtn">คาดการณ์กระแสเงินสด</button>
+      </div>
+    </div>
+
+    <div class="networth-card" id="upcomingCard" style="display:none;">
+      <div class="networth-top">
+        <span class="networth-label">กำลังจะต้องจ่าย</span>
+        <span class="mono networth-num" id="upcomingTotalNum">฿0</span>
+      </div>
+      <div id="upcomingPreviewList"></div>
+      <button class="manage-accounts-btn" id="viewUpcomingBtn" style="width:100%; margin-top:10px;">ดูทั้งหมด</button>
+    </div>
+
     <div class="backup-row">
       <button class="backup-link" id="exportBtn">สำรองข้อมูล</button>
       <button class="backup-link" id="importBtn">กู้คืนข้อมูล</button>
@@ -217,6 +324,62 @@
 
   <div class="breakdown-section" id="breakdownSection"></div>
 
+  <div class="analysis-section">
+    <span class="section-label">วิเคราะห์ตามช่วงเวลา</span>
+    <div class="range-row" style="margin-top:10px">
+      <select id="analysisPreset">
+        <option value="today">วันนี้</option>
+        <option value="7d">7 วันล่าสุด</option>
+        <option value="thisMonth" selected>เดือนนี้</option>
+        <option value="lastMonth">เดือนที่แล้ว</option>
+        <option value="3m">3 เดือนล่าสุด</option>
+        <option value="6m">6 เดือนล่าสุด</option>
+        <option value="thisYear">ปีนี้</option>
+        <option value="lastYear">ปีที่แล้ว</option>
+        <option value="custom">กำหนดเอง</option>
+        <option value="all">ทั้งหมด</option>
+      </select>
+      <select id="analysisAccountFilter">
+        <option value="">ทุกบัญชี</option>
+      </select>
+    </div>
+    <div class="custom-range-row" id="customRangeRow" style="display:none">
+      <input type="date" id="analysisStartInput" />
+      <span style="color:var(--faint)">→</span>
+      <input type="date" id="analysisEndInput" />
+    </div>
+    <div id="periodAnalysisSection"></div>
+  </div>
+
+  <div class="analysis-section">
+    <span class="section-label">เปรียบเทียบช่วงเวลา</span>
+    <div class="range-row" style="margin-top:10px">
+      <select id="comparePreset">
+        <option value="thisMonthVsLastMonth" selected>เดือนนี้ vs เดือนที่แล้ว</option>
+        <option value="7dVsPrev7d">7 วันล่าสุด vs 7 วันก่อนหน้า</option>
+        <option value="3mVsPrev3m">3 เดือนล่าสุด vs 3 เดือนก่อนหน้า</option>
+        <option value="yearVsLastYear">ปีนี้ vs ปีที่แล้ว</option>
+        <option value="custom">กำหนดเอง</option>
+      </select>
+      <select id="compareAccountFilter">
+        <option value="">ทุกบัญชี</option>
+      </select>
+    </div>
+    <div class="custom-range-row" id="compareCustomARow" style="display:none">
+      <span style="font-size:12px;color:var(--faint);white-space:nowrap">ช่วง A</span>
+      <input type="date" id="compareAStartInput" />
+      <span style="color:var(--faint)">→</span>
+      <input type="date" id="compareAEndInput" />
+    </div>
+    <div class="custom-range-row" id="compareCustomBRow" style="display:none">
+      <span style="font-size:12px;color:var(--faint);white-space:nowrap">ช่วง B</span>
+      <input type="date" id="compareBStartInput" />
+      <span style="color:var(--faint)">→</span>
+      <input type="date" id="compareBEndInput" />
+    </div>
+    <div id="compareSection"></div>
+  </div>
+
   <div class="list-section">
     <div class="list-header-row">
       <span class="section-label">รายการ</span>
@@ -225,6 +388,7 @@
         <option value="income">เฉพาะรายรับ</option>
         <option value="expense">เฉพาะรายจ่าย</option>
         <option value="saving">เฉพาะออม/ลงทุน</option>
+        <option value="transfer">เฉพาะโอนเงิน</option>
       </select>
       <span style="color:var(--faint); font-size:12px" id="countLabel">0 รายการ</span>
     </div>
@@ -251,11 +415,23 @@
       <button class="type-btn" data-type="expense">รายจ่าย</button>
       <button class="type-btn" data-type="income">รายรับ</button>
       <button class="type-btn" data-type="saving">ออม/ลงทุน</button>
+      <button class="type-btn" data-type="transfer">โอนเงิน</button>
     </div>
     <label class="field-label">จำนวนเงิน (บาท)</label>
     <input id="amount" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
-    <label class="field-label">หมวด</label>
-    <div class="cat-grid" id="catGrid"></div>
+    <div id="categoryFieldGroup">
+      <label class="field-label">หมวด</label>
+      <div class="cat-grid" id="catGrid"></div>
+      <label class="field-label">บัญชี</label>
+      <select class="field-select" id="entryAccount"></select>
+    </div>
+    <div id="transferFieldGroup" style="display:none">
+      <label class="field-label">จากบัญชี</label>
+      <select class="field-select" id="fromAccount"></select>
+      <div class="transfer-arrow">↓</div>
+      <label class="field-label">ไปบัญชี</label>
+      <select class="field-select" id="toAccount"></select>
+    </div>
     <label class="field-label">วันที่</label>
     <input id="date" type="date" autocomplete="off" />
     <label class="field-label">โน้ต (ไม่บังคับ)</label>
@@ -263,6 +439,122 @@
     <button id="submitBtn">บันทึก</button>
   </div>
 </div>
+
+<div class="overlay" id="accountsOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">จัดการบัญชี</span>
+      <button class="close-btn" id="closeAccountsBtn">✕</button>
+    </div>
+    <div id="accountsManageList"></div>
+    <button class="manage-accounts-btn" id="addAccountBtn" style="width:100%; margin-top:14px;">+ เพิ่มบัญชี</button>
+  </div>
+</div>
+
+<div class="overlay" id="reservedOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">เงินกันไว้</span>
+      <button class="close-btn" id="closeReservedBtn">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--faint); margin:0 0 12px;">เงินที่มีอยู่จริง แต่ตั้งใจว่าจะไม่ใช้ เช่น ค่าเช่า ค่าเน็ต — ไม่นับเป็นรายจ่าย แค่ถูกกันไว้จากยอด "ใช้ได้จริง"</p>
+    <div id="reservedManageList"></div>
+    <button class="manage-accounts-btn" id="addReservedBtn" style="width:100%; margin-top:14px;">+ เพิ่มเงินกันไว้</button>
+  </div>
+</div>
+
+<div class="overlay" id="loansOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">เงินให้คนอื่นยืม</span>
+      <button class="close-btn" id="closeLoansBtn">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--faint); margin:0 0 12px;">เงินออกจากมือแต่ยังเป็นสิทธิ์ของเรา ไม่นับเป็นรายจ่าย — เมื่อคืนก็ไม่นับเป็นรายรับ</p>
+    <div id="loansManageList"></div>
+    <button class="manage-accounts-btn" id="addLoanBtn" style="width:100%; margin-top:14px;">+ บันทึกเงินให้ยืม</button>
+  </div>
+</div>
+
+<div class="overlay" id="upcomingOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">กำลังจะต้องจ่าย</span>
+      <button class="close-btn" id="closeUpcomingBtn">✕</button>
+    </div>
+    <div class="range-row">
+      <select id="upcomingFilterSelect" style="flex:1;">
+        <option value="7d">7 วันข้างหน้า</option>
+        <option value="30d" selected>30 วันข้างหน้า</option>
+        <option value="thisMonth">เดือนนี้</option>
+        <option value="nextMonth">เดือนหน้า</option>
+        <option value="all">ทั้งหมด</option>
+      </select>
+    </div>
+    <div class="stats-grid" id="upcomingStatsGrid"></div>
+    <div id="upcomingFullList" style="margin-top:14px;"></div>
+    <button class="manage-accounts-btn" id="openRecurringFromUpcomingBtn" style="width:100%; margin-top:14px;">จัดการค่าใช้จ่ายประจำ</button>
+  </div>
+</div>
+
+<div class="overlay" id="recurringOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">ค่าใช้จ่ายประจำ</span>
+      <button class="close-btn" id="closeRecurringBtn">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--faint); margin:0 0 8px;">ค่าใช้จ่ายที่เกิดซ้ำ เช่น ค่าเช่า, เน็ต, Subscription — ยังไม่นับเป็นรายจ่ายจริงจนกว่าจะกดว่า "จ่ายแล้ว"</p>
+    <div class="networth-sub" style="margin-bottom:10px;"><span>ประมาณต่อเดือน</span><span class="mono" id="monthlyRecurringNum">฿0</span></div>
+    <div id="recurringManageList"></div>
+    <button class="manage-accounts-btn" id="addRecurringBtn" style="width:100%; margin-top:14px;">+ เพิ่มค่าใช้จ่ายประจำ</button>
+  </div>
+</div>
+
+<div class="overlay" id="forecastOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">คาดการณ์กระแสเงินสด</span>
+      <button class="close-btn" id="closeForecastBtn">✕</button>
+    </div>
+    <p class="forecast-disclaimer">จำลองว่าถ้าไม่มีเงินเข้าเพิ่ม และจ่ายค่าใช้จ่ายประจำตามกำหนด จะเหลือเงินเท่าไหร่ — เป็นการคำนวณจำลองเท่านั้น ไม่กระทบยอดเงินจริง</p>
+    <div class="range-row">
+      <select id="forecastRangeSelect" style="flex:1;">
+        <option value="7">7 วัน</option>
+        <option value="30" selected>30 วัน</option>
+        <option value="60">60 วัน</option>
+        <option value="90">90 วัน</option>
+        <option value="custom">กำหนดเอง</option>
+      </select>
+    </div>
+    <div class="custom-range-row" id="forecastCustomRow" style="display:none">
+      <input type="number" id="forecastCustomDays" min="1" max="3650" placeholder="จำนวนวัน" style="flex:1;" />
+    </div>
+    <div id="forecastSummary"></div>
+    <div id="forecastWarnings"></div>
+    <div class="analysis-section" style="border:none; padding:14px 0 0; margin:6px 0 0;" id="forecastTimeline"></div>
+    <div class="analysis-section" style="border:none; padding:14px 0 0; margin:6px 0 0;" id="forecastByAccount"></div>
+  </div>
+</div>
+
+<div class="overlay" id="markPaidOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="markPaidTitle">บันทึกว่าจ่ายแล้ว</span>
+      <button class="close-btn" id="closeMarkPaidBtn">✕</button>
+    </div>
+    <label class="field-label">จำนวนเงินที่จ่ายจริง (บาท)</label>
+    <input id="markPaidAmount" class="text-input" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
+    <label class="field-label">หมวด</label>
+    <select class="field-select" id="markPaidCategory"></select>
+    <label class="field-label">บัญชี</label>
+    <select class="field-select" id="markPaidAccount"></select>
+    <label class="field-label">วันที่จ่าย</label>
+    <input id="markPaidDate" class="text-input" type="date" autocomplete="off" />
+    <label class="field-label">โน้ต (ไม่บังคับ)</label>
+    <input id="markPaidNote" class="text-input" type="text" autocomplete="off" />
+    <button id="markPaidSubmitBtn" style="width:100%; margin-top:22px; padding:13px 0; border-radius:12px; border:none; color:#fff; background:var(--ink); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;">ยืนยันว่าจ่ายแล้ว</button>
+  </div>
+</div>
+
 <script>
 const THAI_MONTHS_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 const THAI_MONTHS_SHORT = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
@@ -277,10 +569,40 @@ const ENTRIES_KEY = "finance_tracker_entries_v1";
 const CATS_KEY = "finance_tracker_categories_v1";
 const LAST_CAT_KEY = "finance_tracker_last_cat_v1";
 const BACKUP_KEY = "finance_tracker_last_backup_v1";
+const ACCOUNTS_KEY = "finance_tracker_accounts_v1";
+const LAST_ACC_KEY = "finance_tracker_last_account_v1";
+const RESERVED_KEY = "finance_tracker_reserved_v1";
+const LOANS_KEY = "finance_tracker_loans_v1";
+const RECURRING_KEY = "finance_tracker_recurring_v1";
+const UNASSIGNED_ACCOUNT_ID = "unassigned";
 
 let entries = [];
 let CATS_BY_TYPE = { income: [...DEFAULT_CATS.income], expense: [...DEFAULT_CATS.expense], saving: [...DEFAULT_CATS.saving] };
 let lastUsedCat = { income: "", expense: "", saving: "" };
+let accounts = []; // { id, name, initialBalance }
+let lastUsedAccountId = "";
+let reservedItems = []; // { id, name, amount, dueDate, note }
+let loans = []; // { id, person, amount, date, dueDate, note, accountId, repayments:[{id,amount,date,accountId}] }
+// ===== Phase 4: Recurring Expenses + Upcoming Payments =====
+// recurringExpenses: { id, name, amount, category, accountId, frequency, nextDueDate, startDate, endDate, note, status, reservedItemId, lastPaidDate }
+// frequency: weekly | monthly | bimonthly | quarterly | yearly
+// status: active | paused | cancelled  (นี่คือสถานะที่ผู้ใช้ตั้งเอง แยกจาก "overdue/dueToday/upcoming" ที่คำนวณจากวันที่)
+let recurringExpenses = [];
+let upcomingFilter = "30d"; // 7d | 30d | thisMonth | nextMonth | all
+let markPaidRecurringId = null;
+let analysisPreset = "thisMonth";
+let analysisStart = "";
+let analysisEnd = "";
+let analysisAccountFilter = "";
+// ===== Phase 3: Compare Period state =====
+let comparePreset = "thisMonthVsLastMonth";
+let compareAccountFilter = "";
+let compareAStart = "";
+let compareAEnd = "";
+let compareBStart = "";
+let compareBEnd = "";
+let compareCategorySort = "changed"; // changed | increase | decrease | total
+let compareDetailExpanded = false;
 let selectedMonth = "";
 let typeFilter = "all";
 let searchQuery = "";
@@ -289,6 +611,10 @@ let selectedCategory = "";
 let orphanCategory = null; // category from an existing entry that no longer exists in CATS_BY_TYPE; kept visible so editing doesn't silently reassign it
 let editingId = null;
 let expandedBreakdown = { income:false, expense:false, saving:false }; // แต่ละบล็อก breakdown พับ/กางแยกกัน
+// ===== Phase 5: Cash Flow Forecast state =====
+let forecastRangePreset = "30"; // "7" | "30" | "60" | "90" | "custom"
+let forecastCustomDays = 30;
+let forecastTimelineExpanded = false;
 
 function makeId(){
   if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -371,6 +697,694 @@ function loadLastCat(){
 function saveLastCat(){
   try{ localStorage.setItem(LAST_CAT_KEY, JSON.stringify(lastUsedCat)); }catch(e){}
 }
+function loadAccounts(){
+  try{
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    accounts = raw ? JSON.parse(raw) : [];
+  }catch(e){ accounts = []; }
+  if(!accounts.length){
+    // บัญชีเริ่มต้นสำหรับข้อมูลเก่าที่ยังไม่เคยมีระบบบัญชี — รายการเก่าทั้งหมดจะถูกนับรวมอยู่ในนี้
+    accounts = [{ id: UNASSIGNED_ACCOUNT_ID, name: "ไม่ระบุบัญชี", initialBalance: 0 }];
+    saveAccounts();
+  }
+}
+function saveAccounts(){
+  try{ localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)); }catch(e){}
+}
+function loadLastAccount(){
+  try{ lastUsedAccountId = localStorage.getItem(LAST_ACC_KEY) || ""; }catch(e){ lastUsedAccountId = ""; }
+}
+function saveLastAccount(){
+  try{ localStorage.setItem(LAST_ACC_KEY, lastUsedAccountId); }catch(e){}
+}
+function loadReserved(){
+  try{
+    const raw = localStorage.getItem(RESERVED_KEY);
+    reservedItems = raw ? JSON.parse(raw) : [];
+  }catch(e){ reservedItems = []; }
+}
+function saveReserved(){
+  try{ localStorage.setItem(RESERVED_KEY, JSON.stringify(reservedItems)); }catch(e){}
+}
+function loadLoans(){
+  try{
+    const raw = localStorage.getItem(LOANS_KEY);
+    loans = raw ? JSON.parse(raw) : [];
+  }catch(e){ loans = []; }
+  loans.forEach(l => { if(!Array.isArray(l.repayments)) l.repayments = []; });
+}
+function saveLoans(){
+  try{ localStorage.setItem(LOANS_KEY, JSON.stringify(loans)); }catch(e){}
+}
+function loadRecurring(){
+  try{
+    const raw = localStorage.getItem(RECURRING_KEY);
+    recurringExpenses = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(recurringExpenses)) recurringExpenses = [];
+  }catch(e){ recurringExpenses = []; }
+}
+function saveRecurring(){
+  try{ localStorage.setItem(RECURRING_KEY, JSON.stringify(recurringExpenses)); }catch(e){}
+}
+function loanOutstanding(loan){
+  const repaidCents = loan.repayments.reduce((s,r) => s + toCents(r.amount), 0);
+  return (toCents(loan.amount) - repaidCents) / 100;
+}
+function getTotalReserved(){
+  return reservedItems.reduce((s,r) => s + toCents(r.amount), 0) / 100;
+}
+function getTotalReceivablesOutstanding(){
+  return loans.reduce((s,l) => s + toCents(loanOutstanding(l)), 0) / 100;
+}
+
+// ===== Phase 4: Recurring Expenses + Upcoming Payments — core logic =====
+// เพิ่มจำนวนเดือนให้กับวันที่ ISO โดย "clamp" วันที่ให้อยู่ในช่วงที่ถูกต้องของเดือนปลายทางเสมอ
+// เช่น 31 ม.ค. +1 เดือน -> 28 หรือ 29 ก.พ. (แล้วแต่ปีอธิกสุรทิน), ไม่มีวันที่ invalid หลุดออกมา
+function addMonthsClamped(iso, months){
+  const [y,m,d] = iso.split("-").map(Number);
+  const targetMonthIndex = (m-1) + months;
+  const targetYear = y + Math.floor(targetMonthIndex/12);
+  const targetMonth0 = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDay = new Date(targetYear, targetMonth0+1, 0).getDate();
+  const day = Math.min(d, lastDay);
+  return `${targetYear}-${String(targetMonth0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+}
+function computeNextDueDate(currentISO, frequency){
+  switch(frequency){
+    case "weekly": return addDaysISO(currentISO, 7);
+    case "monthly": return addMonthsClamped(currentISO, 1);
+    case "bimonthly": return addMonthsClamped(currentISO, 2);
+    case "quarterly": return addMonthsClamped(currentISO, 3);
+    case "yearly": return addMonthsClamped(currentISO, 12);
+    default: return addMonthsClamped(currentISO, 1);
+  }
+}
+function frequencyLabel(f){
+  return { weekly:"รายสัปดาห์", monthly:"รายเดือน", bimonthly:"ทุก 2 เดือน", quarterly:"รายไตรมาส", yearly:"รายปี" }[f] || f;
+}
+// สถานะที่คำนวณจากวันที่ (เฉพาะรายการที่ status="active" เท่านั้นที่จะมีสถานะเหล่านี้)
+function getDueStatus(r){
+  const today = todayISO();
+  if(r.nextDueDate < today) return "overdue";
+  if(r.nextDueDate === today) return "dueToday";
+  return "upcoming";
+}
+function statusLabel(s){
+  return { active:"ใช้งานอยู่", paused:"หยุดชั่วคราว", cancelled:"ยกเลิกแล้ว", overdue:"เลยกำหนด", dueToday:"ครบกำหนดวันนี้", upcoming:"กำลังจะถึง" }[s] || s;
+}
+function getActiveRecurring(){
+  return recurringExpenses.filter(r => r.status === "active");
+}
+// จำนวนวันนับจากวันนี้ถึง iso (0 = วันนี้, ค่าลบ = เลยมาแล้วกี่วัน)
+function daysUntil(iso){
+  return daysBetweenInclusive(todayISO(), iso) - 1;
+}
+// เงินกันไว้ (Reserved Money) ที่เชื่อมกับ recurring expense นี้ — Reserved ยังคงเป็น "เงินที่กันไว้" ไม่ใช่ Expense
+function getReservedLinkInfo(r){
+  if(!r.reservedItemId) return null;
+  const item = reservedItems.find(x => x.id === r.reservedItemId);
+  if(!item) return null;
+  const shortfall = Math.max(0, toCents(r.amount) - toCents(item.amount)) / 100;
+  return { item, reservedAmount: item.amount, shortfall };
+}
+// รายการ Upcoming ตามช่วงเวลาที่เลือก — Overdue จะโผล่มาเสมอไม่ว่าจะเลือกช่วงไหน
+function getUpcomingOccurrences(filter){
+  const today = todayISO();
+  let rangeStart = today, rangeEnd = null;
+  if(filter === "7d") rangeEnd = addDaysISO(today, 7);
+  else if(filter === "30d") rangeEnd = addDaysISO(today, 30);
+  else if(filter === "thisMonth"){
+    const now = new Date();
+    rangeEnd = monthBoundsISO(now.getFullYear(), now.getMonth()).end;
+  }else if(filter === "nextMonth"){
+    const now = new Date();
+    const nm = now.getMonth()+1 > 11 ? 0 : now.getMonth()+1;
+    const ny = now.getMonth()+1 > 11 ? now.getFullYear()+1 : now.getFullYear();
+    const bounds = monthBoundsISO(ny, nm);
+    rangeStart = bounds.start; rangeEnd = bounds.end;
+  }
+  // filter === "all" -> ไม่มี upper bound
+  return getActiveRecurring()
+    .filter(r => {
+      const status = getDueStatus(r);
+      if(status === "overdue") return true; // overdue โผล่เสมอ
+      if(filter === "nextMonth") return r.nextDueDate >= rangeStart && r.nextDueDate <= rangeEnd;
+      if(rangeEnd) return r.nextDueDate <= rangeEnd;
+      return true;
+    })
+    .map(r => ({ r, status: getDueStatus(r), days: daysUntil(r.nextDueDate) }))
+    .sort((a,b) => a.r.nextDueDate.localeCompare(b.r.nextDueDate));
+}
+function getUpcomingSummary(){
+  const today = todayISO();
+  const in7 = addDaysISO(today, 7), in30 = addDaysISO(today, 30);
+  let total=0, within7=0, within30=0, overdue=0, count=0;
+  getActiveRecurring().forEach(r => {
+    const amtCents = toCents(r.amount);
+    const status = getDueStatus(r);
+    count++;
+    total += amtCents;
+    if(status === "overdue"){ overdue += amtCents; return; }
+    if(r.nextDueDate <= in7) within7 += amtCents;
+    if(r.nextDueDate <= in30) within30 += amtCents;
+  });
+  return { total: total/100, within7: within7/100, within30: within30/100, overdue: overdue/100, count };
+}
+// "ประมาณการ" ค่าใช้จ่ายประจำต่อเดือน — ไม่ใช่ยอด Expense จริง แค่ค่าเฉลี่ยเพื่อดูภาพรวม
+function computeMonthlyRecurringCost(){
+  const cents = getActiveRecurring().reduce((s,r) => {
+    const amt = toCents(r.amount);
+    let monthly;
+    switch(r.frequency){
+      case "weekly": monthly = amt * 30 / 7; break;
+      case "bimonthly": monthly = amt / 2; break;
+      case "quarterly": monthly = amt / 3; break;
+      case "yearly": monthly = amt / 12; break;
+      case "monthly": default: monthly = amt;
+    }
+    return s + monthly;
+  }, 0);
+  return cents / 100;
+}
+
+// ===== Phase 5: Cash Flow Forecast — PURE CALCULATION, read-only =====
+// ห้ามแก้ accounts / entries / recurringExpenses / reservedItems ใดๆ ทั้งสิ้น — คำนวณจากข้อมูลปัจจุบันแล้ว render อย่างเดียว
+function getForecastDays(){
+  if(forecastRangePreset === "custom"){
+    const n = parseInt(forecastCustomDays);
+    return (n > 0 && n <= 3650) ? n : 30;
+  }
+  return parseInt(forecastRangePreset) || 30;
+}
+// occurrence ในอนาคตของ recurring ที่ active เท่านั้น ภายใน horizon (รวม overdue ที่ยังไม่ mark paid)
+//
+// หมายเหตุสำคัญเรื่อง day-31 rollover (แก้เฉพาะ Phase 5 เท่านั้น):
+// computeNextDueDate()/addMonthsClamped() ของ Phase 4 เดิม จะ "จำ" วันที่ของรอบก่อนหน้าไว้แล้วบวกเดือนต่อไปเรื่อยๆ
+// ผลคือถ้าวันที่ตั้งต้นคือ 31 แล้วโดน clamp เหลือ 28 ที่ ก.พ. เดือนถัดๆ ไปจะค้างที่ 28 ไม่กลับไป 31 อีก
+// (เช่น 31 ม.ค. → 28 ก.พ. → 28 มี.ค. → ... ) — เป็นพฤติกรรมที่ถูกต้องแล้วสำหรับ Phase 4 เพราะ nextDueDate
+// ต้องอิงจากวันที่ "จ่ายจริงครั้งล่าสุด" ที่บันทึกไว้ ไม่ใช่ค่าที่ Forecast ควรไปยุ่งด้วย จึงห้ามแก้ฟังก์ชันนั้น
+//
+// แต่ผู้ใช้ต้องการให้ Forecast (ซึ่งเป็นการจำลอง ไม่ใช่ของจริง) แสดง pattern แบบ
+// 31 ม.ค. → 28/29 ก.พ. → 31 มี.ค. → 30 เม.ย. → 31 พ.ค. คือ "กลับไปวันเดิมทุกครั้งที่เดือนนั้นมีวันนั้นจริง"
+// จึงเพิ่มฟังก์ชันใหม่ getForecastNextDate() ที่ใช้เฉพาะใน Forecast เท่านั้น โดยอิงจาก "anchor day" —
+// วันที่ตั้งใจไว้ตอนสร้าง recurring (เอาจาก r.startDate ซึ่ง Phase 4 ตั้งไว้ครั้งเดียวตอนสร้างและไม่เคยแก้ทับ)
+// แทนที่จะอิงวันที่ของรอบก่อนหน้าที่อาจถูก clamp ไปแล้ว
+//
+// ผลกระทบ: ไม่มี — ฟังก์ชันนี้เป็นฟังก์ชันใหม่แยกต่างหาก ไม่ได้ไปแก้ไข/เรียกทับ computeNextDueDate() หรือ
+// addMonthsClamped() เดิม, ไม่แตะ r.nextDueDate จริงใน storage, Mark as Paid ของ Phase 4 ยังคำนวณรอบถัดไป
+// ด้วย computeNextDueDate() เดิมเป๊ะๆ เหมือนเดิมทุกประการ — Forecast แค่ "มองไปข้างหน้า" ต่างไปเท่านั้น
+function getForecastNextDate(currentISO, frequency, anchorDay){
+  if(frequency === "weekly") return addDaysISO(currentISO, 7); // รายสัปดาห์ไม่มีปัญหาวันที่ล้นเดือน ใช้ตรงๆ ได้
+  const monthsToAdd = { monthly:1, bimonthly:2, quarterly:3, yearly:12 }[frequency] || 1;
+  const [y,m] = currentISO.split("-").map(Number);
+  const targetMonthIndex = (m-1) + monthsToAdd;
+  const targetYear = y + Math.floor(targetMonthIndex/12);
+  const targetMonth0 = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDay = new Date(targetYear, targetMonth0+1, 0).getDate();
+  const day = Math.min(anchorDay, lastDay); // ใช้วัน anchor เดิม ไม่ใช่วันของรอบก่อนหน้าที่อาจถูก clamp มาแล้ว
+  return `${targetYear}-${String(targetMonth0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+}
+// reuse getActiveRecurring()/getDueStatus() จาก Phase 4 เดิม — ไม่สร้าง status logic ใหม่
+function getForecastOccurrences(horizonEnd){
+  const today = todayISO();
+  const occurrences = [];
+  getActiveRecurring().forEach(r => {
+    // anchor day: ใช้วัน (1-31) จาก startDate ที่ตั้งไว้ตอนสร้าง ถ้าไม่มี/ไม่ valid ให้ fallback เป็นวันของ nextDueDate ปัจจุบัน
+    // (รองรับข้อมูลเก่าก่อนมี Forecast โดยไม่ต้องแก้ schema หรือ backfill ข้อมูลใดๆ)
+    const anchorSource = isValidISODate(r.startDate) ? r.startDate : r.nextDueDate;
+    const anchorDay = parseInt(anchorSource.split("-")[2], 10) || parseInt(r.nextDueDate.split("-")[2], 10) || 1;
+    let dueDate = r.nextDueDate; // occurrence แรกใช้ nextDueDate จริงเสมอ — เป็นวัน authoritative ตาม Phase 4
+    let guard = 0; // กัน infinite loop ถ้าข้อมูลผิดปกติ
+    while(dueDate && dueDate <= horizonEnd && guard < 1000){
+      occurrences.push({
+        recurringId: r.id, name: r.name, amount: r.amount, accountId: r.accountId,
+        category: r.category, date: dueDate, isOverdue: dueDate < today,
+      });
+      dueDate = getForecastNextDate(dueDate, r.frequency, anchorDay);
+      guard++;
+    }
+  });
+  occurrences.sort((a,b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+  return occurrences;
+}
+// คำนวณ Forecast ทั้งหมด — deterministic, ไม่แตะ localStorage, เรียกกี่ครั้งก็ได้ผลเหมือนเดิมถ้าข้อมูลจริงไม่เปลี่ยน
+function computeForecast(days){
+  const today = todayISO();
+  const horizonEnd = addDaysISO(today, days);
+  const occurrences = getForecastOccurrences(horizonEnd);
+
+  const actualTotalCents = toCents(getTotalMoneyAllAccounts());
+  const reservedTotalCents = toCents(getTotalReserved());
+  const upcomingTotalCents = occurrences.reduce((s,o) => s + toCents(o.amount), 0);
+  const forecastTotalCents = actualTotalCents - upcomingTotalCents;
+  const forecastAvailableCents = forecastTotalCents - reservedTotalCents;
+
+  // แยกตามบัญชี + running balance ต่อบัญชี เพื่อตรวจว่ามีจุดไหนติดลบระหว่างทางหรือไม่
+  const perAccount = accounts.map(a => {
+    const currentCents = toCents(computeAccountBalance(a.id));
+    const accOccs = occurrences.filter(o => o.accountId === a.id);
+    let running = currentCents;
+    let firstNegative = null;
+    accOccs.forEach(o => {
+      running -= toCents(o.amount);
+      if(running < 0 && !firstNegative) firstNegative = { date: o.date, balanceCents: running };
+    });
+    const futureCents = accOccs.reduce((s,o) => s + toCents(o.amount), 0);
+    return {
+      account: a,
+      current: currentCents / 100,
+      future: futureCents / 100,
+      forecast: (currentCents - futureCents) / 100,
+      firstNegative: firstNegative ? { date: firstNegative.date, balance: firstNegative.balanceCents / 100 } : null,
+    };
+  });
+
+  // Timeline รวมทุกบัญชี — running total หลังแต่ละ occurrence เรียงตามวัน
+  let runningTotal = actualTotalCents;
+  const timeline = occurrences.map(o => {
+    runningTotal -= toCents(o.amount);
+    return { ...o, runningTotal: runningTotal / 100 };
+  });
+
+  return {
+    days, horizonEnd,
+    current: actualTotalCents / 100,
+    reserved: reservedTotalCents / 100,
+    upcoming: upcomingTotalCents / 100,
+    forecast: forecastTotalCents / 100,
+    forecastAvailable: forecastAvailableCents / 100,
+    occurrenceCount: occurrences.length,
+    timeline, perAccount,
+    negativeAccounts: perAccount.filter(p => p.firstNegative),
+    totalNegative: forecastTotalCents < 0,
+  };
+}
+
+// ===== Phase 2: Custom Date Range + Period Analysis =====
+function addDaysISO(iso, days){
+  const [y,m,d] = iso.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate() + days);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+}
+function daysBetweenInclusive(startISO, endISO){
+  const [y1,m1,d1] = startISO.split("-").map(Number);
+  const [y2,m2,d2] = endISO.split("-").map(Number);
+  const t1 = Date.UTC(y1,m1-1,d1), t2 = Date.UTC(y2,m2-1,d2);
+  return Math.round((t2 - t1) / 86400000) + 1;
+}
+function monthBoundsISO(y, m){ // m: 0-based month index
+  const start = `${y}-${String(m+1).padStart(2,"0")}-01`;
+  const lastDay = new Date(y, m+1, 0).getDate();
+  const end = `${y}-${String(m+1).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
+  return { start, end };
+}
+// คืนค่า {start, end} เป็น ISO date string (inclusive) หรือ {start:null,end:null} สำหรับ "ทั้งหมด"
+function getAnalysisRange(){
+  const today = todayISO();
+  const now = new Date();
+  switch(analysisPreset){
+    case "today": return { start: today, end: today };
+    case "7d": return { start: addDaysISO(today, -6), end: today };
+    case "thisMonth": return monthBoundsISO(now.getFullYear(), now.getMonth());
+    case "lastMonth": {
+      const m = now.getMonth()===0 ? 11 : now.getMonth()-1;
+      const y = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
+      return monthBoundsISO(y, m);
+    }
+    case "3m": return { start: addDaysISO(today, -89), end: today };
+    case "6m": return { start: addDaysISO(today, -179), end: today };
+    case "thisYear": return { start: `${now.getFullYear()}-01-01`, end: `${now.getFullYear()}-12-31` };
+    case "lastYear": return { start: `${now.getFullYear()-1}-01-01`, end: `${now.getFullYear()-1}-12-31` };
+    case "custom": return { start: analysisStart || null, end: analysisEnd || null };
+    case "all": default: return { start: null, end: null };
+  }
+}
+function computePeriodAnalysis(){
+  const { start, end } = getAnalysisRange();
+  return computePeriodAnalysisForRange(start, end, analysisAccountFilter);
+}
+// เวอร์ชัน parametrized ของ computePeriodAnalysis เดิม — Phase 2 (computePeriodAnalysis) และ Phase 3 (Compare)
+// เรียกฟังก์ชันนี้ร่วมกัน เพื่อให้ logic การคำนวณตรงกันเสมอ ไม่มีสูตรซ้ำซ้อน/ขัดแย้งกัน
+function computePeriodAnalysisForRange(start, end, accountFilter){
+  // รายการที่ไม่ใช่ transfer เท่านั้น (transfer ไม่ใช่รายรับ/รายจ่าย) และกรองตามบัญชีถ้าเลือกไว้
+  let rangeEntries = entries.filter(e => e.type !== "transfer");
+  if(start) rangeEntries = rangeEntries.filter(e => e.date >= start);
+  if(end) rangeEntries = rangeEntries.filter(e => e.date <= end);
+  if(accountFilter) rangeEntries = rangeEntries.filter(e => (e.accountId || UNASSIGNED_ACCOUNT_ID) === accountFilter);
+
+  const sumOf = t => rangeEntries.filter(e => e.type===t).reduce((s,e) => s + toCents(e.amount), 0) / 100;
+  const income = sumOf("income"), expense = sumOf("expense"), saving = sumOf("saving");
+  const netCashFlow = income - expense - saving;
+
+  let effStart = start, effEnd = end;
+  if(!effStart || !effEnd){
+    // "ทั้งหมด" — ใช้ช่วงจากรายการจริงที่มีอยู่ (ถ้าไม่มีรายการเลย ใช้ 1 วันกันหารด้วยศูนย์)
+    const dates = rangeEntries.map(e => e.date).sort();
+    effStart = start || dates[0] || today0();
+    effEnd = end || dates[dates.length-1] || today0();
+  }
+  const days = Math.max(1, daysBetweenInclusive(effStart, effEnd));
+
+  const expenseEntries = rangeEntries.filter(e => e.type==="expense");
+  const avgIncomePerDay = income / days;
+  const avgExpensePerDay = expense / days;
+  const avgExpensePerTxn = expenseEntries.length ? expense / expenseEntries.length : 0;
+
+  const catMap = {};
+  expenseEntries.forEach(e => { catMap[e.category] = (catMap[e.category]||0) + toCents(e.amount); });
+  const breakdown = Object.keys(catMap).map(cat => ({ cat, amount: catMap[cat]/100 }))
+    .sort((a,b) => b.amount - a.amount)
+    .map(r => ({ ...r, pct: expense ? Math.round((r.amount/expense)*100) : 0 }));
+
+  return {
+    income, expense, saving, netCashFlow,
+    count: rangeEntries.length,
+    avgIncomePerDay, avgExpensePerDay, avgExpensePerTxn,
+    topCategory: breakdown[0]?.cat || "-",
+    breakdown,
+  };
+}
+function today0(){ return todayISO(); }
+
+function renderPeriodAnalysis(){
+  const accSelect = document.getElementById("analysisAccountFilter");
+  const accOptsHtml = `<option value="">ทุกบัญชี</option>` + accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+  if(accSelect.innerHTML !== accOptsHtml) accSelect.innerHTML = accOptsHtml;
+  accSelect.value = analysisAccountFilter;
+  document.getElementById("customRangeRow").style.display = analysisPreset === "custom" ? "flex" : "none";
+
+  const a = computePeriodAnalysis();
+  const container = document.getElementById("periodAnalysisSection");
+  const statBox = (label, val, color) => `<div class="stat-box"><div class="stat-box-label">${label}</div><div class="stat-box-num mono" ${color?`style="color:${color}"`:""}>${val}</div></div>`;
+  const money = n => (n<0?"-":"") + "฿" + fmt(Math.abs(n));
+  container.innerHTML = `
+    <div class="stats-grid">
+      ${statBox("รายรับ", money(a.income), "var(--income)")}
+      ${statBox("รายจ่าย", money(a.expense), "var(--expense)")}
+      ${statBox("ออม/ลงทุน", money(a.saving), "var(--saving)")}
+      ${statBox("Net Cash Flow", money(a.netCashFlow), a.netCashFlow<0?"var(--expense)":"var(--ink)")}
+      ${statBox("จำนวนรายการ", a.count + " รายการ")}
+      ${statBox("รายจ่ายเฉลี่ย/รายการ", money(a.avgExpensePerTxn))}
+      ${statBox("รายรับเฉลี่ย/วัน", money(a.avgIncomePerDay))}
+      ${statBox("รายจ่ายเฉลี่ย/วัน", money(a.avgExpensePerDay))}
+    </div>
+    <div style="margin-top:16px">
+      <span class="section-label">รายจ่ายตามหมวด (ช่วงที่เลือก)</span>
+      <div style="margin-top:8px">
+        ${a.breakdown.length===0 ? `<div class="empty-state">ไม่มีรายจ่ายในช่วงเวลานี้</div>` :
+          a.breakdown.map(r => `
+            <div class="bar-row">
+              <div class="bar-row-top"><span>${escapeHtml(r.cat)}</span><span class="mono">฿${fmt(r.amount)} (${r.pct}%)</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:${r.pct}%;background:var(--expense)"></div></div>
+            </div>
+          `).join("")}
+      </div>
+    </div>
+  `;
+}
+document.getElementById("analysisPreset").addEventListener("change", (e) => {
+  analysisPreset = e.target.value;
+  if(analysisPreset === "custom" && !analysisStart && !analysisEnd){
+    analysisStart = todayISO();
+    analysisEnd = todayISO();
+    document.getElementById("analysisStartInput").value = analysisStart;
+    document.getElementById("analysisEndInput").value = analysisEnd;
+  }
+  renderPeriodAnalysis();
+});
+document.getElementById("analysisAccountFilter").addEventListener("change", (e) => {
+  analysisAccountFilter = e.target.value;
+  renderPeriodAnalysis();
+});
+document.getElementById("analysisStartInput").addEventListener("change", (e) => {
+  analysisStart = e.target.value;
+  renderPeriodAnalysis();
+});
+document.getElementById("analysisEndInput").addEventListener("change", (e) => {
+  analysisEnd = e.target.value;
+  renderPeriodAnalysis();
+});
+
+// ===== Phase 3: Compare Period =====
+// คืนค่า label สำหรับช่วงเวลาแบบ custom (ใช้ตอนไม่มี start/end ให้แสดง "ทั้งหมด")
+function compareRangeLabel(range){
+  if(range.start && range.end) return `${dayLabel(range.start)} – ${dayLabel(range.end)}`;
+  if(range.start) return `จาก ${dayLabel(range.start)}`;
+  if(range.end) return `ถึง ${dayLabel(range.end)}`;
+  return "ทั้งหมด";
+}
+// คืนค่า { A, B, labelA, labelB } โดย A คือช่วงปัจจุบัน/ใหม่กว่า, B คือช่วงก่อนหน้าที่จะเทียบด้วย
+function getComparePeriods(){
+  const today = todayISO();
+  const now = new Date();
+  switch(comparePreset){
+    case "thisMonthVsLastMonth": {
+      const A = monthBoundsISO(now.getFullYear(), now.getMonth());
+      const m = now.getMonth()===0 ? 11 : now.getMonth()-1;
+      const y = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
+      const B = monthBoundsISO(y, m);
+      return { A, B, labelA: "เดือนนี้", labelB: "เดือนที่แล้ว" };
+    }
+    case "7dVsPrev7d": {
+      const A = { start: addDaysISO(today, -6), end: today };
+      const B = { start: addDaysISO(today, -13), end: addDaysISO(today, -7) };
+      return { A, B, labelA: "7 วันล่าสุด", labelB: "7 วันก่อนหน้า" };
+    }
+    case "3mVsPrev3m": {
+      const A = { start: addDaysISO(today, -89), end: today };
+      const B = { start: addDaysISO(today, -179), end: addDaysISO(today, -90) };
+      return { A, B, labelA: "3 เดือนล่าสุด", labelB: "3 เดือนก่อนหน้า" };
+    }
+    case "yearVsLastYear": {
+      const A = { start: `${now.getFullYear()}-01-01`, end: `${now.getFullYear()}-12-31` };
+      const B = { start: `${now.getFullYear()-1}-01-01`, end: `${now.getFullYear()-1}-12-31` };
+      return { A, B, labelA: "ปีนี้", labelB: "ปีที่แล้ว" };
+    }
+    case "custom":
+    default: {
+      const A = { start: compareAStart || null, end: compareAEnd || null };
+      const B = { start: compareBStart || null, end: compareBEnd || null };
+      return { A, B, labelA: compareRangeLabel(A), labelB: compareRangeLabel(B) };
+    }
+  }
+}
+// เปรียบเทียบค่า current vs previous แบบปลอดภัย (ไม่มี NaN/Infinity)
+// isMoney=true ใช้หน่วยสตางค์ (toCents) เหมือนส่วนอื่นของระบบ, isMoney=false ใช้จำนวนเต็มตรงๆ (เช่น จำนวนรายการ)
+function computeChangeGeneric(current, previous, isMoney){
+  const curUnits = isMoney ? toCents(current) : Math.round(current || 0);
+  const prevUnits = isMoney ? toCents(previous) : Math.round(previous || 0);
+  const diffUnits = curUnits - prevUnits;
+  const diff = isMoney ? diffUnits/100 : diffUnits;
+  const dir = diffUnits>0 ? "up" : diffUnits<0 ? "down" : "flat";
+  const fmtAbs = v => isMoney ? ("฿"+fmt(Math.abs(v))) : fmt(Math.abs(v));
+  if(curUnits===0 && prevUnits===0){
+    return { diff:0, dir:"flat", diffLabel: fmtAbs(0), pctLabel:"—", hasBase:false, noData:true };
+  }
+  const sign = diffUnits>0 ? "+" : diffUnits<0 ? "-" : "";
+  const diffLabel = sign + fmtAbs(diff);
+  if(prevUnits===0){
+    // ไม่มีฐานสำหรับคำนวณ % (previous = 0) — แสดงจำนวนเงินที่เปลี่ยนได้ แต่ไม่แสดง % เพื่อกัน Infinity
+    return { diff, dir, diffLabel, pctLabel:"—", hasBase:false, noData:false };
+  }
+  const pct = (diffUnits/prevUnits)*100;
+  const pctSign = pct>0 ? "+" : pct<0 ? "-" : "";
+  const pctLabel = pctSign + fmt(Math.abs(pct)) + "%";
+  return { diff, dir, diffLabel, pctLabel, hasBase:true, noData:false };
+}
+// รวมข้อมูลเปรียบเทียบทั้งหมด: เรียก computePeriodAnalysisForRange() ของ Phase 2 สำหรับทั้งสองช่วง
+// เพื่อให้ Accounting Logic (transfer/money lent/loan repayment ไม่นับ, ไม่ double count) ตรงกับ Period Analysis เป๊ะๆ
+function computeCompareAnalysis(){
+  const { A, B, labelA, labelB } = getComparePeriods();
+  const analysisA = computePeriodAnalysisForRange(A.start, A.end, compareAccountFilter);
+  const analysisB = computePeriodAnalysisForRange(B.start, B.end, compareAccountFilter);
+
+  const METRICS = [
+    { key:"income", label:"รายรับ", isMoney:true },
+    { key:"expense", label:"รายจ่าย", isMoney:true },
+    { key:"saving", label:"ออม/ลงทุน", isMoney:true },
+    { key:"netCashFlow", label:"Net Cash Flow", isMoney:true },
+    { key:"count", label:"จำนวนรายการ", isMoney:false },
+    { key:"avgExpensePerTxn", label:"รายจ่ายเฉลี่ย/รายการ", isMoney:true },
+    { key:"avgIncomePerDay", label:"รายรับเฉลี่ย/วัน", isMoney:true },
+    { key:"avgExpensePerDay", label:"รายจ่ายเฉลี่ย/วัน", isMoney:true },
+  ];
+  const rows = METRICS.map(m => ({
+    ...m,
+    curVal: analysisA[m.key],
+    prevVal: analysisB[m.key],
+    change: computeChangeGeneric(analysisA[m.key], analysisB[m.key], m.isMoney),
+  }));
+
+  // รวมหมวดหมู่จากทั้งสองช่วงเข้าด้วยกัน (union) เพื่อไม่ให้หมวดที่มีเฉพาะช่วงใดช่วงหนึ่งหายไป
+  const catSet = new Set([...analysisA.breakdown.map(r=>r.cat), ...analysisB.breakdown.map(r=>r.cat)]);
+  let catRows = Array.from(catSet).map(cat => {
+    const aAmt = analysisA.breakdown.find(r=>r.cat===cat)?.amount || 0;
+    const bAmt = analysisB.breakdown.find(r=>r.cat===cat)?.amount || 0;
+    const change = computeChangeGeneric(aAmt, bAmt, true);
+    return { cat, aAmt, bAmt, change };
+  });
+  switch(compareCategorySort){
+    case "increase": catRows.sort((x,y) => y.change.diff - x.change.diff); break;
+    case "decrease": catRows.sort((x,y) => x.change.diff - y.change.diff); break;
+    case "total": catRows.sort((x,y) => Math.max(y.aAmt,y.bAmt) - Math.max(x.aAmt,x.bAmt)); break;
+    default: catRows.sort((x,y) => Math.abs(y.change.diff) - Math.abs(x.change.diff));
+  }
+
+  return { analysisA, analysisB, labelA, labelB, rows, catRows };
+}
+// สร้าง insight จากข้อมูลจริงล้วนๆ (ไม่ใช้ AI) — ถ้าฐานข้อมูลไม่พอ (previous=0 หรือไม่เปลี่ยนแปลง) จะไม่พูดถึง metric นั้น
+function buildCompareInsights(compare){
+  const lines = [];
+  const byKey = k => compare.rows.find(r => r.key===k);
+  const dirWord = dir => dir==="up" ? "เพิ่มขึ้น" : dir==="down" ? "ลดลง" : "";
+  [["income","รายรับ"], ["expense","รายจ่าย"], ["saving","เงินออม/ลงทุน"]].forEach(([key,label]) => {
+    const r = byKey(key);
+    if(r && r.change.hasBase && r.change.dir !== "flat"){
+      lines.push(`${label}${dirWord(r.change.dir)} ${r.change.pctLabel.replace(/^[+-]/,"")}`);
+    }
+  });
+  const changedCats = compare.catRows.filter(r => r.change.diff !== 0);
+  if(changedCats.length){
+    const top = changedCats.reduce((best,r) => Math.abs(r.change.diff) > Math.abs(best.change.diff) ? r : best, changedCats[0]);
+    lines.push(`หมวด${top.cat}เป็นหมวดที่ใช้เงิน${dirWord(top.change.dir)}มากที่สุด (${top.change.diffLabel})`);
+  }
+  return lines;
+}
+function renderCompareSection(){
+  const accSelect = document.getElementById("compareAccountFilter");
+  const accOptsHtml = `<option value="">ทุกบัญชี</option>` + accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+  if(accSelect.innerHTML !== accOptsHtml) accSelect.innerHTML = accOptsHtml;
+  accSelect.value = compareAccountFilter;
+  document.getElementById("compareCustomARow").style.display = comparePreset === "custom" ? "flex" : "none";
+  document.getElementById("compareCustomBRow").style.display = comparePreset === "custom" ? "flex" : "none";
+
+  const compare = computeCompareAnalysis();
+  const container = document.getElementById("compareSection");
+  const money = n => (n<0?"-":"") + "฿" + fmt(Math.abs(n));
+  const arrowGlyph = dir => dir==="up" ? "↑" : dir==="down" ? "↓" : "→";
+  const arrowColor = dir => dir==="up" ? "var(--income)" : dir==="down" ? "var(--expense)" : "var(--faint)";
+
+  const headlineKeys = ["income","expense","saving"];
+  const headlineRows = compare.rows.filter(r => headlineKeys.includes(r.key));
+  const otherRows = compare.rows.filter(r => !headlineKeys.includes(r.key));
+
+  const insights = buildCompareInsights(compare);
+
+  const noDataAtAll = compare.analysisA.count===0 && compare.analysisB.count===0;
+
+  container.innerHTML = `
+    <div class="compare-vs-row">
+      <div class="compare-period-pill">${escapeHtml(compare.labelA)}</div>
+      <div class="compare-vs-label">VS</div>
+      <div class="compare-period-pill">${escapeHtml(compare.labelB)}</div>
+    </div>
+    ${noDataAtAll ? `<div class="empty-state">ไม่มีข้อมูลในทั้งสองช่วงเวลานี้</div>` : `
+      <div class="compare-headline-grid">
+        ${headlineRows.map(r => `
+          <div class="compare-headline-row">
+            <span class="compare-headline-label">${escapeHtml(r.label)}</span>
+            <span class="compare-headline-val mono">${money(r.curVal)}</span>
+            <span class="compare-headline-change mono" style="color:${arrowColor(r.change.dir)}">${arrowGlyph(r.change.dir)} ${r.change.noData ? "—" : r.change.pctLabel}</span>
+          </div>
+        `).join("")}
+      </div>
+      ${insights.length ? `<div class="insight-box">${insights.map(l => `<div>${escapeHtml(l)}</div>`).join("")}</div>` : ""}
+      <button class="breakdown-toggle" id="compareDetailToggle" style="margin-bottom:10px;">${compareDetailExpanded ? "ซ่อนรายละเอียด" : "+ ดูรายละเอียดเพิ่มเติม"}</button>
+      ${compareDetailExpanded ? `
+        <div style="margin-bottom:16px;">
+          ${otherRows.map(r => `
+            <div class="compare-detail-row">
+              <span style="flex:1.4">${escapeHtml(r.label)}</span>
+              <span class="compare-detail-col mono">${r.isMoney ? money(r.curVal) : fmt(r.curVal)}</span>
+              <span class="compare-detail-col mono" style="color:var(--faint)">${r.isMoney ? money(r.prevVal) : fmt(r.prevVal)}</span>
+              <span class="compare-detail-col mono" style="color:${arrowColor(r.change.dir)}">${r.change.diffLabel}</span>
+            </div>
+          `).join("")}
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span class="section-label">รายจ่ายตามหมวด (เปรียบเทียบ)</span>
+            <select id="compareCategorySort" style="font-size:12px;">
+              <option value="changed">เปลี่ยนแปลงมากที่สุด</option>
+              <option value="increase">เพิ่มขึ้นมากที่สุด</option>
+              <option value="decrease">ลดลงมากที่สุด</option>
+              <option value="total">ยอดรวมสูงสุด</option>
+            </select>
+          </div>
+          ${compare.catRows.length===0 ? `<div class="empty-state">ไม่มีรายจ่ายในทั้งสองช่วงเวลานี้</div>` :
+            compare.catRows.map(r => `
+              <div class="compare-cat-row">
+                <div class="compare-cat-top"><span>${escapeHtml(r.cat)}</span><span class="mono" style="color:${arrowColor(r.change.dir)}">${r.change.diffLabel}${r.change.hasBase ? ` (${r.change.pctLabel})` : ""}</span></div>
+                <div class="compare-cat-sub"><span>${escapeHtml(compare.labelA)}: ฿${fmt(r.aAmt)}</span><span>${escapeHtml(compare.labelB)}: ฿${fmt(r.bAmt)}</span></div>
+              </div>
+            `).join("")}
+        </div>
+      ` : ""}
+    `}
+  `;
+
+  const toggleBtn = document.getElementById("compareDetailToggle");
+  if(toggleBtn){
+    toggleBtn.addEventListener("click", () => {
+      compareDetailExpanded = !compareDetailExpanded;
+      renderCompareSection();
+    });
+  }
+  const catSortSelect = document.getElementById("compareCategorySort");
+  if(catSortSelect){
+    catSortSelect.value = compareCategorySort;
+    catSortSelect.addEventListener("change", (e) => {
+      compareCategorySort = e.target.value;
+      renderCompareSection();
+    });
+  }
+}
+document.getElementById("comparePreset").addEventListener("change", (e) => {
+  comparePreset = e.target.value;
+  if(comparePreset === "custom" && !compareAStart && !compareAEnd && !compareBStart && !compareBEnd){
+    compareAStart = todayISO();
+    compareAEnd = todayISO();
+    compareBStart = todayISO();
+    compareBEnd = todayISO();
+    document.getElementById("compareAStartInput").value = compareAStart;
+    document.getElementById("compareAEndInput").value = compareAEnd;
+    document.getElementById("compareBStartInput").value = compareBStart;
+    document.getElementById("compareBEndInput").value = compareBEnd;
+  }
+  renderCompareSection();
+});
+document.getElementById("compareAccountFilter").addEventListener("change", (e) => {
+  compareAccountFilter = e.target.value;
+  renderCompareSection();
+});
+document.getElementById("compareAStartInput").addEventListener("change", (e) => { compareAStart = e.target.value; renderCompareSection(); });
+document.getElementById("compareAEndInput").addEventListener("change", (e) => { compareAEnd = e.target.value; renderCompareSection(); });
+document.getElementById("compareBStartInput").addEventListener("change", (e) => { compareBStart = e.target.value; renderCompareSection(); });
+document.getElementById("compareBEndInput").addEventListener("change", (e) => { compareBEnd = e.target.value; renderCompareSection(); });
+
+// ยอดคงเหลือของบัญชี = ยอดเริ่มต้น + รายรับ - รายจ่าย - ออม/ลงทุน + โอนเข้า - โอนออก (คำนวณจากรายการทั้งหมดตลอดเวลา ไม่ใช่แค่เดือนที่เลือก)
+function computeAccountBalance(accountId){
+  let cents = toCents(accounts.find(a => a.id===accountId)?.initialBalance || 0);
+  entries.forEach(e => {
+    const acc = e.accountId || UNASSIGNED_ACCOUNT_ID;
+    if(e.type === "transfer"){
+      if(e.fromAccountId === accountId) cents -= toCents(e.amount);
+      if(e.toAccountId === accountId) cents += toCents(e.amount);
+    }else if(acc === accountId){
+      if(e.type === "income") cents += toCents(e.amount);
+      else if(e.type === "expense" || e.type === "saving") cents -= toCents(e.amount);
+    }
+  });
+  loans.forEach(l => {
+    if(l.accountId === accountId) cents -= toCents(l.amount); // เงินให้ยืม ออกจากบัญชีจริง แต่ไม่นับเป็นรายจ่าย
+    l.repayments.forEach(r => { if(r.accountId === accountId) cents += toCents(r.amount); }); // คืนเงิน เข้าบัญชีจริง แต่ไม่นับเป็นรายรับ
+  });
+  return cents / 100;
+}
+function getTotalMoneyAllAccounts(){
+  return accounts.reduce((s,a) => s + toCents(computeAccountBalance(a.id)), 0) / 100;
+}
 function getLastBackup(){
   try{ return localStorage.getItem(BACKUP_KEY) || ""; }catch(e){ return ""; }
 }
@@ -419,8 +1433,25 @@ function getByCategory(type, totals){
     .map(c => ({ ...c, pct: totalForType ? Math.round((c.amount/totalForType)*100) : 0 }));
 }
 
+function renderAccountsSummary(){
+  const total = getTotalMoneyAllAccounts();
+  const reserved = getTotalReserved();
+  document.getElementById("totalMoneyNum").textContent = "฿" + fmt(total);
+  document.getElementById("reservedNum").textContent = "฿" + fmt(reserved);
+  document.getElementById("availableNum").textContent = "฿" + fmt(total - reserved);
+  document.getElementById("receivablesNum").textContent = "฿" + fmt(getTotalReceivablesOutstanding());
+  const listEl = document.getElementById("accountsList");
+  listEl.innerHTML = accounts.map(a => `
+    <div class="account-row"><span class="acc-name">${escapeHtml(a.name)}</span><span class="mono">฿${fmt(computeAccountBalance(a.id))}</span></div>
+  `).join("");
+}
+
 function render(){
   refreshBackupBanner();
+  renderAccountsSummary();
+  renderUpcomingWidget();
+  renderPeriodAnalysis();
+  renderCompareSection();
   const months = getMonths();
   const monthSelect = document.getElementById("monthSelect");
   monthSelect.innerHTML = months.map(m => `<option value="${m}" ${m===selectedMonth?"selected":""}>${monthLabel(m)}</option>`).join("");
@@ -483,13 +1514,31 @@ function render(){
   }else{
     listContainer.innerHTML = `<ul class="list">
       ${me.map(e => {
+        if(e.type === "transfer"){
+          const fromName = accounts.find(a=>a.id===e.fromAccountId)?.name || "บัญชีที่ถูกลบ";
+          const toName = accounts.find(a=>a.id===e.toAccountId)?.name || "บัญชีที่ถูกลบ";
+          return `<li class="list-item" data-id="${e.id}">
+            <div class="list-item-left">
+              <span class="list-date">${dayLabel(e.date)}</span>
+              <div>
+                <div class="list-cat transfer-label">โอน: ${escapeHtml(fromName)} → ${escapeHtml(toName)}</div>
+                ${e.note ? `<div class="list-note">${escapeHtml(e.note)}</div>` : ""}
+              </div>
+            </div>
+            <div class="list-item-right">
+              <span class="mono" style="font-weight:600;color:var(--transfer)">฿${fmt(e.amount)}</span>
+              <button class="icon-btn edit-btn" data-id="${e.id}" aria-label="แก้ไข">✏️</button>
+              <button class="icon-btn delete-btn" data-id="${e.id}" aria-label="ลบ">🗑</button>
+            </div>
+          </li>`;
+        }
         const color = e.type==="income" ? "var(--income)" : e.type==="saving" ? "var(--saving)" : "var(--expense)";
         const sign = e.type==="income" ? "+" : e.type==="saving" ? "→" : "−";
         return `<li class="list-item" data-id="${e.id}">
           <div class="list-item-left">
             <span class="list-date">${dayLabel(e.date)}</span>
             <div>
-              <div class="list-cat">${escapeHtml(e.category)}</div>
+              <div class="list-cat">${e.recurringId ? "🔁 " : ""}${escapeHtml(e.category)}</div>
               ${e.note ? `<div class="list-note">${escapeHtml(e.note)}</div>` : ""}
             </div>
           </div>
@@ -593,8 +1642,32 @@ function renderCatGrid(){
   });
 }
 
-function setFormType(t, isInit){
+function populateAccountSelects(){
+  const opts = accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+  document.getElementById("entryAccount").innerHTML = opts;
+  document.getElementById("fromAccount").innerHTML = opts;
+  document.getElementById("toAccount").innerHTML = opts;
+}
+
+function setFormType(t, isInit, entry){
   formType = t;
+  const isTransfer = t === "transfer";
+  document.getElementById("categoryFieldGroup").style.display = isTransfer ? "none" : "block";
+  document.getElementById("transferFieldGroup").style.display = isTransfer ? "block" : "none";
+  if(isTransfer){
+    if(accounts.length < 2){
+      showToast("ต้องมีอย่างน้อย 2 บัญชีก่อนถึงจะโอนเงินได้");
+    }
+    populateAccountSelects();
+    document.getElementById("fromAccount").value = entry ? entry.fromAccountId : (accounts[0]?.id || "");
+    document.getElementById("toAccount").value = entry ? entry.toAccountId : (accounts[1]?.id || accounts[0]?.id || "");
+    document.querySelectorAll(".type-btn").forEach(b => {
+      b.classList.remove("active-expense","active-income","active-saving","active-transfer");
+      if(b.dataset.type===t) b.classList.add("active-transfer");
+    });
+    document.getElementById("submitBtn").style.background = "var(--transfer)";
+    return;
+  }
   const cats = CATS_BY_TYPE[t] || [];
   if(!cats.includes(selectedCategory)){
     if(isInit && selectedCategory){
@@ -610,10 +1683,12 @@ function setFormType(t, isInit){
     orphanCategory = null;
   }
   document.querySelectorAll(".type-btn").forEach(b => {
-    b.classList.remove("active-expense","active-income","active-saving");
+    b.classList.remove("active-expense","active-income","active-saving","active-transfer");
     if(b.dataset.type===t) b.classList.add("active-"+t);
   });
   document.getElementById("submitBtn").style.background = `var(--${t})`;
+  populateAccountSelects();
+  document.getElementById("entryAccount").value = entry ? (entry.accountId || UNASSIGNED_ACCOUNT_ID) : (lastUsedAccountId && accounts.some(a=>a.id===lastUsedAccountId) ? lastUsedAccountId : (accounts[0]?.id || ""));
   renderCatGrid();
 }
 
@@ -626,7 +1701,7 @@ function openForm(entry){
   document.getElementById("note").value = entry ? (entry.note || "") : "";
   selectedCategory = entry ? entry.category : "";
   orphanCategory = null;
-  setFormType(entry ? entry.type : "expense", true);
+  setFormType(entry ? entry.type : "expense", true, entry);
   const v = parseFloat(document.getElementById("amount").value);
   document.getElementById("submitBtn").disabled = !v || v<=0;
   document.getElementById("amount").focus();
@@ -661,16 +1736,36 @@ document.getElementById("submitBtn").addEventListener("click", () => {
   const date = document.getElementById("date").value || todayISO();
   const note = document.getElementById("note").value.trim();
 
-  if(editingId){
-    const idx = entries.findIndex(e => e.id === editingId);
-    if(idx !== -1){
-      entries[idx] = { ...entries[idx], type: formType, category: selectedCategory, amount, date, note };
+  if(formType === "transfer"){
+    const fromAccountId = document.getElementById("fromAccount").value;
+    const toAccountId = document.getElementById("toAccount").value;
+    if(!fromAccountId || !toAccountId || fromAccountId === toAccountId){
+      showToast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");
+      return;
+    }
+    if(editingId){
+      const idx = entries.findIndex(e => e.id === editingId);
+      if(idx !== -1){
+        entries[idx] = { ...entries[idx], type: "transfer", category: undefined, fromAccountId, toAccountId, amount, date, note };
+      }
+    }else{
+      entries.unshift({ id: makeId(), type: "transfer", fromAccountId, toAccountId, amount, date, note });
     }
   }else{
-    entries.unshift({ id: makeId(), type: formType, category: selectedCategory, amount, date, note });
+    const accountId = document.getElementById("entryAccount").value || UNASSIGNED_ACCOUNT_ID;
+    if(editingId){
+      const idx = entries.findIndex(e => e.id === editingId);
+      if(idx !== -1){
+        entries[idx] = { ...entries[idx], type: formType, category: selectedCategory, accountId, amount, date, note };
+      }
+    }else{
+      entries.unshift({ id: makeId(), type: formType, category: selectedCategory, accountId, amount, date, note });
+    }
+    lastUsedCat[formType] = selectedCategory;
+    saveLastCat();
+    lastUsedAccountId = accountId;
+    saveLastAccount();
   }
-  lastUsedCat[formType] = selectedCategory;
-  saveLastCat();
   saveEntries();
   closeForm();
   selectedMonth = monthKey(date);
@@ -690,7 +1785,7 @@ document.getElementById("backupDismissBtn").addEventListener("click", () => {
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = { entries, categories: CATS_BY_TYPE, exportedAt: todayISO() };
+  const payload = { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, exportedAt: todayISO() };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -729,6 +1824,27 @@ document.getElementById("importFile").addEventListener("change", (e) => {
         });
         saveCategories();
       }
+      if(Array.isArray(data.accounts)){
+        const existingAccIds = new Set(accounts.map(a => a.id));
+        data.accounts.forEach(a => { if(a && a.id && !existingAccIds.has(a.id)) accounts.push(a); });
+        saveAccounts();
+      }
+      if(Array.isArray(data.reservedItems)){
+        const existingResIds = new Set(reservedItems.map(r => r.id));
+        data.reservedItems.forEach(r => { if(r && r.id && !existingResIds.has(r.id)) reservedItems.push(r); });
+        saveReserved();
+      }
+      if(Array.isArray(data.loans)){
+        const existingLoanIds = new Set(loans.map(l => l.id));
+        data.loans.forEach(l => { if(l && l.id && !existingLoanIds.has(l.id)){ if(!Array.isArray(l.repayments)) l.repayments=[]; loans.push(l); } });
+        saveLoans();
+      }
+      // Backup เก่าที่ไม่มี recurringExpenses เลย ให้ถือเป็น [] (ค่าเริ่มต้น) โดยไม่ทำให้ restore พัง
+      if(Array.isArray(data.recurringExpenses)){
+        const existingRecIds = new Set(recurringExpenses.map(r => r.id));
+        data.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
+        saveRecurring();
+      }
       saveEntries();
       render();
       showToast("กู้คืนข้อมูลสำเร็จ");
@@ -743,8 +1859,687 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 loadEntries();
 loadCategories();
 loadLastCat();
+loadAccounts();
+loadLastAccount();
+loadReserved();
+loadLoans();
+loadRecurring();
 selectedMonth = monthKey(todayISO());
 render();
+
+function renderAccountsManageList(){
+  const el = document.getElementById("accountsManageList");
+  el.innerHTML = accounts.map(a => `
+    <div class="account-row">
+      <span class="acc-name">${escapeHtml(a.name)} <span class="mono" style="color:var(--faint)">฿${fmt(computeAccountBalance(a.id))}</span></span>
+      <span class="acc-actions">
+        <button class="icon-btn rename-acc-btn" data-id="${a.id}" aria-label="แก้ไข">✏️</button>
+        <button class="icon-btn delete-acc-btn" data-id="${a.id}" aria-label="ลบ">🗑</button>
+      </span>
+    </div>
+  `).join("");
+  el.querySelectorAll(".rename-acc-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const acc = accounts.find(a => a.id === btn.dataset.id);
+      if(!acc) return;
+      const name = prompt("ชื่อบัญชี:", acc.name);
+      if(!name || !name.trim()) return;
+      acc.name = name.trim();
+      const balStr = prompt("ยอดเริ่มต้นของบัญชี (บาท) — ใช้ตอนสร้างบัญชีครั้งแรกเท่านั้น ไม่กระทบรายการที่บันทึกไปแล้ว:", acc.initialBalance || 0);
+      const bal = parseFloat(balStr);
+      if(!isNaN(bal)) acc.initialBalance = bal;
+      saveAccounts();
+      renderAccountsManageList();
+      render();
+    });
+  });
+  el.querySelectorAll(".delete-acc-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(accounts.length <= 1){
+        showToast("ต้องเหลืออย่างน้อย 1 บัญชี");
+        return;
+      }
+      const acc = accounts.find(a => a.id === btn.dataset.id);
+      if(!acc) return;
+      const inUse = entries.some(e => e.accountId===acc.id || e.fromAccountId===acc.id || e.toAccountId===acc.id)
+        || loans.some(l => l.accountId===acc.id || l.repayments.some(r => r.accountId===acc.id));
+      const fallback = accounts.find(a => a.id !== acc.id);
+      const msg = inUse
+        ? `บัญชี "${acc.name}" มีรายการผูกอยู่ ลบแล้วรายการเหล่านั้นจะถูกย้ายไปที่ "${fallback.name}" — ยืนยันไหม?`
+        : `ลบบัญชี "${acc.name}" ใช่ไหม?`;
+      if(!confirm(msg)) return;
+      if(inUse){
+        entries.forEach(e => {
+          if(e.accountId === acc.id) e.accountId = fallback.id;
+          if(e.fromAccountId === acc.id) e.fromAccountId = fallback.id;
+          if(e.toAccountId === acc.id) e.toAccountId = fallback.id;
+        });
+        saveEntries();
+        loans.forEach(l => {
+          if(l.accountId === acc.id) l.accountId = fallback.id;
+          l.repayments.forEach(r => { if(r.accountId === acc.id) r.accountId = fallback.id; });
+        });
+        saveLoans();
+      }
+      accounts = accounts.filter(a => a.id !== acc.id);
+      saveAccounts();
+      renderAccountsManageList();
+      render();
+    });
+  });
+}
+
+document.getElementById("manageAccountsBtn").addEventListener("click", () => {
+  renderAccountsManageList();
+  document.getElementById("accountsOverlay").classList.add("open");
+});
+document.getElementById("closeAccountsBtn").addEventListener("click", () => {
+  document.getElementById("accountsOverlay").classList.remove("open");
+});
+document.getElementById("accountsOverlay").addEventListener("click", () => {
+  document.getElementById("accountsOverlay").classList.remove("open");
+});
+document.getElementById("addAccountBtn").addEventListener("click", () => {
+  const name = prompt("ชื่อบัญชีใหม่ เช่น ธนาคาร, เงินสด, Wallet, เงินออม:");
+  if(!name || !name.trim()) return;
+  const balStr = prompt("ยอดเงินเริ่มต้นในบัญชีนี้ตอนนี้ (บาท):", "0");
+  const bal = parseFloat(balStr) || 0;
+  accounts.push({ id: makeId(), name: name.trim(), initialBalance: bal });
+  saveAccounts();
+  renderAccountsManageList();
+  render();
+});
+
+// ===== เงินกันไว้ / Reserved Money =====
+function renderReservedManageList(){
+  const el = document.getElementById("reservedManageList");
+  if(!reservedItems.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีเงินกันไว้</div>`;
+    return;
+  }
+  el.innerHTML = reservedItems.map(r => `
+    <div class="account-row">
+      <span class="acc-name">${escapeHtml(r.name)} <span class="mono" style="color:var(--faint)">฿${fmt(r.amount)}</span>${r.dueDate ? ` <span style="color:var(--faint)">(${dayLabel(r.dueDate)})</span>` : ""}</span>
+      <span class="acc-actions">
+        <button class="icon-btn edit-reserved-btn" data-id="${r.id}" aria-label="แก้ไข">✏️</button>
+        <button class="icon-btn delete-reserved-btn" data-id="${r.id}" aria-label="ลบ">🗑</button>
+      </span>
+    </div>
+  `).join("");
+  el.querySelectorAll(".edit-reserved-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = reservedItems.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      const name = prompt("ชื่อรายการ:", r.name);
+      if(!name || !name.trim()) return;
+      const amtStr = prompt("จำนวนเงินที่กันไว้ (บาท):", r.amount);
+      const amt = parseFloat(amtStr);
+      if(!amt || amt<=0) return;
+      const due = prompt("วันครบกำหนด (YYYY-MM-DD, เว้นว่างได้):", r.dueDate || "");
+      r.name = name.trim(); r.amount = amt; r.dueDate = due ? due.trim() : "";
+      saveReserved();
+      renderReservedManageList();
+      render();
+    });
+  });
+  el.querySelectorAll(".delete-reserved-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!confirm("ลบรายการเงินกันไว้นี้ใช่ไหม?")) return;
+      reservedItems = reservedItems.filter(x => x.id !== btn.dataset.id);
+      saveReserved();
+      renderReservedManageList();
+      render();
+    });
+  });
+}
+document.getElementById("manageReservedBtn").addEventListener("click", () => {
+  renderReservedManageList();
+  document.getElementById("reservedOverlay").classList.add("open");
+});
+document.getElementById("closeReservedBtn").addEventListener("click", () => {
+  document.getElementById("reservedOverlay").classList.remove("open");
+});
+document.getElementById("reservedOverlay").addEventListener("click", () => {
+  document.getElementById("reservedOverlay").classList.remove("open");
+});
+document.getElementById("addReservedBtn").addEventListener("click", () => {
+  const name = prompt("กันเงินไว้สำหรับอะไร เช่น ค่าเช่าห้อง, ค่าเน็ต:");
+  if(!name || !name.trim()) return;
+  const amtStr = prompt("จำนวนเงินที่กันไว้ (บาท):");
+  const amt = parseFloat(amtStr);
+  if(!amt || amt<=0) return;
+  const due = prompt("วันครบกำหนด (YYYY-MM-DD, เว้นว่างได้):", "");
+  reservedItems.push({ id: makeId(), name: name.trim(), amount: amt, dueDate: due ? due.trim() : "", note: "" });
+  saveReserved();
+  renderReservedManageList();
+  render();
+});
+
+// ===== เงินให้คนอื่นยืม / Receivables =====
+function renderLoansManageList(){
+  const el = document.getElementById("loansManageList");
+  if(!loans.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีรายการเงินให้ยืม</div>`;
+    return;
+  }
+  el.innerHTML = loans.map(l => {
+    const outstanding = loanOutstanding(l);
+    const status = outstanding<=0 ? "คืนครบแล้ว" : (l.dueDate && l.dueDate < todayISO() ? "เลยกำหนด" : "ค้างคืน");
+    return `<div class="account-row" style="align-items:flex-start;">
+      <span class="acc-name" style="flex-direction:column; align-items:flex-start; display:flex;">
+        <span>${escapeHtml(l.person)} <span style="color:var(--faint)">— ${status}</span></span>
+        <span class="mono" style="font-size:12px;color:var(--faint)">ยืม ฿${fmt(l.amount)} · ค้าง ฿${fmt(outstanding)}</span>
+      </span>
+      <span class="acc-actions">
+        ${outstanding>0 ? `<button class="icon-btn repay-loan-btn" data-id="${l.id}" aria-label="รับคืน">💰</button>` : ""}
+        <button class="icon-btn delete-loan-btn" data-id="${l.id}" aria-label="ลบ">🗑</button>
+      </span>
+    </div>`;
+  }).join("");
+  el.querySelectorAll(".repay-loan-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const l = loans.find(x => x.id === btn.dataset.id);
+      if(!l) return;
+      const outstanding = loanOutstanding(l);
+      const amtStr = prompt(`${l.person} คืนเงินเท่าไหร่ (บาท) — ค้างอยู่ ฿${fmt(outstanding)}:`, outstanding);
+      const amt = parseFloat(amtStr);
+      if(!amt || amt<=0) return;
+      if(!accounts.length) return;
+      const accNames = accounts.map((a,i) => `${i+1}. ${a.name}`).join("\n");
+      const accIdxStr = accounts.length===1 ? "1" : prompt(`เงินเข้าบัญชีไหน?\n${accNames}\nพิมพ์หมายเลข:`, "1");
+      const accIdx = (parseInt(accIdxStr) || 1) - 1;
+      const accountId = accounts[accIdx]?.id || accounts[0].id;
+      l.repayments.push({ id: makeId(), amount: Math.min(amt, outstanding), date: todayISO(), accountId });
+      saveLoans();
+      renderLoansManageList();
+      render();
+    });
+  });
+  el.querySelectorAll(".delete-loan-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!confirm("ลบรายการเงินให้ยืมนี้ใช่ไหม? (เงินที่หักออกจากบัญชีไปแล้วจะถูกคืนกลับเข้าบัญชี)")) return;
+      loans = loans.filter(x => x.id !== btn.dataset.id);
+      saveLoans();
+      renderLoansManageList();
+      render();
+    });
+  });
+}
+document.getElementById("manageLoansBtn").addEventListener("click", () => {
+  renderLoansManageList();
+  document.getElementById("loansOverlay").classList.add("open");
+});
+document.getElementById("closeLoansBtn").addEventListener("click", () => {
+  document.getElementById("loansOverlay").classList.remove("open");
+});
+document.getElementById("loansOverlay").addEventListener("click", () => {
+  document.getElementById("loansOverlay").classList.remove("open");
+});
+document.getElementById("addLoanBtn").addEventListener("click", () => {
+  if(!accounts.length){ showToast("ยังไม่มีบัญชีเลย เพิ่มบัญชีก่อน"); return; }
+  const person = prompt("ให้ใครยืม:");
+  if(!person || !person.trim()) return;
+  const amtStr = prompt("จำนวนเงินที่ให้ยืม (บาท):");
+  const amt = parseFloat(amtStr);
+  if(!amt || amt<=0) return;
+  const accNames = accounts.map((a,i) => `${i+1}. ${a.name}`).join("\n");
+  const accIdxStr = accounts.length===1 ? "1" : prompt(`เงินออกจากบัญชีไหน?\n${accNames}\nพิมพ์หมายเลข:`, "1");
+  const accIdx = (parseInt(accIdxStr) || 1) - 1;
+  const accountId = accounts[accIdx]?.id || accounts[0].id;
+  const due = prompt("วันครบกำหนดคืน (YYYY-MM-DD, เว้นว่างได้):", "");
+  loans.push({ id: makeId(), person: person.trim(), amount: amt, date: todayISO(), dueDate: due ? due.trim() : "", note: "", accountId, repayments: [] });
+  saveLoans();
+  renderLoansManageList();
+  render();
+});
+
+// ===== Phase 4: Recurring Expenses + Upcoming Payments — UI =====
+
+function promptFrequency(defaultVal){
+  const opts = [["1","weekly","รายสัปดาห์"],["2","monthly","รายเดือน"],["3","bimonthly","ทุก 2 เดือน"],["4","quarterly","รายไตรมาส"],["5","yearly","รายปี"]];
+  const defIdx = opts.findIndex(o => o[1] === defaultVal);
+  const msg = "ความถี่:\n" + opts.map(o => `${o[0]}. ${o[2]}`).join("\n") + "\nพิมพ์หมายเลข:";
+  const ans = prompt(msg, defIdx>=0 ? opts[defIdx][0] : "2");
+  if(ans === null) return null;
+  const found = opts.find(o => o[0] === String(ans).trim());
+  return found ? found[1] : (defaultVal || "monthly");
+}
+function isValidISODate(s){
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s.trim()) && !isNaN(new Date(s.trim()).getTime());
+}
+
+// ----- Dashboard widget (แสดงย่อ 3-5 รายการใกล้ที่สุด) -----
+function renderUpcomingWidget(){
+  const card = document.getElementById("upcomingCard");
+  if(!recurringExpenses.length){ card.style.display = "none"; return; }
+  const summary = getUpcomingSummary();
+  card.style.display = "block";
+  document.getElementById("upcomingTotalNum").textContent = "฿" + fmt(summary.total);
+  const items = getUpcomingOccurrences("30d").slice(0, 5);
+  const listEl = document.getElementById("upcomingPreviewList");
+  let html = "";
+  if(summary.overdue > 0){
+    html += `<div class="networth-sub" style="color:var(--expense)"><span>ค้างจ่าย (Overdue)</span><span class="mono">฿${fmt(summary.overdue)}</span></div>`;
+  }
+  if(!items.length){
+    html += `<div class="networth-sub"><span>ไม่มีรายการใน 30 วันข้างหน้า</span><span></span></div>`;
+  }else{
+    html += items.map(({r, status, days}) => {
+      const dayText = status==="overdue" ? `เลยกำหนด ${Math.abs(days)} วัน` : status==="dueToday" ? "วันนี้" : `อีก ${days} วัน`;
+      const color = status==="overdue" ? "var(--expense)" : "var(--faint)";
+      return `<div class="networth-sub"><span style="color:var(--ink)">${escapeHtml(r.name)} <span style="color:${color}">· ${dayText}</span></span><span class="mono">฿${fmt(r.amount)}</span></div>`;
+    }).join("");
+  }
+  listEl.innerHTML = html;
+}
+
+// ----- Upcoming overlay: filter, summary stats, full list, mark paid / skip -----
+function renderUpcomingOverlay(){
+  document.getElementById("upcomingFilterSelect").value = upcomingFilter;
+  const summary = getUpcomingSummary();
+  document.getElementById("upcomingStatsGrid").innerHTML = `
+    <div class="stat-box"><div class="stat-box-label">ค่าใช้จ่ายที่กำลังจะถึง</div><div class="stat-box-num">฿${fmt(summary.total)}</div></div>
+    <div class="stat-box"><div class="stat-box-label">จำนวนรายการ</div><div class="stat-box-num">${summary.count} รายการ</div></div>
+    <div class="stat-box"><div class="stat-box-label">ภายใน 7 วัน</div><div class="stat-box-num">฿${fmt(summary.within7)}</div></div>
+    <div class="stat-box"><div class="stat-box-label">ภายใน 30 วัน</div><div class="stat-box-num">฿${fmt(summary.within30)}</div></div>
+    <div class="stat-box"><div class="stat-box-label" style="color:var(--expense)">Overdue</div><div class="stat-box-num" style="color:var(--expense)">฿${fmt(summary.overdue)}</div></div>
+    <div class="stat-box"><div class="stat-box-label">ประมาณต่อเดือน</div><div class="stat-box-num">฿${fmt(computeMonthlyRecurringCost())}</div></div>
+  `;
+  const items = getUpcomingOccurrences(upcomingFilter);
+  const listEl = document.getElementById("upcomingFullList");
+  if(!items.length){
+    listEl.innerHTML = `<div class="empty-state">ไม่มีรายการที่กำลังจะถึงในช่วงนี้</div>`;
+    return;
+  }
+  listEl.innerHTML = items.map(({r, status, days}) => {
+    const dayText = status==="overdue" ? `เลยกำหนดมาแล้ว ${Math.abs(days)} วัน` : status==="dueToday" ? "ครบกำหนดวันนี้" : `อีก ${days} วัน`;
+    const color = status==="overdue" ? "var(--expense)" : status==="dueToday" ? "var(--locked)" : "var(--ink)";
+    const accName = accounts.find(a => a.id===r.accountId)?.name || "บัญชีที่ถูกลบ";
+    const link = getReservedLinkInfo(r);
+    let reservedLine;
+    if(!link){
+      reservedLine = `<div class="list-note">ยังไม่ได้กันเงิน</div>`;
+    }else if(link.shortfall <= 0){
+      reservedLine = `<div class="list-note" style="color:var(--income)">กันไว้แล้ว ฿${fmt(link.reservedAmount)} · ครบแล้ว</div>`;
+    }else{
+      reservedLine = `<div class="list-note" style="color:var(--expense)">กันไว้แล้ว ฿${fmt(link.reservedAmount)} · ยังขาด ฿${fmt(link.shortfall)}</div>`;
+    }
+    return `<div class="upcoming-item">
+      <div>
+        <div class="list-cat" style="color:${color}">${escapeHtml(r.name)} · ${dayText}</div>
+        <div class="list-note">${frequencyLabel(r.frequency)} · ${escapeHtml(accName)} · ฿${fmt(r.amount)}</div>
+        ${reservedLine}
+      </div>
+      <div class="upcoming-actions">
+        <span class="mono" style="font-weight:600;color:var(--expense)">฿${fmt(r.amount)}</span>
+        <button class="small-btn primary mark-paid-btn" data-id="${r.id}">บันทึกว่าจ่ายแล้ว</button>
+        <button class="small-btn skip-recurring-btn" data-id="${r.id}">ข้ามรอบนี้</button>
+      </div>
+    </div>`;
+  }).join("");
+  listEl.querySelectorAll(".mark-paid-btn").forEach(btn => {
+    btn.addEventListener("click", () => openMarkPaid(btn.dataset.id));
+  });
+  listEl.querySelectorAll(".skip-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = recurringExpenses.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      if(!confirm(`ข้ามรอบนี้ของ "${r.name}" ใช่ไหม? จะไม่สร้างรายจ่าย และเลื่อนไปกำหนดครั้งถัดไป`)) return;
+      r.nextDueDate = computeNextDueDate(r.nextDueDate, r.frequency);
+      saveRecurring();
+      renderUpcomingOverlay();
+      renderUpcomingWidget();
+      showToast("ข้ามรอบนี้แล้ว");
+    });
+  });
+}
+document.getElementById("upcomingFilterSelect").addEventListener("change", (e) => {
+  upcomingFilter = e.target.value;
+  renderUpcomingOverlay();
+});
+document.getElementById("viewUpcomingBtn").addEventListener("click", () => {
+  renderUpcomingOverlay();
+  document.getElementById("upcomingOverlay").classList.add("open");
+});
+document.getElementById("closeUpcomingBtn").addEventListener("click", () => {
+  document.getElementById("upcomingOverlay").classList.remove("open");
+});
+document.getElementById("upcomingOverlay").addEventListener("click", () => {
+  document.getElementById("upcomingOverlay").classList.remove("open");
+});
+
+// ----- Recurring management overlay (add / edit / pause / resume / cancel / delete) -----
+function renderRecurringManageList(){
+  document.getElementById("monthlyRecurringNum").textContent = "฿" + fmt(computeMonthlyRecurringCost());
+  const el = document.getElementById("recurringManageList");
+  if(!recurringExpenses.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีค่าใช้จ่ายประจำ</div>`;
+    return;
+  }
+  const sorted = [...recurringExpenses].sort((a,b) => a.nextDueDate.localeCompare(b.nextDueDate));
+  el.innerHTML = sorted.map(r => {
+    const accName = accounts.find(a => a.id===r.accountId)?.name || "บัญชีที่ถูกลบ";
+    const displayStatus = r.status === "active" ? getDueStatus(r) : r.status;
+    const badgeColor = (displayStatus==="overdue") ? "var(--expense)" : (displayStatus==="paused"||displayStatus==="cancelled") ? "var(--faint)" : "var(--income)";
+    return `<div class="account-row" style="align-items:flex-start;">
+      <span class="acc-name" style="flex-direction:column; align-items:flex-start; display:flex;">
+        <span>${escapeHtml(r.name)} <span style="color:${badgeColor}">— ${statusLabel(displayStatus)}</span></span>
+        <span class="mono" style="font-size:12px;color:var(--faint)">฿${fmt(r.amount)} · ${frequencyLabel(r.frequency)} · ${escapeHtml(accName)} · ครบกำหนด ${r.nextDueDate}</span>
+      </span>
+      <span class="acc-actions">
+        <button class="icon-btn edit-recurring-btn" data-id="${r.id}" aria-label="แก้ไข">✏️</button>
+        ${r.status==="active" ? `<button class="icon-btn pause-recurring-btn" data-id="${r.id}" aria-label="หยุดชั่วคราว">⏸</button>` : `<button class="icon-btn resume-recurring-btn" data-id="${r.id}" aria-label="เปิดใช้งาน">▶️</button>`}
+        ${r.status!=="cancelled" ? `<button class="icon-btn cancel-recurring-btn" data-id="${r.id}" aria-label="ยกเลิก">🚫</button>` : ""}
+        <button class="icon-btn delete-recurring-btn" data-id="${r.id}" aria-label="ลบ">🗑</button>
+      </span>
+    </div>`;
+  }).join("");
+
+  el.querySelectorAll(".edit-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = recurringExpenses.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      const name = prompt("ชื่อค่าใช้จ่ายประจำ:", r.name);
+      if(!name || !name.trim()) return;
+      const amtStr = prompt("จำนวนเงินโดยประมาณ (บาท):", r.amount);
+      const amt = parseFloat(amtStr);
+      if(!amt || amt<=0) return;
+      const cats = CATS_BY_TYPE.expense;
+      const catNames = cats.map((c,i) => `${i+1}. ${c}`).join("\n");
+      const curCatIdx = cats.indexOf(r.category);
+      const catIdxStr = prompt(`หมวดหมู่:\n${catNames}\nพิมพ์หมายเลข:`, curCatIdx>=0 ? String(curCatIdx+1) : "1");
+      const catIdx = (parseInt(catIdxStr) || 1) - 1;
+      const category = cats[catIdx] || r.category;
+      const accNames = accounts.map((a,i) => `${i+1}. ${a.name}`).join("\n");
+      const curAccIdx = accounts.findIndex(a => a.id === r.accountId);
+      const accIdxStr = accounts.length===1 ? "1" : prompt(`หักจากบัญชีไหน?\n${accNames}\nพิมพ์หมายเลข:`, curAccIdx>=0 ? String(curAccIdx+1) : "1");
+      const accIdx = (parseInt(accIdxStr) || 1) - 1;
+      const accountId = accounts[accIdx]?.id || r.accountId;
+      const frequency = promptFrequency(r.frequency);
+      if(frequency === null) return;
+      const nextDue = prompt("วันครบกำหนดจ่ายครั้งถัดไป (YYYY-MM-DD):", r.nextDueDate);
+      if(!isValidISODate(nextDue || "")){ showToast("รูปแบบวันที่ไม่ถูกต้อง"); return; }
+      const endDate = prompt("วันสิ้นสุด (YYYY-MM-DD, เว้นว่างได้):", r.endDate || "");
+      const note = prompt("โน้ต:", r.note || "");
+      let reservedItemId = r.reservedItemId || "";
+      if(reservedItems.length){
+        const curLinkIdx = reservedItems.findIndex(x => x.id === reservedItemId);
+        const linkNames = "0. ไม่เชื่อมกับเงินกันไว้\n" + reservedItems.map((x,i) => `${i+1}. ${x.name} (฿${fmt(x.amount)})`).join("\n");
+        const linkAns = prompt(`เชื่อมกับเงินกันไว้รายการไหน?\n${linkNames}\nพิมพ์หมายเลข:`, curLinkIdx>=0 ? String(curLinkIdx+1) : "0");
+        if(linkAns !== null){
+          const linkIdx = parseInt(linkAns);
+          reservedItemId = (linkIdx>0 && reservedItems[linkIdx-1]) ? reservedItems[linkIdx-1].id : "";
+        }
+      }
+      r.name = name.trim(); r.amount = amt; r.category = category; r.accountId = accountId;
+      r.frequency = frequency; r.nextDueDate = nextDue.trim(); r.endDate = endDate ? endDate.trim() : "";
+      r.note = note || ""; r.reservedItemId = reservedItemId;
+      saveRecurring();
+      renderRecurringManageList();
+      renderUpcomingWidget();
+      showToast("บันทึกการแก้ไขแล้ว");
+    });
+  });
+  el.querySelectorAll(".pause-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = recurringExpenses.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      r.status = "paused"; saveRecurring(); renderRecurringManageList(); renderUpcomingWidget();
+      showToast("หยุดชั่วคราวแล้ว");
+    });
+  });
+  el.querySelectorAll(".resume-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = recurringExpenses.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      r.status = "active"; saveRecurring(); renderRecurringManageList(); renderUpcomingWidget();
+      showToast("เปิดใช้งานแล้ว");
+    });
+  });
+  el.querySelectorAll(".cancel-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!confirm("ยกเลิกค่าใช้จ่ายประจำนี้ใช่ไหม? จะไม่แสดงใน Upcoming อีก แต่ประวัติการจ่ายเดิมจะยังอยู่เหมือนเดิม")) return;
+      const r = recurringExpenses.find(x => x.id === btn.dataset.id);
+      if(!r) return;
+      r.status = "cancelled"; saveRecurring(); renderRecurringManageList(); renderUpcomingWidget();
+    });
+  });
+  el.querySelectorAll(".delete-recurring-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!confirm("ลบค่าใช้จ่ายประจำนี้ใช่ไหม? รายการที่เคยบันทึกว่าจ่ายไปแล้วจะไม่ถูกลบ")) return;
+      recurringExpenses = recurringExpenses.filter(x => x.id !== btn.dataset.id);
+      saveRecurring(); renderRecurringManageList(); renderUpcomingWidget();
+    });
+  });
+}
+document.getElementById("manageRecurringBtn").addEventListener("click", () => {
+  renderRecurringManageList();
+  document.getElementById("recurringOverlay").classList.add("open");
+});
+document.getElementById("openRecurringFromUpcomingBtn").addEventListener("click", () => {
+  document.getElementById("upcomingOverlay").classList.remove("open");
+  renderRecurringManageList();
+  document.getElementById("recurringOverlay").classList.add("open");
+});
+document.getElementById("closeRecurringBtn").addEventListener("click", () => {
+  document.getElementById("recurringOverlay").classList.remove("open");
+});
+document.getElementById("recurringOverlay").addEventListener("click", () => {
+  document.getElementById("recurringOverlay").classList.remove("open");
+});
+document.getElementById("addRecurringBtn").addEventListener("click", () => {
+  if(!accounts.length){ showToast("ยังไม่มีบัญชีเลย เพิ่มบัญชีก่อน"); return; }
+  const name = prompt("ชื่อค่าใช้จ่ายประจำ เช่น ค่าเช่าห้อง, Netflix:");
+  if(!name || !name.trim()) return;
+  const amtStr = prompt("จำนวนเงินโดยประมาณ (บาท):");
+  const amt = parseFloat(amtStr);
+  if(!amt || amt<=0) return;
+  const cats = CATS_BY_TYPE.expense;
+  if(!cats.length){ showToast("ยังไม่มีหมวดรายจ่ายเลย เพิ่มหมวดก่อน"); return; }
+  const catNames = cats.map((c,i) => `${i+1}. ${c}`).join("\n");
+  const catIdxStr = prompt(`หมวดหมู่:\n${catNames}\nพิมพ์หมายเลข:`, "1");
+  const catIdx = (parseInt(catIdxStr) || 1) - 1;
+  const category = cats[catIdx] || cats[0];
+  const accNames = accounts.map((a,i) => `${i+1}. ${a.name}`).join("\n");
+  const accIdxStr = accounts.length===1 ? "1" : prompt(`หักจากบัญชีไหน?\n${accNames}\nพิมพ์หมายเลข:`, "1");
+  const accIdx = (parseInt(accIdxStr) || 1) - 1;
+  const accountId = accounts[accIdx]?.id || accounts[0].id;
+  const frequency = promptFrequency("monthly");
+  if(frequency === null) return;
+  const nextDueDate = prompt("วันครบกำหนดจ่ายครั้งถัดไป (YYYY-MM-DD):", todayISO());
+  if(!isValidISODate(nextDueDate || "")){ showToast("รูปแบบวันที่ไม่ถูกต้อง"); return; }
+  const note = prompt("โน้ต (ไม่บังคับ):", "");
+  let reservedItemId = "";
+  if(reservedItems.length){
+    const linkNames = "0. ไม่เชื่อมกับเงินกันไว้\n" + reservedItems.map((x,i) => `${i+1}. ${x.name} (฿${fmt(x.amount)})`).join("\n");
+    const linkAns = prompt(`เชื่อมกับเงินกันไว้รายการไหนไหม? (ไม่บังคับ)\n${linkNames}\nพิมพ์หมายเลข:`, "0");
+    if(linkAns !== null){
+      const linkIdx = parseInt(linkAns);
+      reservedItemId = (linkIdx>0 && reservedItems[linkIdx-1]) ? reservedItems[linkIdx-1].id : "";
+    }
+  }
+  recurringExpenses.push({
+    id: makeId(), name: name.trim(), amount: amt, category, accountId,
+    frequency, nextDueDate: nextDueDate.trim(), startDate: nextDueDate.trim(), endDate: "",
+    note: note || "", status: "active", reservedItemId, lastPaidDate: ""
+  });
+  saveRecurring();
+  renderRecurringManageList();
+  renderUpcomingWidget();
+  showToast("เพิ่มค่าใช้จ่ายประจำแล้ว");
+});
+
+// ----- Forecast overlay: read-only cash flow projection (Phase 5) -----
+function renderForecastOverlay(){
+  document.getElementById("forecastRangeSelect").value = forecastRangePreset;
+  document.getElementById("forecastCustomRow").style.display = forecastRangePreset === "custom" ? "flex" : "none";
+  document.getElementById("forecastCustomDays").value = forecastCustomDays;
+
+  const days = getForecastDays();
+  const f = computeForecast(days);
+
+  document.getElementById("forecastSummary").innerHTML = `
+    <div class="networth-card" style="margin-top:4px;">
+      <div class="networth-top">
+        <span class="networth-label">เงินจริงตอนนี้ (ทุกบัญชี)</span>
+        <span class="mono networth-num">฿${fmt(f.current)}</span>
+      </div>
+      <div class="networth-sub"><span>ค่าใช้จ่ายประจำที่จะถึง (${f.occurrenceCount} รายการ)</span><span class="mono" style="color:var(--expense)">-฿${fmt(f.upcoming)}</span></div>
+      <div class="networth-sub" style="font-size:13.5px; font-weight:600; color:var(--ink); margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">
+        <span>ยอดคาดการณ์ (${days} วัน)</span>
+        <span class="mono" style="color:${f.forecast<0?"var(--expense)":"var(--ink)"}">${f.forecast<0?"-":""}฿${fmt(Math.abs(f.forecast))}</span>
+      </div>
+      <div class="networth-sub"><span>กันไว้ (ไม่เปลี่ยนแปลง)</span><span class="mono">฿${fmt(f.reserved)}</span></div>
+      <div class="networth-sub"><span>คาดการณ์ใช้ได้จริง</span><span class="mono real">${f.forecastAvailable<0?"-":""}฿${fmt(Math.abs(f.forecastAvailable))}</span></div>
+    </div>
+  `;
+
+  const warnEl = document.getElementById("forecastWarnings");
+  let warnHtml = "";
+  f.negativeAccounts.forEach(p => {
+    warnHtml += `
+      <div class="forecast-warning">
+        <div style="font-weight:600; color:var(--expense);">⚠️ เงินอาจไม่พอ — ${escapeHtml(p.account.name)}</div>
+        <div class="list-note">คาดว่าจะติดลบวันที่ ${dayLabel(p.firstNegative.date)} · ยอดคาดการณ์ ${p.firstNegative.balance<0?"-":""}฿${fmt(Math.abs(p.firstNegative.balance))}</div>
+      </div>`;
+  });
+  if(f.totalNegative){
+    warnHtml += `
+      <div class="forecast-warning">
+        <div style="font-weight:600; color:var(--expense);">⚠️ ยอดรวมคาดการณ์อาจติดลบ</div>
+        <div class="list-note">ภายใน ${days} วัน ยอดรวมคาดการณ์ ${f.forecast<0?"-":""}฿${fmt(Math.abs(f.forecast))}</div>
+      </div>`;
+  }
+  warnEl.innerHTML = warnHtml;
+
+  const timelineEl = document.getElementById("forecastTimeline");
+  if(!f.timeline.length){
+    timelineEl.innerHTML = `<span class="section-label">ไทม์ไลน์</span><div class="empty-state">ไม่มีค่าใช้จ่ายประจำในช่วงนี้</div>`;
+  }else{
+    const TIMELINE_LIMIT = 8;
+    const visible = forecastTimelineExpanded ? f.timeline : f.timeline.slice(0, TIMELINE_LIMIT);
+    const hiddenCount = f.timeline.length - visible.length;
+    timelineEl.innerHTML = `
+      <span class="section-label">ไทม์ไลน์</span>
+      <div class="timeline-row">
+        <span class="timeline-date">วันนี้</span>
+        <div style="flex:1;"><div class="list-cat">เงินคงเหลือตอนนี้</div></div>
+        <span class="mono" style="font-weight:600;">฿${fmt(f.current)}</span>
+      </div>
+      ${visible.map(o => {
+        const accName = accounts.find(a=>a.id===o.accountId)?.name || "บัญชีที่ถูกลบ";
+        return `
+        <div class="timeline-row">
+          <span class="timeline-date">${dayLabel(o.date)}</span>
+          <div style="flex:1;">
+            <div class="list-cat">${o.isOverdue ? "⚠️ ค้างจ่าย · " : "🔁 "}${escapeHtml(o.name)}</div>
+            <div class="list-note">${escapeHtml(accName)}</div>
+          </div>
+          <span class="mono" style="text-align:right;">
+            <span style="display:block; color:var(--expense);">-฿${fmt(o.amount)}</span>
+            <span style="display:block; font-size:11px; color:var(--faint);">เหลือ ฿${fmt(o.runningTotal)}</span>
+          </span>
+        </div>`;
+      }).join("")}
+      ${hiddenCount>0 ? `<button class="breakdown-toggle" id="forecastTimelineToggle">+ ดูอีก ${hiddenCount} รายการ</button>` : ""}
+      ${forecastTimelineExpanded && f.timeline.length>TIMELINE_LIMIT ? `<button class="breakdown-toggle" id="forecastTimelineToggle">ย่อ</button>` : ""}
+    `;
+    const toggleBtn = document.getElementById("forecastTimelineToggle");
+    if(toggleBtn){
+      toggleBtn.addEventListener("click", () => {
+        forecastTimelineExpanded = !forecastTimelineExpanded;
+        renderForecastOverlay();
+      });
+    }
+  }
+
+  const accEl = document.getElementById("forecastByAccount");
+  accEl.innerHTML = `
+    <span class="section-label">แยกตามบัญชี</span>
+    <div style="margin-top:8px;">
+      ${f.perAccount.map(p => `
+        <div class="account-row" style="align-items:flex-start;">
+          <span class="acc-name" style="flex-direction:column; align-items:flex-start; display:flex;">
+            <span>${escapeHtml(p.account.name)}</span>
+            <span class="mono" style="font-size:12px;color:var(--faint)">ปัจจุบัน ฿${fmt(p.current)} · อนาคต -฿${fmt(p.future)}</span>
+          </span>
+          <span class="mono" style="font-weight:600; color:${p.forecast<0?"var(--expense)":"var(--ink)"}">${p.forecast<0?"-":""}฿${fmt(Math.abs(p.forecast))}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+document.getElementById("openForecastBtn").addEventListener("click", () => {
+  forecastTimelineExpanded = false;
+  renderForecastOverlay();
+  document.getElementById("forecastOverlay").classList.add("open");
+});
+document.getElementById("closeForecastBtn").addEventListener("click", () => {
+  document.getElementById("forecastOverlay").classList.remove("open");
+});
+document.getElementById("forecastOverlay").addEventListener("click", () => {
+  document.getElementById("forecastOverlay").classList.remove("open");
+});
+document.getElementById("forecastRangeSelect").addEventListener("change", (e) => {
+  forecastRangePreset = e.target.value;
+  forecastTimelineExpanded = false;
+  renderForecastOverlay();
+});
+document.getElementById("forecastCustomDays").addEventListener("input", (e) => {
+  const n = parseInt(e.target.value);
+  forecastCustomDays = (n > 0 && n <= 3650) ? n : forecastCustomDays;
+  forecastTimelineExpanded = false;
+  renderForecastOverlay();
+});
+
+// ----- Mark as Paid: สร้าง Expense Transaction จริงเมื่อกดยืนยันเท่านั้น -----
+function openMarkPaid(id){
+  const r = recurringExpenses.find(x => x.id === id);
+  if(!r) return;
+  markPaidRecurringId = id;
+  document.getElementById("markPaidTitle").textContent = `บันทึกว่าจ่ายแล้ว — ${r.name}`;
+  document.getElementById("markPaidAmount").value = r.amount;
+  const cats = CATS_BY_TYPE.expense.length ? CATS_BY_TYPE.expense : [r.category];
+  document.getElementById("markPaidCategory").innerHTML = cats.map(c =>
+    `<option value="${escapeHtml(c)}" ${c===r.category ? "selected" : ""}>${escapeHtml(c)}</option>`
+  ).join("");
+  document.getElementById("markPaidAccount").innerHTML = accounts.map(a =>
+    `<option value="${a.id}" ${a.id===r.accountId ? "selected" : ""}>${escapeHtml(a.name)}</option>`
+  ).join("");
+  document.getElementById("markPaidDate").value = todayISO();
+  document.getElementById("markPaidNote").value = r.note || "";
+  document.getElementById("upcomingOverlay").classList.remove("open");
+  document.getElementById("markPaidOverlay").classList.add("open");
+}
+document.getElementById("closeMarkPaidBtn").addEventListener("click", () => {
+  document.getElementById("markPaidOverlay").classList.remove("open");
+  markPaidRecurringId = null;
+});
+document.getElementById("markPaidOverlay").addEventListener("click", () => {
+  document.getElementById("markPaidOverlay").classList.remove("open");
+  markPaidRecurringId = null;
+});
+document.getElementById("markPaidSubmitBtn").addEventListener("click", () => {
+  const r = recurringExpenses.find(x => x.id === markPaidRecurringId);
+  if(!r){ showToast("ไม่พบรายการ"); return; }
+  const amt = parseFloat(document.getElementById("markPaidAmount").value);
+  if(!amt || amt<=0){ showToast("กรอกจำนวนเงินให้ถูกต้อง"); return; }
+  const category = document.getElementById("markPaidCategory").value || r.category;
+  const accountId = document.getElementById("markPaidAccount").value || r.accountId;
+  const date = document.getElementById("markPaidDate").value || todayISO();
+  if(!isValidISODate(date)){ showToast("วันที่ไม่ถูกต้อง"); return; }
+  const note = document.getElementById("markPaidNote").value.trim();
+  // สร้าง Expense Transaction จริง — ใช้ยอดที่จ่ายจริง (อาจต่างจากยอดประมาณการของ recurring)
+  entries.unshift({ id: makeId(), type: "expense", amount: amt, category, accountId, date, note, recurringId: r.id });
+  saveEntries();
+  r.lastPaidDate = date;
+  r.nextDueDate = computeNextDueDate(r.nextDueDate, r.frequency); // เลื่อนไปครั้งถัดไป ไม่สร้างซ้ำ
+  saveRecurring();
+  document.getElementById("markPaidOverlay").classList.remove("open");
+  markPaidRecurringId = null;
+  render();
+  showToast("บันทึกว่าจ่ายแล้ว");
+});
 </script>
 </body>
 </html>
