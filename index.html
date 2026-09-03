@@ -378,6 +378,37 @@
     font-family:inherit; font-size:13px; font-weight:600; color:#fff; background:var(--accent1);
     border:none; border-radius:10px; padding:10px 0; cursor:pointer;
   }
+  /* ===== รายการแชท (หลายแชทแบบ ChatGPT/Gemini) ===== */
+  .ai-chat-list-row{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:12px 2px; border-top:1px solid var(--line); cursor:pointer;
+  }
+  .ai-chat-list-row:first-child{ border-top:none; }
+  .ai-chat-list-row.active{ background:var(--surface-2); border-radius:12px; padding-left:10px; padding-right:10px; }
+  .ai-chat-list-info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .ai-chat-list-title{ font-size:13.5px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ai-chat-list-meta{ font-size:11.5px; color:var(--faint); }
+  .new-chat-btn{
+    width:100%; font-family:inherit; font-size:13px; font-weight:600; color:#fff; background:var(--accent1);
+    border:none; border-radius:12px; padding:11px 0; cursor:pointer; margin-bottom:6px;
+  }
+  /* ===== Memory ที่ AI จำได้ ===== */
+  .memory-row{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:8px;
+    padding:10px 0; border-top:1px solid var(--line);
+  }
+  .memory-row:first-child{ border-top:none; }
+  .memory-row-text{ font-size:13px; color:var(--ink); line-height:1.5; }
+  .memory-row-meta{ font-size:11px; color:var(--faint); margin-top:2px; }
+  .memory-add-row{ display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+  .memory-add-row input{
+    flex:1; min-width:0; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:10px;
+    padding:9px 10px; background:var(--surface); color:var(--ink);
+  }
+  #addAiMemoryBtn{
+    font-family:inherit; font-size:13px; font-weight:600; color:#fff; background:var(--accent1);
+    border:none; border-radius:10px; padding:0 14px; cursor:pointer; white-space:nowrap;
+  }
   textarea.ai-textarea{
     width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:12px;
     padding:12px 14px; background:var(--surface-2); color:var(--ink); min-height:92px; resize:vertical; line-height:1.5;
@@ -763,6 +794,16 @@
         <button id="addAiGoalBtn" type="button">+ เพิ่มเป้าหมาย</button>
       </div>
     </div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">🧠 Memory ที่ AI จำได้</div>
+      <p class="ai-hint">สิ่งสำคัญที่ AI เคยจำไว้จากบทสนทนา (ทั้งที่จำเองอัตโนมัติ และที่เพิ่มเองด้านล่าง) — AI จะนำไปใช้ประกอบคำตอบทุกครั้งที่คุยกัน ลบรายการไหนก็ได้ถ้าไม่อยากให้จำอีกต่อไป</p>
+      <div id="aiMemoryList"></div>
+      <div class="memory-add-row">
+        <input id="aiMemoryInput" type="text" placeholder="เพิ่มสิ่งที่อยากให้ AI จำเอง เช่น เงินเดือนออกทุกวันที่ 25" autocomplete="off" />
+        <button id="addAiMemoryBtn" type="button">+ เพิ่ม</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -835,7 +876,8 @@
     <div class="modal-header">
       <span class="modal-title">ที่ปรึกษาการเงิน AI</span>
       <div style="display:flex; align-items:center; gap:6px;">
-        <button class="icon-btn" id="clearAiChatBtn" type="button" title="ล้างประวัติการสนทนา">🗑️</button>
+        <button class="icon-btn" id="aiChatHistoryBtn" type="button" title="แชททั้งหมด">📜</button>
+        <button class="icon-btn" id="clearAiChatBtn" type="button" title="ล้างข้อความในแชทนี้">🗑️</button>
         <button class="close-btn" id="closeAiAnalystBtn">✕</button>
       </div>
     </div>
@@ -845,6 +887,17 @@
       <button id="aiChatSendBtn" type="button">ส่ง</button>
     </div>
     <div class="ai-input-error" id="aiChatError"></div>
+  </div>
+</div>
+
+<div class="overlay" id="aiChatListOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">แชททั้งหมด</span>
+      <button class="close-btn" id="closeAiChatListBtn">✕</button>
+    </div>
+    <button class="new-chat-btn" id="newAiChatBtn" type="button">+ แชทใหม่</button>
+    <div id="aiChatListBody"></div>
   </div>
 </div>
 
@@ -1023,7 +1076,9 @@ const AI_APIKEY_KEY = "finance_tracker_ai_apikey_v1";
 // ===== AI Layer (Milestone 3) =====
 // กฎเหล็กเดียวกับ AI_APIKEY_KEY: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn เด็ดขาด — เป็นข้อมูลเฉพาะเครื่อง ไม่ใช่ backup การเงิน
 const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
-const AI_CHAT_KEY = "finance_tracker_ai_chat_v1"; // ประวัติแชทที่ปรึกษาการเงิน AI (แยกจากรายการบันทึกทั่วไป — เก็บในเครื่องนี้เท่านั้น)
+const AI_CHAT_KEY = "finance_tracker_ai_chat_v1"; // ประวัติแชทแบบเก่า (เดี่ยว) — เก็บไว้เผื่อ migrate เป็น AI_CHATS_KEY
+const AI_CHATS_KEY = "finance_tracker_ai_chats_v1"; // ระบบแชทหลายรายการ (เหมือน ChatGPT/Gemini) — {chats:[{id,title,messages,createdAt,updatedAt}], activeId}
+const AI_MEMORY_KEY = "finance_tracker_ai_memory_v1"; // ความจำระยะยาวของ AI ที่ปรึกษาการเงิน — [{id,text,createdAt}]
 // Milestone 4: แคชผลวิเคราะห์ Proactive Insight — เก็บแยกจากทุกคีย์ข้างบน ห้ามรวมเข้า exportBtn backup
 const AI_PROACTIVE_KEY = "finance_tracker_ai_proactive_v1";
 // Milestone 5: หนี้สิน (เช่น กยศ.) — เก็บรวมกับ exportBtn backup ได้ตามปกติ (ไม่ใช่ secret เฉพาะเครื่อง)
@@ -1578,7 +1633,7 @@ function computePeriodAnalysisForRange(start, end, accountFilter){
   const avgDays = avgDivisorEnd < effStart ? days : Math.max(1, daysBetweenInclusive(effStart, avgDivisorEnd));
 
   const expenseEntries = rangeEntries.filter(e => e.type==="expense");
-  const avgIncomePerDay = income / avgDays;
+  const avgIncomePerDay = income / days;
   const avgExpensePerDay = expense / avgDays;
   const avgExpensePerTxn = expenseEntries.length ? expense / expenseEntries.length : 0;
 
@@ -2474,6 +2529,7 @@ document.getElementById("settingsBtn").addEventListener("click", () => {
   refreshApiKeyStatus();
   aiProfileDraft = loadAIProfile() || { nickname:"", monthlyIncomeEstimate:null, minReserveTarget:null, financialGoals:[], notes:"" };
   renderAIProfileForm();
+  renderAIMemoryList();
   document.getElementById("settingsOverlay").classList.add("open");
 });
 document.getElementById("closeSettingsBtn").addEventListener("click", () => {
@@ -2594,6 +2650,46 @@ document.getElementById("addAiGoalBtn").addEventListener("click", () => {
   showToast("เพิ่มเป้าหมายแล้ว");
   refreshProactiveCard(true);
 });
+
+// ===== Memory ที่ AI จำได้ — จัดการในหน้าตั้งค่า (ดู/ลบ/เพิ่มเองได้) =====
+function renderAIMemoryList(){
+  const el = document.getElementById("aiMemoryList");
+  const mem = loadAIMemory();
+  if(!mem.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีอะไรถูกจำไว้ — คุยกับ AI แล้วบอกว่า "จำไว้ด้วย" หรือเพิ่มเองด้านล่างได้เลย</div>`;
+    return;
+  }
+  const sorted = [...mem].sort((a,b) => (b.createdAt||"").localeCompare(a.createdAt||""));
+  el.innerHTML = sorted.map(m => `
+    <div class="memory-row">
+      <div>
+        <div class="memory-row-text">${escapeHtml(m.text)}</div>
+        <div class="memory-row-meta">${m.createdAt ? chatTimeLabel(m.createdAt) : ""}</div>
+      </div>
+      <button class="icon-btn delete-ai-memory-btn" data-id="${m.id}" aria-label="ลบความจำนี้">🗑</button>
+    </div>
+  `).join("");
+  el.querySelectorAll(".delete-ai-memory-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      deleteMemoryEntry(btn.dataset.id);
+      renderAIMemoryList();
+      showToast("ลบความจำแล้ว");
+    });
+  });
+}
+document.getElementById("addAiMemoryBtn").addEventListener("click", () => {
+  const input = document.getElementById("aiMemoryInput");
+  const text = input.value.trim();
+  if(!text){ showToast("พิมพ์สิ่งที่อยากให้จำก่อน"); return; }
+  addMemoryEntry(text);
+  input.value = "";
+  renderAIMemoryList();
+  showToast("เพิ่มความจำแล้ว");
+});
+document.getElementById("aiMemoryInput").addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){ e.preventDefault(); document.getElementById("addAiMemoryBtn").click(); }
+});
+
 document.getElementById("saveAIProfileBtn").addEventListener("click", () => {
   const nickname = document.getElementById("aiProfileNickname").value.trim();
   const incomeVal = parseFloat(document.getElementById("aiProfileIncome").value);
@@ -2913,6 +3009,20 @@ function buildFinancialAnalystSystemPrompt(snapshot, profile){
     JSON.stringify(snapshot)
   );
 
+  // ===== Memory ระยะยาว — ข้อมูลสำคัญที่ผู้ใช้เคยขอให้จำไว้ข้ามการสนทนา =====
+  const memory = loadAIMemory().slice(-60); // จำกัดจำนวนกันพรอมป์บวมเกินไป
+  lines.push(
+    "",
+    "ความจำระยะยาว (Memory) — ข้อมูลสำคัญที่ผู้ใช้เคยขอให้จำไว้ใช้ข้ามการสนทนา แต่ละอันมี id กำกับ:",
+    memory.length ? JSON.stringify(memory) : "(ยังไม่มีอะไรถูกจำไว้)",
+    "",
+    "กติกาการอัปเดต Memory (สำคัญ):",
+    "- ถ้าผู้ใช้เล่าข้อมูลสำคัญที่ควรใช้ได้ในการสนทนาครั้งต่อๆ ไป (เช่น วันเงินเดือนออก นิสัย/เป้าหมายการเงิน ข้อจำกัดสำคัญ) หรือบอกตรงๆ ว่า \"จำไว้ด้วย\"/\"บันทึกไว้\" ให้เพิ่มบรรทัดต่อท้ายคำตอบ (บรรทัดใหม่ แยกจากเนื้อหา) รูปแบบ: @@MEMORY_ADD@@ ข้อความที่ต้องการจำ (เขียนสั้น กระชับ ได้ใจความ เป็นข้อความเดี่ยวๆ ไม่ต้องมีวันที่กำกับ)",
+    "- ถ้าผู้ใช้ขอให้ลืม/ลบความจำเรื่องใดเรื่องหนึ่ง ให้เพิ่มบรรทัด: @@MEMORY_DELETE@@ ตามด้วย id ของรายการนั้น (คัดลอก id จากรายการด้านบนให้ตรงเป๊ะ)",
+    "- ใส่ directive ได้หลายบรรทัดถ้าจำเป็น แต่ให้ใส่เฉพาะข้อมูลที่สำคัญจริงๆ เท่านั้น ห้ามจำคำถามทั่วไป เรื่องชั่วคราว หรือสิ่งที่ไม่เกี่ยวกับผู้ใช้ในระยะยาว",
+    "- ผู้ใช้จะไม่เห็น directive พวกนี้ (ระบบตัดออกก่อนแสดงผลให้ผู้ใช้) จึงห้ามพูดถึงมันในเนื้อหาคำตอบที่ผู้ใช้เห็น เช่น ห้ามเขียนว่า \"ผมจดไว้แล้วนะ\" ให้ตอบตามปกติแล้วแปะ directive ต่อท้ายเงียบๆ"
+  );
+
   return lines.filter(l => l !== null).join("\n");
 }
 
@@ -2957,18 +3067,174 @@ async function analyzeFinancialQuery(query, snapshot){
   return { ok:true, text };
 }
 
-// ===== Persistent AI Chat (ที่ปรึกษาการเงิน) — เก็บประวัติสนทนาไว้ในเครื่องนี้เท่านั้น =====
-function loadAIChatHistory(){
+// ===== Persistent AI Chat (ที่ปรึกษาการเงิน) — ระบบหลายแชท (เหมือน ChatGPT/Gemini) เก็บไว้ในเครื่องนี้เท่านั้น =====
+// โครงสร้าง: { chats:[{id,title,messages,createdAt,updatedAt}], activeId }
+function loadAllChats(){
   try{
-    const raw = localStorage.getItem(AI_CHAT_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){ return []; }
+    const raw = localStorage.getItem(AI_CHATS_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && Array.isArray(parsed.chats) && parsed.chats.length) return parsed;
+    }
+  }catch(e){}
+
+  // ยังไม่เคยมีข้อมูลแบบหลายแชท — migrate จากประวัติแชทเดี่ยวแบบเก่า (ถ้ามี) มาเป็นแชทแรกให้อัตโนมัติ
+  let migratedMessages = [];
+  try{
+    const oldRaw = localStorage.getItem(AI_CHAT_KEY);
+    if(oldRaw){
+      const oldHistory = JSON.parse(oldRaw);
+      if(Array.isArray(oldHistory)) migratedMessages = oldHistory;
+    }
+  }catch(e){}
+
+  const now = new Date().toISOString();
+  const firstChat = {
+    id: makeId(),
+    title: migratedMessages.length ? chatTitleFrom(migratedMessages) : null,
+    messages: migratedMessages,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const data = { chats: [firstChat], activeId: firstChat.id };
+  saveAllChats(data);
+  return data;
+}
+function saveAllChats(data){
+  try{ localStorage.setItem(AI_CHATS_KEY, JSON.stringify(data)); }catch(e){}
+}
+function chatTitleFrom(messages){
+  const firstUser = (messages || []).find(m => m.role === "user");
+  if(!firstUser || !firstUser.text) return "แชทใหม่";
+  const t = firstUser.text.trim().replace(/\s+/g, " ");
+  return t.length > 34 ? t.slice(0, 34) + "…" : (t || "แชทใหม่");
+}
+function chatTimeLabel(iso){
+  try{
+    const d = new Date(iso);
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    return `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()]} ${hh}:${mm}`;
+  }catch(e){ return ""; }
+}
+function getActiveChat(){
+  const data = loadAllChats();
+  let chat = data.chats.find(c => c.id === data.activeId);
+  if(!chat){
+    // activeId เพี้ยน/ถูกลบไปแล้ว — fallback ไปแชทล่าสุดในลิสต์
+    chat = data.chats[data.chats.length - 1];
+    if(chat){ data.activeId = chat.id; saveAllChats(data); }
+  }
+  return chat || null;
+}
+function loadAIChatHistory(){
+  const chat = getActiveChat();
+  return chat ? chat.messages : [];
 }
 function saveAIChatHistory(history){
-  try{ localStorage.setItem(AI_CHAT_KEY, JSON.stringify(history.slice(-40))); }catch(e){} // เก็บย้อนหลังไม่เกิน 40 ข้อความ กันไฟล์บวม
+  const data = loadAllChats();
+  let chat = data.chats.find(c => c.id === data.activeId);
+  if(!chat){
+    chat = { id: makeId(), title: null, messages: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    data.chats.push(chat);
+    data.activeId = chat.id;
+  }
+  chat.messages = history.slice(-40); // เก็บย้อนหลังไม่เกิน 40 ข้อความต่อแชท กันไฟล์บวม
+  chat.updatedAt = new Date().toISOString();
+  if(!chat.title) chat.title = chatTitleFrom(chat.messages);
+  saveAllChats(data);
 }
+// ล้างเฉพาะข้อความในแชทที่เปิดอยู่ (แชทยังอยู่ในลิสต์ แต่ว่างเปล่า) — ใช้กับปุ่ม 🗑️ ในหน้าต่างแชท
 function clearAIChatHistory(){
-  try{ localStorage.removeItem(AI_CHAT_KEY); }catch(e){}
+  const data = loadAllChats();
+  const chat = data.chats.find(c => c.id === data.activeId);
+  if(chat){ chat.messages = []; chat.title = null; chat.updatedAt = new Date().toISOString(); saveAllChats(data); }
+}
+// เริ่มแชทใหม่ทั้งหมด (ว่างเปล่า) แล้วสลับไปเป็นแชทที่เปิดอยู่
+function createNewChat(){
+  const data = loadAllChats();
+  const now = new Date().toISOString();
+  const chat = { id: makeId(), title: null, messages: [], createdAt: now, updatedAt: now };
+  data.chats.unshift(chat);
+  data.activeId = chat.id;
+  saveAllChats(data);
+  return chat;
+}
+// สลับไปแชทอื่นตาม id
+function switchToChat(id){
+  const data = loadAllChats();
+  if(data.chats.some(c => c.id === id)){ data.activeId = id; saveAllChats(data); }
+}
+// ลบแชททิ้งทั้งอัน — ถ้าลบอันที่กำลังเปิดอยู่ จะสลับไปแชทอื่นที่อัปเดตล่าสุด หรือสร้างแชทใหม่ถ้าไม่เหลือเลย
+function deleteChat(id){
+  const data = loadAllChats();
+  data.chats = data.chats.filter(c => c.id !== id);
+  if(!data.chats.length){
+    const now = new Date().toISOString();
+    data.chats.push({ id: makeId(), title: null, messages: [], createdAt: now, updatedAt: now });
+  }
+  if(data.activeId === id){
+    const sorted = [...data.chats].sort((a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||""));
+    data.activeId = sorted[0].id;
+  }
+  saveAllChats(data);
+}
+
+// ===== Memory ระยะยาว (เหมือนระบบ Memory ของ AI ทั่วไป) — [{id,text,createdAt}] เก็บในเครื่องนี้เท่านั้น =====
+function loadAIMemory(){
+  try{
+    const raw = localStorage.getItem(AI_MEMORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  }catch(e){ return []; }
+}
+function saveAIMemory(list){
+  try{ localStorage.setItem(AI_MEMORY_KEY, JSON.stringify(list)); }catch(e){}
+}
+function addMemoryEntry(text){
+  const t = (text || "").trim();
+  if(!t) return;
+  const mem = loadAIMemory();
+  mem.push({ id: makeId(), text: t, createdAt: new Date().toISOString() });
+  saveAIMemory(mem);
+}
+function deleteMemoryEntry(id){
+  saveAIMemory(loadAIMemory().filter(m => m.id !== id));
+}
+// AI แปะ directive ท้ายคำตอบเพื่อขอเพิ่ม/ลบความจำเอง เช่น "@@MEMORY_ADD@@ ข้อความ" หรือ "@@MEMORY_DELETE@@ id"
+// ฟังก์ชันนี้ดึง directive ออกมา พร้อมคืนข้อความที่ตัด directive ออกแล้ว (สำหรับเอาไปแสดง/บันทึกในแชทจริง)
+function extractMemoryDirectives(text){
+  if(!text) return { cleaned: text, adds: [], dels: [] };
+  const adds = [];
+  const dels = [];
+  const addRe = /^@@MEMORY_ADD@@\s*(.+)$/gm;
+  const delRe = /^@@MEMORY_DELETE@@\s*(.+)$/gm;
+  let m;
+  while((m = addRe.exec(text))) adds.push(m[1].trim());
+  while((m = delRe.exec(text))) dels.push(m[1].trim());
+  const cleaned = text
+    .replace(/^@@MEMORY_ADD@@.*$/gm, "")
+    .replace(/^@@MEMORY_DELETE@@.*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return { cleaned, adds, dels };
+}
+function applyMemoryDirectives(adds, dels){
+  if(!adds.length && !dels.length) return;
+  let mem = loadAIMemory();
+  dels.forEach(d => {
+    if(!d) return;
+    // ลบตาม id ตรงๆ ถ้ามี หรือลบรายการที่เนื้อหาตรงกับข้อความที่ AI ส่งมา (กันกรณี AI จำ id ไม่แม่น)
+    mem = mem.filter(item => item.id !== d && item.text !== d);
+  });
+  adds.forEach(a => { if(a) mem.push({ id: makeId(), text: a, createdAt: new Date().toISOString() }); });
+  saveAIMemory(mem);
+}
+// จัดการผลลัพธ์จาก AI ก่อนเอาไปแสดง/บันทึกจริง — ดึง directive ออก อัปเดต memory แล้วคืนข้อความที่สะอาดแล้ว
+function processAiReplyForMemory(text){
+  const { cleaned, adds, dels } = extractMemoryDirectives(text);
+  applyMemoryDirectives(adds, dels);
+  return cleaned;
 }
 
 function renderAiChatBubbles(){
@@ -3373,6 +3639,67 @@ document.getElementById("clearAiChatBtn").addEventListener("click", (e) => {
   document.getElementById("aiChatError").style.display = "none";
 });
 
+// ===== รายการแชททั้งหมด (หลายแชทแบบ ChatGPT/Gemini) =====
+function renderAiChatList(){
+  const el = document.getElementById("aiChatListBody");
+  const data = loadAllChats();
+  const sorted = [...data.chats].sort((a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||""));
+  el.innerHTML = sorted.map(c => {
+    const title = c.title || chatTitleFrom(c.messages) || "แชทใหม่";
+    const isActive = c.id === data.activeId;
+    return `
+    <div class="ai-chat-list-row${isActive ? " active" : ""}" data-id="${c.id}">
+      <div class="ai-chat-list-info">
+        <span class="ai-chat-list-title">${escapeHtml(title)}</span>
+        <span class="ai-chat-list-meta">${c.messages.length} ข้อความ · ${chatTimeLabel(c.updatedAt)}</span>
+      </div>
+      <button class="icon-btn delete-ai-chat-btn" data-id="${c.id}" aria-label="ลบแชทนี้">🗑</button>
+    </div>`;
+  }).join("");
+
+  el.querySelectorAll(".ai-chat-list-row").forEach(row => {
+    row.addEventListener("click", (e) => {
+      if(e.target.closest(".delete-ai-chat-btn")) return;
+      switchToChat(row.dataset.id);
+      renderAiChatBubbles();
+      document.getElementById("aiChatListOverlay").classList.remove("open");
+      document.getElementById("aiAnalystOverlay").classList.add("open");
+      clearAiChatUnread();
+    });
+  });
+  el.querySelectorAll(".delete-ai-chat-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(!confirm("ลบแชทนี้ทั้งหมดใช่ไหม? กู้คืนไม่ได้")) return;
+      deleteChat(btn.dataset.id);
+      renderAiChatList();
+      renderAiChatBubbles();
+      showToast("ลบแชทแล้ว");
+    });
+  });
+}
+document.getElementById("aiChatHistoryBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  renderAiChatList();
+  document.getElementById("aiChatListOverlay").classList.add("open");
+});
+document.getElementById("closeAiChatListBtn").addEventListener("click", () => {
+  document.getElementById("aiChatListOverlay").classList.remove("open");
+});
+document.getElementById("aiChatListOverlay").addEventListener("click", () => {
+  document.getElementById("aiChatListOverlay").classList.remove("open");
+});
+document.getElementById("newAiChatBtn").addEventListener("click", () => {
+  if(aiChatAbortController) aiChatAbortController.abort();
+  aiChatEditingIndex = null;
+  createNewChat();
+  renderAiChatBubbles();
+  document.getElementById("aiChatListOverlay").classList.remove("open");
+  document.getElementById("aiAnalystOverlay").classList.add("open");
+  clearAiChatUnread();
+  document.getElementById("aiChatError").style.display = "none";
+});
+
 // ปุ่ม "คุยแบบอิสระ" ในหน้าพิมพ์รายการ — ข้ามการคัดกรองว่าเป็นรายการหรือคำถาม เปิดแชทตรงเลย
 document.getElementById("openChatDirectBtn").addEventListener("click", () => {
   closeAiInputSheet();
@@ -3471,7 +3798,7 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
     return;
   }
 
-  const historyWithReply = historyWithUserMsg.concat([{ role:"model", text: result.text }]);
+  const historyWithReply = historyWithUserMsg.concat([{ role:"model", text: processAiReplyForMemory(result.text) }]);
   saveAIChatHistory(historyWithReply);
   renderAiChatBubbles();
 
@@ -3520,7 +3847,7 @@ async function regenerateLastReply(priorHistory, userText){
     return;
   }
 
-  saveAIChatHistory(priorHistory.concat([{ role:"user", text: userText }, { role:"model", text: result.text }]));
+  saveAIChatHistory(priorHistory.concat([{ role:"user", text: userText }, { role:"model", text: processAiReplyForMemory(result.text) }]));
   renderAiChatBubbles();
 
   if(!document.getElementById("aiAnalystOverlay").classList.contains("open")){
@@ -3567,7 +3894,7 @@ document.getElementById("aiProcessBtn").addEventListener("click", async () => {
     }
 
     closeAiInputSheet();
-    openAiAnalystSheet(text, analysisResult.text);
+    openAiAnalystSheet(text, processAiReplyForMemory(analysisResult.text));
     return;
   }
 
