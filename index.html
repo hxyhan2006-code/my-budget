@@ -755,12 +755,12 @@
         <span class="ai-status-label">Gemini API Key</span>
         <span class="ai-status-value" id="apiKeyStatus">ยังไม่ได้ตั้งค่า</span>
       </div>
-      <label class="field-label">วาง API Key</label>
+      <p class="ai-hint">ใส่ได้สูงสุด 3 คีย์ — ถ้าคีย์แรกโควต้าเต็ม (429) ระบบจะสลับไปใช้คีย์ถัดไปให้อัตโนมัติ Key จะถูกเก็บไว้ในเครื่องนี้เท่านั้น (localStorage) ไม่ถูกส่งไปรวมในไฟล์สำรองข้อมูล และไม่ถูกอัปโหลดไปที่ไหนนอกจากตอนเรียก AI</p>
+      <div id="apiKeyList"></div>
+      <label class="field-label">เพิ่ม API Key</label>
       <input class="text-input" id="apiKeyInput" type="password" placeholder="วาง Gemini API Key ที่นี่" autocomplete="off" />
-      <p class="ai-hint">Key จะถูกเก็บไว้ในเครื่องนี้เท่านั้น (localStorage) ไม่ถูกส่งไปรวมในไฟล์สำรองข้อมูล และไม่ถูกอัปโหลดไปที่ไหนนอกจากตอนเรียก AI</p>
       <div class="ai-key-actions">
-        <button id="saveApiKeyBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">บันทึก</button>
-        <button class="danger-btn" id="clearApiKeyBtn" style="display:none;">ลบคีย์</button>
+        <button id="saveApiKeyBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">เพิ่มคีย์</button>
       </div>
     </div>
 
@@ -1075,7 +1075,28 @@ const RECURRING_KEY = "finance_tracker_recurring_v1";
 // ===== AI Layer (Milestone 1) =====
 // กฎเหล็ก: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn (บรรทัดที่ประกอบ payload สำรองข้อมูล) เด็ดขาด
 // เพราะเป็น secret เฉพาะเครื่อง ไม่ใช่ข้อมูลทางการเงินที่ควรอยู่ในไฟล์ backup ที่แชร์ได้
-const AI_APIKEY_KEY = "finance_tracker_ai_apikey_v1";
+const AI_APIKEY_KEY = "finance_tracker_ai_apikey_v1"; // คีย์เดี่ยวแบบเก่า — เก็บไว้เผื่อ migrate เป็น AI_APIKEYS_KEY เท่านั้น ห้ามอ่าน/เขียนตรงๆ อีก ให้ใช้ getApiKeys()/saveApiKeys() แทน
+const AI_APIKEYS_KEY = "finance_tracker_ai_apikeys_v1"; // รายการ Gemini API Key (สูงสุด AI_APIKEYS_MAX อัน) — คีย์แรก=หลัก ที่เหลือ=สำรอง สลับอัตโนมัติเมื่อเจอโควต้าเต็ม (429)
+const AI_APIKEYS_MAX = 3;
+
+// คืน array ของ API key ที่ตั้งค่าไว้ (เรียงตามลำดับที่จะลองใช้ก่อน-หลัง) — migrate คีย์เดี่ยวแบบเก่าให้อัตโนมัติครั้งเดียวถ้ามี
+function getApiKeys(){
+  let arr;
+  try{ arr = JSON.parse(localStorage.getItem(AI_APIKEYS_KEY) || "null"); }catch(e){ arr = null; }
+  if(Array.isArray(arr)) return arr;
+  const legacy = localStorage.getItem(AI_APIKEY_KEY);
+  if(legacy){
+    arr = [legacy];
+    localStorage.setItem(AI_APIKEYS_KEY, JSON.stringify(arr));
+    localStorage.removeItem(AI_APIKEY_KEY);
+    return arr;
+  }
+  return [];
+}
+// สำคัญ: เก็บเฉพาะคีย์เหล่านี้ ห้ามนำไปรวมกับ payload ของ exportBtn เด็ดขาด (ดูคอมเมนต์ด้านบน)
+function saveApiKeys(arr){
+  localStorage.setItem(AI_APIKEYS_KEY, JSON.stringify(arr));
+}
 // ===== AI Layer (Milestone 3) =====
 // กฎเหล็กเดียวกับ AI_APIKEY_KEY: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn เด็ดขาด — เป็นข้อมูลเฉพาะเครื่อง ไม่ใช่ backup การเงิน
 const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
@@ -2519,13 +2540,53 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   reader.readAsText(file);
 });
 
-// ===== AI Layer (Milestone 1): Settings panel — API Key =====
+// ===== AI Layer (Milestone 1): Settings panel — API Key(s) =====
+// โชว์คีย์แบบปิดบังส่วนใหญ่ไว้ เหลือ 4 ตัวท้ายให้เห็น พอแยกออกว่าเป็นคีย์ไหน
+function maskApiKey(key){
+  if(!key) return "";
+  const tail = key.slice(-4);
+  const hidden = Math.max(4, key.length - 4);
+  return "•".repeat(Math.min(hidden, 24)) + tail;
+}
+function renderApiKeyList(){
+  const el = document.getElementById("apiKeyList");
+  const keys = getApiKeys();
+  const input = document.getElementById("apiKeyInput");
+  if(!keys.length){
+    el.innerHTML = "";
+  }else{
+    el.innerHTML = keys.map((k, i) => `
+      <div class="memory-row">
+        <div>
+          <div class="memory-row-text">คีย์ที่ ${i+1}${i === 0 ? " (หลัก)" : " (สำรอง)"}</div>
+          <div class="memory-row-meta">${escapeHtml(maskApiKey(k))}</div>
+        </div>
+        <button class="icon-btn delete-api-key-btn" data-index="${i}" aria-label="ลบคีย์นี้">🗑</button>
+      </div>
+    `).join("");
+    el.querySelectorAll(".delete-api-key-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const cur = getApiKeys();
+        cur.splice(idx, 1);
+        saveApiKeys(cur);
+        refreshApiKeyStatus();
+        showToast("ลบ API Key แล้ว");
+      });
+    });
+  }
+  const atMax = keys.length >= AI_APIKEYS_MAX;
+  input.disabled = atMax;
+  input.placeholder = atMax ? `ใส่ได้สูงสุด ${AI_APIKEYS_MAX} คีย์` : "วาง Gemini API Key ที่นี่";
+  document.getElementById("saveApiKeyBtn").disabled = atMax;
+}
 function refreshApiKeyStatus(){
-  const has = !!localStorage.getItem(AI_APIKEY_KEY);
+  const keys = getApiKeys();
+  const has = keys.length > 0;
   const statusEl = document.getElementById("apiKeyStatus");
-  statusEl.textContent = has ? "ตั้งค่าแล้ว ✓" : "ยังไม่ได้ตั้งค่า";
+  statusEl.textContent = has ? `ตั้งค่าแล้ว ${keys.length} คีย์ ✓` : "ยังไม่ได้ตั้งค่า";
   statusEl.style.color = has ? "var(--income)" : "var(--faint)";
-  document.getElementById("clearApiKeyBtn").style.display = has ? "block" : "none";
+  renderApiKeyList();
 }
 document.getElementById("settingsBtn").addEventListener("click", () => {
   document.getElementById("apiKeyInput").value = "";
@@ -2544,16 +2605,14 @@ document.getElementById("settingsOverlay").addEventListener("click", () => {
 document.getElementById("saveApiKeyBtn").addEventListener("click", () => {
   const val = document.getElementById("apiKeyInput").value.trim();
   if(!val){ showToast("กรอก API Key ก่อน"); return; }
-  // สำคัญ: เก็บเฉพาะคีย์นี้ ห้ามนำไปรวมกับ payload ของ exportBtn เด็ดขาด (ดูคอมเมนต์ตรง const ด้านบน)
-  localStorage.setItem(AI_APIKEY_KEY, val);
+  const cur = getApiKeys();
+  if(cur.length >= AI_APIKEYS_MAX){ showToast(`ใส่ได้สูงสุด ${AI_APIKEYS_MAX} คีย์`); return; }
+  if(cur.includes(val)){ showToast("คีย์นี้ถูกเพิ่มไว้แล้ว"); return; }
+  cur.push(val);
+  saveApiKeys(cur);
   document.getElementById("apiKeyInput").value = "";
   refreshApiKeyStatus();
-  showToast("บันทึก API Key แล้ว");
-});
-document.getElementById("clearApiKeyBtn").addEventListener("click", () => {
-  localStorage.removeItem(AI_APIKEY_KEY);
-  refreshApiKeyStatus();
-  showToast("ลบ API Key แล้ว");
+  showToast(cur.length === 1 ? "บันทึก API Key แล้ว" : "เพิ่ม API Key สำรองแล้ว");
 });
 
 // ===== AI Layer (Milestone 3): Profile / Memory — storage helpers =====
@@ -2775,23 +2834,32 @@ const AI_RESPONSE_SCHEMA = {
   required: ["action","amount","note","confidence","ambiguousFields"]
 };
 
-// เรียก Gemini API พร้อม auto-retry เงียบๆ ถ้าเจอ HTTP 429 (Too Many Requests — โควต้าฟรีต่อนาทีเต็มชั่วคราว)
-// รอสักพักแล้วลองซ้ำให้อัตโนมัติ ก่อนจะคืนผลให้โค้ดที่เรียกใช้จัดการ error ตามปกติถ้ายังไม่สำเร็จ
-// ผู้ใช้จะไม่เห็น error 429 เลยถ้า retry แล้วผ่านภายในจำนวนครั้งที่กำหนด
-async function fetchGeminiWithRetry(url, options, maxRetries = 2){
-  let attempt = 0;
-  while(true){
-    const res = await fetch(url, options);
-    if(res.status !== 429 || attempt >= maxRetries) return res;
-    attempt++;
-    await new Promise(r => setTimeout(r, 1500 * attempt)); // หน่วงเพิ่มขึ้นทีละรอบ: 1.5s, 3s
+// เรียก Gemini API พร้อมกันโควต้าเต็ม (HTTP 429) 2 ชั้น:
+// 1) auto-retry เงียบๆ กับคีย์เดิมก่อน (หน่วงเวลาเพิ่มทีละรอบ) เหมือนเดิม
+// 2) ถ้าคีย์เดิม retry แล้วยัง 429 อยู่ ให้สลับไปลองคีย์สำรองถัดไปในลิสต์ทันที (ถ้าตั้งค่าไว้หลายคีย์)
+// buildUrl: function(apiKey) => url เต็มพร้อม query key (เพราะแต่ละคีย์ต้องประกอบ url ใหม่)
+// ผู้ใช้จะไม่เห็น error 429 เลยถ้าคีย์ใดคีย์หนึ่งในลิสต์ผ่านได้ภายในเงื่อนไขนี้
+async function fetchGeminiWithRetry(buildUrl, options, maxRetriesPerKey = 2){
+  const keys = getApiKeys();
+  let res = null;
+  for(let i = 0; i < keys.length; i++){
+    const url = buildUrl(keys[i]);
+    let attempt = 0;
+    while(true){
+      res = await fetch(url, options);
+      if(res.status !== 429 || attempt >= maxRetriesPerKey) break;
+      attempt++;
+      await new Promise(r => setTimeout(r, 1500 * attempt)); // หน่วงเพิ่มขึ้นทีละรอบ: 1.5s, 3s
+    }
+    if(res.status !== 429) return res; // สำเร็จ หรือ error อื่นที่ไม่ใช่โควต้าเต็ม → ไม่ต้องลองคีย์ถัดไป
+    // คีย์นี้โควต้าเต็มแม้ retry แล้ว → ลองคีย์สำรองถัดไปทันที ไม่ต้องหน่วงเพิ่ม
   }
+  return res; // ทุกคีย์โดน 429 หมด (หรือไม่มีคีย์เลย) — คืนตัวสุดท้ายให้ caller จัดการ error ตามปกติ
 }
 
 // รับข้อความภาษาคน คืน { ok:true, payload } ตาม schema ในข้อ 2 ของแผน หรือ { ok:false, error }
 async function parseNaturalLanguageEntry(text){
-  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
-  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!text || !text.trim()) return { ok:false, error:"empty_input" };
 
   const context = buildAIContext();
@@ -2800,7 +2868,7 @@ async function parseNaturalLanguageEntry(text){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2848,8 +2916,7 @@ const INTENT_RESPONSE_SCHEMA = {
 // ตรวจว่าข้อความของผู้ใช้เป็น "transaction" (ต้องการบันทึกรายการ) หรือ "query" (คำถาม/ขอวิเคราะห์)
 // ด่านแรกก่อนเข้า flow ใดๆ — คืน { ok:true, intent } หรือ { ok:false, error } รูปแบบเดียวกับ parseNaturalLanguageEntry
 async function classifyIntent(text){
-  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
-  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!text || !text.trim()) return { ok:false, error:"empty_input" };
 
   const systemPrompt = [
@@ -2864,7 +2931,7 @@ async function classifyIntent(text){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -3044,8 +3111,7 @@ function buildFinancialAnalystSystemPrompt(snapshot, profile){
 
 // ส่ง Snapshot + Profile + คำถามผู้ใช้ ให้ Gemini วิเคราะห์ คืน { ok:true, text } หรือ { ok:false, error }
 async function analyzeFinancialQuery(query, snapshot){
-  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
-  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!query || !query.trim()) return { ok:false, error:"empty_input" };
 
   const profile = loadAIProfile(); // null ถ้าผู้ใช้ยังไม่เคยตั้งค่า — ไม่ทำให้ query flow พังถ้าไม่มีโปรไฟล์
@@ -3054,7 +3120,7 @@ async function analyzeFinancialQuery(query, snapshot){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -3321,8 +3387,7 @@ function buildAIChatSystemPrompt(snapshot, profile){
 // ส่งข้อความต่อเนื่อง (พร้อมประวัติแชท) ให้ Gemini ตอบ คืน { ok:true, text } หรือ { ok:false, error }
 // signal (AbortSignal) เป็น optional — ใช้สำหรับให้ผู้ใช้กดยกเลิกระหว่างรอคำตอบได้
 async function generateChatReply(priorHistory, userText, snapshot, profile, signal){
-  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
-  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!userText || !userText.trim()) return { ok:false, error:"empty_input" };
 
   const systemPrompt = buildAIChatSystemPrompt(snapshot, profile);
@@ -3333,7 +3398,7 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -3477,15 +3542,14 @@ function buildProactiveSystemPrompt(evalResult, snapshot, profile){
 
 // ส่ง Findings + Snapshot + Profile ให้ Gemini เรียบเรียงเป็นข้อความ คืน { ok:true, text } หรือ { ok:false, error }
 async function generateProactiveInsight(evalResult, snapshot, profile){
-  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
-  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
 
   const systemPrompt = buildProactiveSystemPrompt(evalResult, snapshot, profile);
 
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -3572,7 +3636,7 @@ async function refreshProactiveCard(force){
     return;
   }
 
-  if(!localStorage.getItem(AI_APIKEY_KEY)){
+  if(getApiKeys().length === 0){
     renderProactiveCard(evalResult.severity, null, "needsApiKey");
     return;
   }
@@ -3606,7 +3670,7 @@ function closeAiInputSheet(){
   document.getElementById("aiInputOverlay").classList.remove("open");
 }
 document.getElementById("aiFabBtn").addEventListener("click", () => {
-  if(!localStorage.getItem(AI_APIKEY_KEY)){
+  if(getApiKeys().length === 0){
     showToast("ยังไม่ได้ตั้งค่า API Key — กดไอคอน ⚙️ เพื่อตั้งค่าก่อน");
     return;
   }
@@ -3780,7 +3844,7 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
   errBox.style.display = "none";
   if(!text) return;
 
-  if(!localStorage.getItem(AI_APIKEY_KEY)){
+  if(getApiKeys().length === 0){
     errBox.textContent = AI_ERROR_MESSAGES.missing_api_key;
     errBox.style.display = "block";
     return;
