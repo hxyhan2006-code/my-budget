@@ -874,6 +874,135 @@ input,select,textarea{background:#141416!important;border:1px solid rgba(255,255
 .number,.numeric,[data-number],.money-value,.amount-value{font-variant-numeric:tabular-nums lining-nums!important;font-feature-settings:"tnum" 1,"lnum" 1!important}
 h1,h2,h3,h4,.title,.brand-name{letter-spacing:-.02em}
 </style>
+
+<style id="vaultet-final-ux-fix">
+/* ===== Final UX fixes requested ===== */
+
+/* Bottom navigation: dock to the physical bottom edge. */
+@media (max-width:600px){
+  .ux-bottom-nav{
+    left:0!important; right:0!important; bottom:0!important;
+    height:68px!important;
+    padding:6px 7px calc(6px + env(safe-area-inset-bottom))!important;
+    border-radius:20px 20px 0 0!important;
+    border-left:0!important; border-right:0!important; border-bottom:0!important;
+    box-shadow:0 -6px 22px rgba(0,0,0,.24)!important;
+    z-index:200!important;
+  }
+  .ux-bottom-item{min-height:54px!important}
+  .page{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+}
+
+/* Floating actions only appear on Overview + Transactions. */
+.page-anchor.fab-hidden,
+.page-anchor.fab-hidden .fab,
+.page-anchor.fab-hidden .fab-ai{display:none!important}
+
+@media (max-width:600px){
+  .fab{
+    bottom:calc(82px + env(safe-area-inset-bottom))!important;
+    right:18px!important; z-index:190!important;
+  }
+  .fab-ai{
+    bottom:calc(88px + env(safe-area-inset-bottom))!important;
+    right:86px!important; z-index:190!important;
+  }
+}
+
+/* Backup / restore: aligned as one compact control group. */
+.backup-row{
+  margin:14px 20px 0!important;
+  padding:8px!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;
+  align-items:stretch!important;
+  background:#141416!important;
+  border:1px solid #27272A!important;
+  border-radius:16px!important;
+}
+.backup-row .backup-link{
+  min-width:0!important; min-height:40px!important;
+  padding:8px 5px!important;
+  border:1px solid #27272A!important;
+  border-radius:12px!important;
+  background:#1A1A1D!important;
+  color:#B5B5BC!important;
+  font-size:11.5px!important; line-height:1.25!important;
+  text-align:center!important;
+  display:flex!important; align-items:center!important; justify-content:center!important;
+}
+.backup-row .backup-link:active{
+  background:rgba(29,185,84,.12)!important; color:#1DB954!important;
+}
+.backup-row .settings-icon-btn{display:none!important}
+
+/* Natural-language entry: larger typing area. */
+#aiInputOverlay .sheet-modal{max-height:92vh!important}
+#aiInputOverlay .ai-textarea{
+  min-height:155px!important; height:155px!important;
+  padding:14px 15px!important; line-height:1.6!important; font-size:15px!important;
+}
+#aiInputOverlay .ai-hint{margin-top:10px!important;line-height:1.55!important}
+@media (max-width:380px){
+  #aiInputOverlay .ai-textarea{min-height:135px!important;height:135px!important}
+}
+
+/* Notification center: cleaner hierarchy, spacing and cards. */
+#notificationOverlay{
+  background:rgba(0,0,0,.68)!important;
+  backdrop-filter:blur(5px)!important;
+}
+#notificationOverlay>.sheet{
+  width:min(460px,100%)!important; margin:0 auto!important;
+  background:#141416!important; border:1px solid #27272A!important;
+  border-bottom:0!important; border-radius:22px 22px 0 0!important;
+  padding:18px 18px calc(24px + env(safe-area-inset-bottom))!important;
+  box-shadow:0 -16px 42px rgba(0,0,0,.45)!important;
+}
+#notificationOverlay .sheet-head{
+  display:flex!important; align-items:center!important; justify-content:space-between!important;
+  gap:12px!important; padding:2px 0 14px!important;
+  border-bottom:1px solid #27272A!important;
+}
+#notificationOverlay .sheet-head strong{font-size:17px!important;letter-spacing:-.2px!important}
+#notificationOverlay .sheet-head .icon-btn{
+  width:36px!important;height:36px!important;border-radius:50%!important;
+  background:#1A1A1D!important;color:#9A9AA2!important;
+}
+#notificationOverlay .notification-permission{
+  margin-top:12px!important;padding:10px 12px!important;border-radius:12px!important;
+  background:rgba(29,185,84,.07)!important;border:1px solid rgba(29,185,84,.18)!important;
+  color:#C7D0CB!important;font-size:11px!important;line-height:1.5!important;
+}
+#notificationOverlay .manage-accounts-btn{
+  min-height:38px!important;padding:8px 11px!important;font-size:11px!important;
+}
+#notificationOverlay .notification-settings-grid{gap:7px!important;margin-top:8px!important}
+#notificationOverlay .notification-setting{
+  padding:10px 11px!important;border-radius:12px!important;
+  background:#1A1A1D!important;border:1px solid #27272A!important;
+}
+#notificationOverlay .notification-setting label{font-size:11.5px!important;font-weight:650!important}
+#notificationOverlay .notification-setting small{font-size:9.5px!important;line-height:1.4!important}
+#notificationOverlay .notification-list{gap:6px!important}
+#notificationOverlay .notification-item{
+  padding:10px 11px!important;border-radius:13px!important;
+  background:#1A1A1D!important;border:1px solid #27272A!important;
+}
+#notificationOverlay .notification-item.unread{
+  background:rgba(29,185,84,.065)!important;border-color:rgba(29,185,84,.24)!important;
+}
+#notificationOverlay .notification-icon{width:26px!important;text-align:center!important;font-size:16px!important}
+#notificationOverlay .notification-item-title{font-size:11.5px!important}
+#notificationOverlay .notification-item-body{font-size:10.5px!important;line-height:1.45!important}
+#notificationOverlay .notification-time{font-size:9px!important}
+@media (max-width:380px){
+  #notificationOverlay>.sheet{padding-left:14px!important;padding-right:14px!important}
+  #notificationOverlay .notification-settings-grid{grid-template-columns:1fr!important}
+}
+</style>
+
 </head>
 <body>
 <div class="page">
@@ -4447,7 +4576,7 @@ function checkVaultetNotifications(){try{const r=evaluateProactiveRules(buildFin
 function initVaultetNotifications(){
  const s=loadVaultetNotifSettings(),ids=["notifEnabledInput","notifPositiveInput","notifBudgetInput","notifEmergencyInput","notifForecastInput","notifObligationInput","notifBehaviorInput","notifQuietInput"],keys=["enabled","positive","budget","emergency","forecast","obligation","behavior","quiet"];
  ids.forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.checked=!!s[keys[i]];el.onchange=()=>{const x=loadVaultetNotifSettings();x[keys[i]]=el.checked;saveVaultetNotifSettings(x);checkVaultetNotifications()}});
- document.getElementById("uxBellBtn")?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();openVaultetNotificationCenter()},true);
+ document.getElementById("uxBellBtn")?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();const ov=document.getElementById("notificationOverlay");if(ov?.classList.contains("open")) closeVaultetNotificationCenter();else openVaultetNotificationCenter()},true);
  document.getElementById("notificationQuickBtn")?.addEventListener("click",openVaultetNotificationCenter);
  document.getElementById("notificationViewAllBtn")?.addEventListener("click",openVaultetNotificationCenter);
  document.getElementById("notificationSettingsBtn")?.addEventListener("click",openVaultetNotificationCenter);
@@ -6206,6 +6335,39 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
   }
 })();
 </script>
+
+<script id="vaultet-final-ux-logic">
+(function(){
+  const anchor=document.querySelector('.page-anchor');
+  const nav=document.querySelector('.ux-bottom-nav');
+
+  function syncFabVisibility(){
+    if(!anchor) return;
+    const active=document.querySelector('.ux-view.active');
+    const pageId=active ? active.id.replace(/^ux-/,'') : 'home';
+    anchor.classList.toggle('fab-hidden', !['home','transactions'].includes(pageId));
+  }
+
+  if(nav) nav.addEventListener('click',()=>setTimeout(syncFabVisibility,0),true);
+
+  const observer=new MutationObserver(syncFabVisibility);
+  document.querySelectorAll('.ux-view').forEach(v=>{
+    observer.observe(v,{attributes:true,attributeFilter:['class']});
+  });
+  syncFabVisibility();
+
+  const bell=document.getElementById('uxBellBtn');
+  const overlay=document.getElementById('notificationOverlay');
+  if(bell && overlay){
+    bell.setAttribute('aria-expanded','false');
+    const stateObserver=new MutationObserver(()=>{
+      bell.setAttribute('aria-expanded',overlay.classList.contains('open')?'true':'false');
+    });
+    stateObserver.observe(overlay,{attributes:true,attributeFilter:['class']});
+  }
+})();
+</script>
+
 </body>
 </html>
 <style id="vaultet-round10-spacing">
