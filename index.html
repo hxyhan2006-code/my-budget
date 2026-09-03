@@ -1769,10 +1769,18 @@ function scheduleGDriveAutoSync(){
   if(localStorage.getItem(GDRIVE_AUTOSYNC_KEY) !== "1") return;
   if(!localStorage.getItem(GDRIVE_CLIENT_ID_KEY)) return;
   clearTimeout(gdriveAutoSyncTimer);
-  gdriveAutoSyncTimer = setTimeout(() => { runGDriveSync(true); }, 4000);
+  gdriveAutoSyncTimer = setTimeout(() => {
+    // Auto-sync may upload only when an already-valid token exists.
+    // It must never initiate OAuth/popup after page load or refresh.
+    runGDriveSync(true);
+  }, 4000);
 }
 // silent=true คือเรียกจาก auto-sync เบื้องหลัง (ห้ามโชว์ toast ถ้าพลาด แค่อัปเดตสถานะเงียบๆ ให้ผู้ใช้เห็นตอนเข้าตั้งค่า)
 async function runGDriveSync(silent){
+  // Never request Google OAuth from a background timer.
+  // requestAccessToken() may open a browser popup when the token is missing/expired,
+  // and Chrome blocks that because there is no direct user gesture.
+  if(silent && !(gdriveAccessToken && Date.now() < gdriveAccessTokenExpiry)) return;
   if(gdriveSyncBusy) return;
   gdriveSyncBusy = true;
   try{
@@ -6243,7 +6251,7 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
   function go(id){Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===id));document.getElementById('uxPageName').textContent=names[id]||'';document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));closeDrawer();window.scrollTo({top:0,behavior:'smooth'});history.replaceState(null,'','#'+id)}
   document.getElementById('uxMenuBtn').onclick=openDrawer;document.getElementById('uxCloseDrawer').onclick=closeDrawer;backdrop.onclick=closeDrawer;
   document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>go(x.dataset.page));
-  document.getElementById('uxBellBtn').onclick=()=>{const b=document.getElementById('notificationViewAllBtn');if(b)b.click();else go('more')};
+  document.getElementById('uxBellBtn').onclick=()=>{const ov=document.getElementById('notificationOverlay');if(ov?.classList.contains('open')) closeVaultetNotificationCenter();else openVaultetNotificationCenter();};
   // The old overlay handlers still exist for compatibility; these page-level handlers route the user back cleanly.
   const closeChatBtn=document.getElementById('closeAiAnalystBtn');
   if(closeChatBtn) closeChatBtn.addEventListener('click',()=>go('home'));
