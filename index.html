@@ -4389,6 +4389,77 @@ async function generateProactiveInsight(evalResult, snapshot, profile){
   return { ok:true, text };
 }
 
+// ===== Vaultet Notification Center: functional local engine =====
+const VAULTET_NOTIF_KEY="vaultet_notifications_v1", VAULTET_NOTIF_SETTINGS_KEY="vaultet_notification_settings_v1";
+const DEFAULT_NOTIF_SETTINGS={enabled:true,positive:true,budget:true,emergency:true,forecast:true,obligation:true,behavior:true,quiet:true};
+function loadVaultetNotifSettings(){try{return {...DEFAULT_NOTIF_SETTINGS,...JSON.parse(localStorage.getItem(VAULTET_NOTIF_SETTINGS_KEY)||"{}")}}catch(e){return {...DEFAULT_NOTIF_SETTINGS}}}
+function saveVaultetNotifSettings(v){try{localStorage.setItem(VAULTET_NOTIF_SETTINGS_KEY,JSON.stringify(v))}catch(e){}}
+function loadVaultetNotifications(){try{const a=JSON.parse(localStorage.getItem(VAULTET_NOTIF_KEY)||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
+function saveVaultetNotifications(a){try{localStorage.setItem(VAULTET_NOTIF_KEY,JSON.stringify(a.slice(0,80)))}catch(e){}}
+function notifTypeEnabled(id,s){
+ if(["EMERGENCY_LOW","A"].includes(id))return s.emergency;
+ if(["BUDGET_OVER","BUDGET_PACE_HIGH"].includes(id))return s.budget;
+ if(["D","C","CASHFLOW_NEGATIVE","FORECAST_NEGATIVE"].includes(id))return s.forecast||s.obligation;
+ if(["B","SPENDING_SPIKE","HIGH_DISCRETIONARY_SPENDING","INCOME_DROP","SAVINGS_RATE_LOW"].includes(id))return s.behavior;
+ if(["EMERGENCY_HEALTHY","FINANCIAL_STRENGTH","OK"].includes(id))return s.positive;
+ return true;
+}
+function notificationFromFinding(f){
+ const d=f.data||{}, money=n=>`฿${fmt(Math.abs(Number(n)||0))}`;
+ const map={
+  BUDGET_OVER:["งบประมาณเกิน",`หมวด ${d.category||""} ใช้ไป ${money(d.spent)} จากงบ ${money(d.budget)}`],
+  BUDGET_PACE_HIGH:["ใช้เงินเร็วเกินงบ",`หมวด ${d.category||""} มีแนวโน้มเกินงบในเดือนนี้`],
+  EMERGENCY_LOW:["เงินสำรองฉุกเฉินยังไม่พอ",`เงินสำรอง ${money(d.currentAvailableReserve)} ยังต่ำกว่าเป้าหมาย ${money(d.recommendedEmergencyFund)}`],
+  A:["เงินสำรองต่ำกว่าเป้าหมาย",`เงินที่ใช้ได้ ${money(d.available)} ยังต่ำกว่าเป้าหมาย ${money(d.target)}`],
+  D:["กระแสเงินสดตึงตัว",`คาดการณ์ปลายช่วงเหลือ ${money(d.forecastAvailable)} — ควรเช็กค่าใช้จ่ายที่กำลังจะถึง`],
+  C:["มีภาระใกล้ถึงกำหนด",`${d.name||"รายการ"} ${money(d.amount)} ยังกันเงินไม่พอ`],
+  CASHFLOW_NEGATIVE:["กระแสเงินสดติดลบ","รายจ่ายมากกว่ารายรับในช่วงปัจจุบัน"],
+  FORECAST_NEGATIVE:["เงินอาจไม่พอถึงสิ้นช่วง","Forecast ส่งสัญญาณว่ากระแสเงินสดอาจติดลบ"],
+  B:["ค่าใช้จ่ายพุ่งผิดปกติ",`หมวด ${d.category||"ไม่ระบุ"} เพิ่มขึ้นเป็น ${money(d.thisMonthAmt)} จาก ${money(d.lastMonthAmt)} เดือนก่อน`],
+  SPENDING_SPIKE:["รายจ่ายพุ่งผิดปกติ","มีหมวดรายจ่ายที่เพิ่มขึ้นมากกว่าปกติ"],
+  HIGH_DISCRETIONARY_SPENDING:["รายจ่ายไม่จำเป็นสูง","สัดส่วนรายจ่ายไม่จำเป็นอยู่ในระดับที่ควรเฝ้าดู"],
+  INCOME_DROP:["รายรับลดลง","รายรับช่วงปัจจุบันลดลงจากช่วงก่อนหน้า"],
+  SAVINGS_RATE_LOW:["อัตราออมต่ำ","ช่วงนี้เงินที่เหลือสำหรับการออมยังต่ำกว่าที่ควร"],
+  EMERGENCY_HEALTHY:["เงินสำรองฉุกเฉินถึงเป้าหมาย","เงินสำรองของคุณอยู่ในระดับแข็งแรงแล้ว"],
+  FINANCIAL_STRENGTH:["สุขภาพการเงินแข็งแรง","ภาพรวมการเงินอยู่ในสถานะที่ดี"],
+  OK:["การเงินวันนี้ปกติดี","ยังไม่พบความเสี่ยงสำคัญจากข้อมูลล่าสุด"]
+ };
+ const v=map[f.id]||[proactiveRuleLabel(f.id),"มีเรื่องการเงินที่ควรตรวจสอบ"];
+ return {title:v[0],body:v[1],icon:f.severity==="critical"?"🚨":f.severity==="warning"?"⚠️":"💡"};
+}
+function addVaultetNotification(f){
+ const s=loadVaultetNotifSettings();if(!s.enabled||!notifTypeEnabled(f.id,s))return;
+ const h=new Date().getHours();if(s.quiet&&(h>=23||h<7)&&f.severity!=="critical")return;
+ const a=loadVaultetNotifications(),day=todayISO(),fp=f.id+"|"+JSON.stringify(f.data||{}).slice(0,600);
+ if(a.some(n=>n.day===day&&n.fingerprint===fp))return;
+ const m=notificationFromFinding(f);a.unshift({id:makeId(),day,createdAt:new Date().toISOString(),fingerprint:fp,type:f.id,severity:f.severity,title:m.title,body:m.body,icon:m.icon,read:false});saveVaultetNotifications(a);
+}
+function renderVaultetNotifications(){
+ const a=loadVaultetNotifications(),unread=a.filter(n=>!n.read).length,badge=document.getElementById("notificationUnreadBadge"),dot=document.getElementById("uxBellDot");
+ if(badge){badge.textContent=unread;badge.style.display=unread?"flex":"none"}if(dot)dot.style.display=unread?"block":"none";
+ const draw=(arr,target)=>{if(!target)return;target.innerHTML=arr.length?arr.map(n=>`<div class="notification-item ${n.read?"":"unread"}" data-notif-id="${escapeHtml(n.id)}"><div class="notification-icon">${n.icon||"🔔"}</div><div class="notification-content"><div class="notification-item-title">${escapeHtml(n.title)}</div><div class="notification-item-body">${escapeHtml(n.body)}</div></div><div class="notification-time">${escapeHtml(n.day===todayISO()?new Date(n.createdAt).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}):dayLabel(n.day))}</div></div>`).join(""):"<div class=\"notification-empty\">ยังไม่มีการแจ้งเตือน 🎉</div>";target.querySelectorAll("[data-notif-id]").forEach(el=>el.onclick=()=>{const x=loadVaultetNotifications(),n=x.find(v=>v.id===el.dataset.notifId);if(n)n.read=true;saveVaultetNotifications(x);renderVaultetNotifications()})};
+ draw(a.slice(0,3),document.getElementById("notificationPreviewList"));draw(a,document.getElementById("notificationFullList"));
+ const sub=document.getElementById("notificationDashboardSub");if(sub)sub.textContent=unread?`มี ${unread} รายการที่ยังไม่ได้อ่าน`:"ไม่มีรายการใหม่";
+}
+function openVaultetNotificationCenter(){renderVaultetNotifications();document.getElementById("notificationOverlay")?.classList.add("open")}
+function closeVaultetNotificationCenter(){document.getElementById("notificationOverlay")?.classList.remove("open")}
+function checkVaultetNotifications(){try{const r=evaluateProactiveRules(buildFinancialSnapshot(),loadAIProfile());r.findings.slice(0,6).forEach(addVaultetNotification)}catch(e){}renderVaultetNotifications()}
+function initVaultetNotifications(){
+ const s=loadVaultetNotifSettings(),ids=["notifEnabledInput","notifPositiveInput","notifBudgetInput","notifEmergencyInput","notifForecastInput","notifObligationInput","notifBehaviorInput","notifQuietInput"],keys=["enabled","positive","budget","emergency","forecast","obligation","behavior","quiet"];
+ ids.forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;el.checked=!!s[keys[i]];el.onchange=()=>{const x=loadVaultetNotifSettings();x[keys[i]]=el.checked;saveVaultetNotifSettings(x);checkVaultetNotifications()}});
+ document.getElementById("uxBellBtn")?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();openVaultetNotificationCenter()},true);
+ document.getElementById("notificationQuickBtn")?.addEventListener("click",openVaultetNotificationCenter);
+ document.getElementById("notificationViewAllBtn")?.addEventListener("click",openVaultetNotificationCenter);
+ document.getElementById("notificationSettingsBtn")?.addEventListener("click",openVaultetNotificationCenter);
+ document.getElementById("closeNotificationBtn")?.addEventListener("click",closeVaultetNotificationCenter);
+ document.getElementById("notificationOverlay")?.addEventListener("click",e=>{if(e.target.id==="notificationOverlay")closeVaultetNotificationCenter()});
+ document.getElementById("markNotificationsReadBtn")?.addEventListener("click",()=>{const a=loadVaultetNotifications();a.forEach(n=>n.read=true);saveVaultetNotifications(a);renderVaultetNotifications();showToast("อ่านการแจ้งเตือนทั้งหมดแล้ว")});
+ document.getElementById("clearNotificationsBtn")?.addEventListener("click",()=>{saveVaultetNotifications([]);renderVaultetNotifications();showToast("ล้างประวัติการแจ้งเตือนแล้ว")});
+ document.getElementById("requestNotificationBtn")?.addEventListener("click",async()=>{if(!("Notification"in window)){showToast("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน");return}try{const p=await Notification.requestPermission();document.getElementById("notificationPermissionBox").textContent=p==="granted"?"เปิดการแจ้งเตือนบนเครื่องแล้ว":"ยังไม่ได้อนุญาตการแจ้งเตือนบนเครื่อง"}catch(e){showToast("เปิดการแจ้งเตือนไม่สำเร็จ")}});
+ renderVaultetNotifications();setTimeout(checkVaultetNotifications,300);setInterval(checkVaultetNotifications,300000);
+}
+setTimeout(initVaultetNotifications,0);
+
 // --- UI: #aiProactiveCard บน Dashboard ---
 const PROACTIVE_SEVERITY_META = {
   critical: { icon:"🚨", color:"var(--expense)" },
