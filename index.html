@@ -6,216 +6,267 @@
 <title>บัญชี</title>
 
 <!-- PWA: Web App Manifest embedded as Data URI (no external manifest.json needed) -->
-<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIuC4muC4seC4jeC4iuC4tSAtIEZpbmFuY2UgVHJhY2tlciIsICJzaG9ydF9uYW1lIjogIuC4muC4seC4jeC4iuC4tSIsICJkZXNjcmlwdGlvbiI6ICLguYHguK3guJvguJrguLHguJnguJfguLbguIHguKPguLLguKLguKPguLHguJrguKPguLLguKLguIjguYjguLLguKLguYHguKXguLDguYDguIfguLTguJnguK3guK3guKEg4LiX4Liz4LiH4Liy4LiZ4Lit4Lit4Lif4LmE4Lil4LiZ4LmMIiwgInN0YXJ0X3VybCI6ICIuLyIsICJzY29wZSI6ICIuLyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjRUZFQUUwIiwgInRoZW1lX2NvbG9yIjogIiNFRkVBRTAiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNEtQSEpsWTNRZ2QybGtkR2c5SWpVeE1pSWdhR1ZwWjJoMFBTSTFNVElpSUhKNFBTSTVOaUlnWm1sc2JEMGlJekpCTWpVeU1TSXZQZ284ZEdWNGRDQjRQU0l5TlRZaUlIazlJak15TUNJZ1ptOXVkQzFtWVcxcGJIazlJa2RsYjNKbmFXRXNJSE5sY21sbUlpQm1iMjUwTFhOcGVtVTlJakkyTUNJZ1ptOXVkQzEzWldsbmFIUTlJall3TUNJZ1ptbHNiRDBpSTBWR1JVRkZNQ0lnZEdWNGRDMWhibU5vYjNJOUltMXBaR1JzWlNJKzRMaS9QQzkwWlhoMFBnbzhMM04yWno0PSIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsICJwdXJwb3NlIjogImFueSJ9LCB7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWo0S1BISmxZM1FnZDJsa2RHZzlJalV4TWlJZ2FHVnBaMmgwUFNJMU1USWlJSEo0UFNJNU5pSWdabWxzYkQwaUl6SkJNalV5TVNJdlBnbzhkR1Y0ZENCNFBTSXlOVFlpSUhrOUlqTXlNQ0lnWm05dWRDMW1ZVzFwYkhrOUlrZGxiM0puYVdFc0lITmxjbWxtSWlCbWIyNTBMWE5wZW1VOUlqSTJNQ0lnWm05dWRDMTNaV2xuYUhROUlqWXdNQ0lnWm1sc2JEMGlJMFZHUlVGRk1DSWdkR1Y0ZEMxaGJtTm9iM0k5SW0xcFpHUnNaU0krNExpL1BDOTBaWGgwUGdvOEwzTjJaejQ9IiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwgInB1cnBvc2UiOiAibWFza2FibGUifV19" />
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIuC4muC4seC4jeC4iuC4tSAtIEZpbmFuY2UgVHJhY2tlciIsICJzaG9ydF9uYW1lIjogIuC4muC4seC4jeC4iuC4tSIsICJkZXNjcmlwdGlvbiI6ICLguYHguK3guJvguJrguLHguJnguJfguLbguIHguKPguLLguKLguKPguLHguJrguKPguLLguKLguIjguYjguLLguKLguKrguYjguKfguJnguJXguLHguKcg4LiX4Liz4LiH4Liy4LiZ4Lit4Lit4Lif4LmE4Lil4LiZ4LmM4LmE4LiU4LmJIiwgInN0YXJ0X3VybCI6ICIuLyIsICJzY29wZSI6ICIuLyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMEEwOTEyIiwgInRoZW1lX2NvbG9yIjogIiMwQTA5MTIiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNEtQR1JsWm5NK1BHeHBibVZoY2tkeVlXUnBaVzUwSUdsa1BTSm5JaUI0TVQwaU1DSWdlVEU5SWpBaUlIZ3lQU0l4SWlCNU1qMGlNU0krQ2p4emRHOXdJRzltWm5ObGREMGlNQ1VpSUhOMGIzQXRZMjlzYjNJOUlpTTFRalF6UlRZaUx6NDhjM1J2Y0NCdlptWnpaWFE5SWpRNEpTSWdjM1J2Y0MxamIyeHZjajBpSXpnek5EZEVSQ0l2UGp4emRHOXdJRzltWm5ObGREMGlNVEF3SlNJZ2MzUnZjQzFqYjJ4dmNqMGlJekkwTVVNMFJTSXZQZ284TDJ4cGJtVmhja2R5WVdScFpXNTBQand2WkdWbWN6NEtQSEpsWTNRZ2QybGtkR2c5SWpVeE1pSWdhR1ZwWjJoMFBTSTFNVElpSUhKNFBTSTVOaUlnWm1sc2JEMGlkWEpzS0NObktTSXZQZ284ZEdWNGRDQjRQU0l5TlRZaUlIazlJak15TUNJZ1ptOXVkQzFtWVcxcGJIazlJa2RsYjNKbmFXRXNJSE5sY21sbUlpQm1iMjUwTFhOcGVtVTlJakkyTUNJZ1ptOXVkQzEzWldsbmFIUTlJall3TUNJZ1ptbHNiRDBpSTBZelJqRkdRaUlnZEdWNGRDMWhibU5vYjNJOUltMXBaR1JzWlNJKzRMaS9QQzkwWlhoMFBnbzhMM04yWno0PSIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsICJwdXJwb3NlIjogImFueSJ9LCB7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWo0S1BHUmxabk0rUEd4cGJtVmhja2R5WVdScFpXNTBJR2xrUFNKbklpQjRNVDBpTUNJZ2VURTlJakFpSUhneVBTSXhJaUI1TWowaU1TSStDanh6ZEc5d0lHOW1abk5sZEQwaU1DVWlJSE4wYjNBdFkyOXNiM0k5SWlNMVFqUXpSVFlpTHo0OGMzUnZjQ0J2Wm1aelpYUTlJalE0SlNJZ2MzUnZjQzFqYjJ4dmNqMGlJemd6TkRkRVJDSXZQanh6ZEc5d0lHOW1abk5sZEQwaU1UQXdKU0lnYzNSdmNDMWpiMnh2Y2owaUl6STBNVU0wUlNJdlBnbzhMMnhwYm1WaGNrZHlZV1JwWlc1MFBqd3ZaR1ZtY3o0S1BISmxZM1FnZDJsa2RHZzlJalV4TWlJZ2FHVnBaMmgwUFNJMU1USWlJSEo0UFNJNU5pSWdabWxzYkQwaWRYSnNLQ05uS1NJdlBnbzhkR1Y0ZENCNFBTSXlOVFlpSUhrOUlqTXlNQ0lnWm05dWRDMW1ZVzFwYkhrOUlrZGxiM0puYVdFc0lITmxjbWxtSWlCbWIyNTBMWE5wZW1VOUlqSTJNQ0lnWm05dWRDMTNaV2xuYUhROUlqWXdNQ0lnWm1sc2JEMGlJMFl6UmpGR1FpSWdkR1Y0ZEMxaGJtTm9iM0k5SW0xcFpHUnNaU0krNExpL1BDOTBaWGgwUGdvOEwzTjJaejQ9IiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwgInB1cnBvc2UiOiAibWFza2FibGUifV19" />
 
 <!-- Standalone / full-screen install behavior -->
-<meta name="theme-color" content="#EFEAE0" />
+<meta name="theme-color" content="#0A0912" />
 <meta name="mobile-web-app-capable" content="yes" />
 
 <!-- iOS-specific standalone support -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="บัญชี" />
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzJBMjUyMSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0VGRUFFMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM1QjQzRTYiLz48c3RvcCBvZmZzZXQ9IjQ4JSIgc3RvcC1jb2xvcj0iIzgzNDdERCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzI0MUM0RSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0idXJsKCNnKSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0YzRjFGQiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
 
 <!-- Icon shown in tabs / bookmarks -->
-<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzJBMjUyMSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0VGRUFFMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM1QjQzRTYiLz48c3RvcCBvZmZzZXQ9IjQ4JSIgc3RvcC1jb2xvcj0iIzgzNDdERCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzI0MUM0RSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0idXJsKCNnKSIvPgo8dGV4dCB4PSIyNTYiIHk9IjMyMCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXNpemU9IjI2MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0YzRjFGQiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4Li/PC90ZXh0Pgo8L3N2Zz4=" />
 <style>
   :root{
-    --paper:#EFEAE0;
-    --surface:#F8F4EC;
-    --ink:#2A2521;
-    --faint:#8C8274;
-    --line:#DAD1C0;
-    --income:#3F6C51;
-    --expense:#8C3B2E;
-    --saving:#3A5A6B;
-    --transfer:#6B5B3A;
-    --locked:#8C6B3A;
+    --paper:#0A0912;
+    --surface:#171426;
+    --surface-2:#1E1A33;
+    --surface-3:#252041;
+    --ink:#F3F1FB;
+    --faint:#9791AE;
+    --line:rgba(255,255,255,0.08);
+    --income:#22C55E;
+    --income-soft:rgba(34,197,94,0.14);
+    --expense:#FB4570;
+    --expense-soft:rgba(251,69,112,0.14);
+    --saving:#4FA8FF;
+    --saving-soft:rgba(79,168,255,0.14);
+    --transfer:#F5A623;
+    --transfer-soft:rgba(245,166,35,0.14);
+    --locked:#C08A3E;
+    --accent1:#7C5CFF;
+    --accent2:#B24FE0;
+    --accent-grad: linear-gradient(150deg,#5B43E6 0%,#8347DD 48%,#3A2A8F 100%);
+    --shadow-card: 0 14px 30px rgba(0,0,0,0.45);
+    --shadow-soft: 0 6px 16px rgba(0,0,0,0.3);
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
+  html{ background:var(--paper); }
   body{
     margin:0;
     background:var(--paper);
     color:var(--ink);
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
-  .mono{ font-family: 'Courier New', monospace; }
-  .page{ max-width:460px; margin:0 auto; padding-bottom:calc(96px + env(safe-area-inset-bottom)); min-height:100vh; position:relative; }
-  header{ padding:28px 20px 18px; border-bottom:1px solid var(--line); }
-  .header-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  h1{ font-size:22px; font-weight:600; margin:0; }
+  .mono{ font-family: 'SFMono-Regular', Consolas, 'Roboto Mono', 'Courier New', monospace; font-variant-numeric: tabular-nums; }
+  .page{ max-width:460px; margin:0 auto; padding-bottom:calc(110px + env(safe-area-inset-bottom)); min-height:100vh; position:relative; background:var(--paper); }
+  header{
+    padding:26px 20px 40px;
+    background:var(--accent-grad);
+    border-radius:0 0 28px 28px;
+    box-shadow:0 10px 34px rgba(60,30,140,0.35);
+    position:relative;
+  }
+  .hero-cards{ padding:0 20px; position:relative; }
+  .header-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  h1{ font-size:21px; font-weight:700; margin:0; color:#fff; letter-spacing:-0.2px; }
   select{
-    font-family:inherit; font-size:13px; color:var(--faint);
-    background:transparent; border:1px solid var(--line); border-radius:8px; padding:6px 10px;
+    font-family:inherit; font-size:13px; color:var(--ink); font-weight:500;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:7px 10px;
+    -webkit-appearance:none; appearance:none;
   }
-  .balance-row{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
-  .balance-label{ font-size:12px; color:var(--faint); }
-  .balance-num{ font-size:40px; font-weight:600; letter-spacing:-0.5px; }
-  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  #monthSelect{
+    background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22); color:#fff;
+    backdrop-filter: blur(6px);
+  }
+  .balance-row{ display:flex; flex-direction:column; gap:4px; margin-bottom:16px; }
+  .balance-label{ font-size:12.5px; color:rgba(255,255,255,0.72); font-weight:500; }
+  .balance-num{ font-size:38px; font-weight:800; letter-spacing:-0.8px; color:#fff; }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
   .pill{
-    display:flex; align-items:center; gap:5px; font-size:12.5px;
-    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:6px 10px;
+    display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:500;
+    background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.18); border-radius:12px; padding:7px 12px;
+    backdrop-filter: blur(8px); color:#fff;
   }
+  .pill span:first-child{ color:rgba(255,255,255,0.7) !important; }
   .networth-card{
-    margin:0 0 14px; padding:12px 14px; background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    margin:0 0 14px; padding:18px 18px 14px; background:var(--surface); border:1px solid var(--line);
+    border-radius:20px; box-shadow:var(--shadow-card); position:relative; z-index:2;
   }
-  .networth-top{ display:flex; justify-content:space-between; align-items:baseline; }
-  .networth-label{ font-size:12px; color:var(--faint); }
-  .networth-num{ font-size:26px; font-weight:600; }
-  .networth-sub{ display:flex; justify-content:space-between; font-size:12px; color:var(--faint); margin-top:6px; }
-  .networth-sub .real{ color:var(--income); font-weight:600; }
+  .hero-cards > .networth-card:first-child{ margin-top:-26px; }
+  .networth-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px; }
+  .networth-label{ font-size:12px; color:var(--faint); font-weight:500; text-transform:uppercase; letter-spacing:0.4px; }
+  .networth-num{ font-size:25px; font-weight:800; letter-spacing:-0.4px; }
+  .networth-sub{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--faint); margin-top:9px; padding-top:9px; border-top:1px solid var(--line); }
+  .networth-sub .real{ color:var(--income); font-weight:700; }
   .accounts-toggle{
-    font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none;
-    cursor:pointer; text-decoration:underline; padding:8px 0 0; display:block;
+    font-family:inherit; font-size:12px; color:var(--accent1); background:none; border:none; font-weight:600;
+    cursor:pointer; padding:10px 0 0; display:block;
   }
-  .account-row{ display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-top:1px solid var(--line); }
+  .account-row{ display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:9px 0; border-top:1px solid var(--line); }
   .account-row:first-child{ border-top:none; }
   .account-row .acc-name{ display:flex; align-items:center; gap:6px; }
   .account-row .acc-actions{ display:flex; gap:4px; }
   .manage-accounts-btn{
-    font-family:inherit; font-size:12px; color:var(--faint); background:var(--paper); border:1px solid var(--line);
-    border-radius:8px; padding:5px 10px; cursor:pointer; margin-top:8px;
+    font-family:inherit; font-size:12px; font-weight:600; color:var(--ink); background:var(--surface-2); border:1px solid var(--line);
+    border-radius:20px; padding:8px 13px; cursor:pointer; margin-top:8px;
   }
-  .backup-row{ display:flex; gap:14px; }
+  .backup-row{ display:flex; gap:16px; padding:2px 2px 0; }
   .backup-link{
-    font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none;
-    cursor:pointer; text-decoration:underline; padding:0;
+    font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none; font-weight:500;
+    cursor:pointer; padding:0;
   }
-  .error-banner{ margin:12px 20px 0; font-size:13px; color:var(--expense); background:#F5E7E2; border-radius:8px; padding:8px 12px; display:none; }
+  .error-banner{ margin:14px 20px 0; font-size:13px; color:#FF87A0; background:rgba(251,69,112,0.14); border:1px solid rgba(251,69,112,0.3); border-radius:12px; padding:10px 14px; display:none; }
   .backup-banner{
-    margin:12px 20px 0; font-size:12.5px; color:var(--ink); background:var(--surface);
-    border:1px solid var(--line); border-radius:8px; padding:8px 12px; display:none;
+    margin:14px 20px 0; font-size:12.5px; color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:12px; padding:10px 14px; display:none;
     align-items:center; justify-content:space-between; gap:10px;
   }
   .backup-banner.show{ display:flex; }
   .backup-banner button{
-    font-family:inherit; font-size:12px; color:var(--ink); background:var(--paper);
-    border:1px solid var(--line); border-radius:6px; padding:4px 10px; cursor:pointer; white-space:nowrap;
+    font-family:inherit; font-size:12px; font-weight:600; color:#fff; background:var(--accent1);
+    border:1px solid transparent; border-radius:8px; padding:5px 11px; cursor:pointer; white-space:nowrap;
   }
   .backup-banner .dismiss{ background:none; border:none; color:var(--faint); font-size:14px; padding:0 2px; }
-  .search-row{ display:flex; gap:8px; margin:0 0 10px; }
+  .search-row{ display:flex; gap:8px; margin:0 0 12px; }
   .search-row input{
-    flex:1; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:8px;
-    padding:7px 10px; background:var(--surface); color:var(--ink);
+    flex:1; font-family:inherit; font-size:13.5px; border:1px solid var(--line); border-radius:12px;
+    padding:10px 14px; background:var(--surface); color:var(--ink);
   }
+  .search-row input::placeholder{ color:var(--faint); }
   .cat-chip-wrap.orphan{ border-style:dashed; }
   .cat-chip-wrap.orphan .cat-chip-label{ color:var(--faint); font-style:italic; }
   .toast{
-    position:fixed; bottom:calc(96px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:var(--ink); color:#fff;
-    font-size:13px; padding:9px 16px; border-radius:20px; opacity:0; transition:opacity .25s; z-index:20; pointer-events:none;
+    position:fixed; bottom:calc(110px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:var(--surface-3); color:#fff;
+    font-size:13px; font-weight:500; padding:10px 18px; border-radius:24px; opacity:0; transition:opacity .25s; z-index:20; pointer-events:none;
+    border:1px solid var(--line); box-shadow:var(--shadow-soft);
   }
   .toast.show{ opacity:1; }
-  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:10px; }
-  .stat-box{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:9px 11px; }
-  .stat-box-label{ font-size:11px; color:var(--faint); }
-  .stat-box-num{ font-size:15px; font-weight:600; margin-top:2px; }
-  .range-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; margin-top:12px; }
+  .stat-box{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 13px; }
+  .stat-box-label{ font-size:11px; color:var(--faint); font-weight:500; }
+  .stat-box-num{ font-size:16px; font-weight:700; margin-top:3px; }
+  .range-row{ display:flex; gap:8px; margin-bottom:12px; }
   .range-row select{ flex:1; }
-  .custom-range-row{ display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .custom-range-row{ display:flex; gap:8px; align-items:center; margin-bottom:12px; }
   .custom-range-row input{
-    flex:1; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:8px;
-    padding:6px 8px; background:var(--surface); color:var(--ink);
+    flex:1; font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:10px;
+    padding:7px 9px; background:var(--surface); color:var(--ink);
   }
-  .analysis-section{ padding:6px 20px 18px; }
-  .breakdown-section{ padding:18px 20px 6px; display:flex; flex-direction:column; gap:20px; }
-  .section-label{ font-size:13px; color:var(--faint); }
-  .bar-row{ margin-bottom:10px; }
-  .bar-row-top{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:4px; }
-  .bar-track{ height:6px; background:var(--line); border-radius:4px; overflow:hidden; }
-  .bar-fill{ height:100%; border-radius:4px; }
+  .analysis-section{ padding:16px 20px 20px; }
+  .analysis-section + .analysis-section{ border-top:1px solid var(--line); }
+  .breakdown-section{ padding:20px 20px 6px; display:flex; flex-direction:column; gap:20px; }
+  .section-label{ font-size:12px; color:var(--faint); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .bar-row{ margin-bottom:12px; }
+  .bar-row-top{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px; font-weight:500; }
+  .bar-track{ height:7px; background:var(--surface-2); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:6px; }
   .breakdown-toggle{
-    font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none;
-    cursor:pointer; text-decoration:underline; padding:6px 0 0; display:block;
+    font-family:inherit; font-size:12px; font-weight:600; color:var(--accent1); background:none; border:none;
+    cursor:pointer; padding:8px 0 0; display:block;
   }
   /* ===== Phase 5: Cash Flow Forecast ===== */
-  .forecast-disclaimer{ font-size:12.5px; color:var(--faint); margin:0 0 12px; }
+  .forecast-disclaimer{ font-size:12.5px; color:var(--faint); margin:0 0 14px; line-height:1.5; }
   .forecast-warning{
-    background:rgba(140,59,46,0.08); border:1px solid var(--expense); border-radius:10px;
-    padding:10px 12px; margin-top:10px;
+    background:rgba(251,69,112,0.12); border:1px solid rgba(251,69,112,0.32); border-radius:14px;
+    padding:12px 14px; margin-top:12px;
   }
-  .timeline-row{ display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line); align-items:flex-start; }
+  .timeline-row{ display:flex; gap:10px; padding:12px 0; border-top:1px solid var(--line); align-items:flex-start; }
   .timeline-row:first-child{ border-top:none; }
-  .timeline-date{ font-size:12px; color:var(--faint); min-width:44px; padding-top:1px; flex-shrink:0; }
-  .compare-vs-row{ display:flex; align-items:center; gap:10px; margin:10px 0 14px; }
-  .compare-period-pill{ flex:1; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 6px; font-size:12.5px; }
-  .compare-vs-label{ font-size:11px; color:var(--faint); flex-shrink:0; }
-  .compare-headline-grid{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
-  .compare-headline-row{ display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; gap:8px; }
-  .compare-headline-label{ font-size:13px; color:var(--faint); flex:1; }
-  .compare-headline-val{ font-size:16px; font-weight:600; }
-  .compare-headline-change{ font-size:12.5px; font-weight:600; white-space:nowrap; }
-  .compare-detail-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-top:1px solid var(--line); gap:4px; }
+  .timeline-date{ font-size:12px; color:var(--faint); min-width:44px; padding-top:1px; flex-shrink:0; font-weight:500; }
+  .compare-vs-row{ display:flex; align-items:center; gap:10px; margin:12px 0 16px; }
+  .compare-period-pill{ flex:1; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:9px 6px; font-size:12.5px; font-weight:500; }
+  .compare-vs-label{ font-size:11px; color:var(--faint); flex-shrink:0; font-weight:600; }
+  .compare-headline-grid{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .compare-headline-row{ display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; gap:8px; }
+  .compare-headline-label{ font-size:13px; color:var(--faint); flex:1; font-weight:500; }
+  .compare-headline-val{ font-size:16px; font-weight:700; }
+  .compare-headline-change{ font-size:12.5px; font-weight:700; white-space:nowrap; }
+  .compare-detail-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:9px 0; border-top:1px solid var(--line); gap:4px; }
   .compare-detail-row:first-child{ border-top:none; }
   .compare-detail-col{ flex:1; text-align:right; }
-  .compare-cat-row{ padding:8px 0; border-top:1px solid var(--line); }
+  .compare-cat-row{ padding:9px 0; border-top:1px solid var(--line); }
   .compare-cat-row:first-child{ border-top:none; }
-  .compare-cat-top{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:2px; gap:8px; }
+  .compare-cat-top{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:3px; gap:8px; font-weight:500; }
   .compare-cat-sub{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--faint); }
-  .insight-box{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
-  .insight-box div{ margin-bottom:4px; }
+  .insight-box{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; font-size:13px; margin-bottom:14px; }
+  .insight-box div{ margin-bottom:5px; }
   .insight-box div:last-child{ margin-bottom:0; }
-  .list-section{ padding:10px 20px 0; }
-  .list-header-row{ display:flex; justify-content:space-between; align-items:baseline; margin:8px 0; }
+  .list-section{ padding:14px 20px 0; }
+  .list-header-row{ display:flex; justify-content:space-between; align-items:baseline; margin:10px 0; gap:8px; }
   .empty-state{
-    font-size:13.5px; color:var(--faint); text-align:center; padding:28px 10px;
-    border:1px dashed var(--line); border-radius:12px;
+    font-size:13.5px; color:var(--faint); text-align:center; padding:32px 10px;
+    border:1px dashed var(--line); border-radius:16px;
   }
-  ul.list{ list-style:none; margin:0; padding:0; }
+  ul.list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
   .list-item{
-    display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; padding:13px 14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
     cursor:pointer;
   }
   .list-item-left{ display:flex; align-items:center; gap:12px; }
-  .list-date{ font-size:12px; color:var(--faint); width:40px; flex-shrink:0; }
-  .list-cat{ font-size:14.5px; }
-  .list-note{ font-size:12.5px; color:var(--faint); margin-top:1px; }
-  .list-item-right{ display:flex; align-items:center; gap:6px; }
-  .icon-btn{ background:none; border:none; cursor:pointer; padding:5px; color:var(--faint); font-size:14px; }
+  .list-icon{
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:15px; flex-shrink:0;
+  }
+  .list-date{ font-size:11.5px; color:var(--faint); width:40px; flex-shrink:0; font-weight:500; }
+  .list-cat{ font-size:14.5px; font-weight:600; }
+  .list-note{ font-size:12px; color:var(--faint); margin-top:2px; }
+  .list-item-right{ display:flex; align-items:center; gap:2px; }
+  .icon-btn{ background:none; border:none; cursor:pointer; padding:6px; color:var(--faint); font-size:14px; }
   .fab{
-    position:fixed; bottom:calc(24px + env(safe-area-inset-bottom)); right:24px;
-    width:54px; height:54px; border-radius:50%; background:var(--ink); border:none;
+    position:fixed; bottom:calc(28px + env(safe-area-inset-bottom)); right:24px;
+    width:58px; height:58px; border-radius:50%; background:var(--accent-grad); border:none;
     display:flex; align-items:center; justify-content:center; cursor:pointer;
-    box-shadow:0 4px 14px rgba(0,0,0,0.25); font-size:26px; color:#fff;
+    box-shadow:0 10px 24px rgba(102,60,220,0.55); font-size:28px; color:#fff; font-weight:300;
+    z-index:9;
   }
   .page-anchor{ max-width:460px; margin:0 auto; position:relative; }
   .overlay{
-    position:fixed; inset:0; background:rgba(30,26,22,0.4); display:none;
-    align-items:flex-end; justify-content:center; z-index:10;
+    position:fixed; inset:0; background:rgba(4,3,10,0.6); display:none;
+    align-items:flex-end; justify-content:center; z-index:10; backdrop-filter:blur(2px);
   }
   .overlay.open{ display:flex; }
   .sheet-modal{
-    width:100%; max-width:460px; background:var(--paper); border-radius:20px 20px 0 0;
+    width:100%; max-width:460px; background:var(--surface); border:1px solid var(--line); border-bottom:none;
+    border-radius:22px 22px 0 0; box-shadow:0 -12px 40px rgba(0,0,0,0.5);
     padding:18px 20px calc(28px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto;
+    position:relative;
   }
-  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .modal-title{ font-size:17px; font-weight:600; }
-  .close-btn{ background:none; border:none; cursor:pointer; font-size:20px; color:var(--faint); }
-  .type-toggle{ display:flex; gap:6px; margin-bottom:16px; }
+  .sheet-modal::before{
+    content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%);
+    width:36px; height:4px; border-radius:4px; background:var(--line);
+  }
+  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-top:8px; }
+  .modal-title{ font-size:17px; font-weight:700; }
+  .close-btn{ background:var(--surface-2); border:none; cursor:pointer; font-size:15px; color:var(--faint); width:30px; height:30px; border-radius:50%; }
+  .type-toggle{ display:flex; gap:6px; margin-bottom:18px; background:var(--surface-2); padding:4px; border-radius:12px; }
   .type-btn{
-    flex:1; padding:10px 4px; border-radius:10px; border:1px solid var(--line);
-    background:var(--surface); color:var(--faint); font-family:inherit; font-size:13px; cursor:pointer; white-space:nowrap;
+    flex:1; padding:10px 4px; border-radius:9px; border:none;
+    background:transparent; color:var(--faint); font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;
   }
-  .type-btn.active-expense{ background:var(--expense); color:#fff; border-color:transparent; }
-  .type-btn.active-income{ background:var(--income); color:#fff; border-color:transparent; }
-  .type-btn.active-saving{ background:var(--saving); color:#fff; border-color:transparent; }
-  .type-btn.active-transfer{ background:var(--transfer); color:#fff; border-color:transparent; }
+  .type-btn.active-expense{ background:var(--expense); color:#fff; }
+  .type-btn.active-income{ background:var(--income); color:#fff; }
+  .type-btn.active-saving{ background:var(--saving); color:#fff; }
+  .type-btn.active-transfer{ background:var(--transfer); color:#101018; }
   select.field-select{
-    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
-    padding:8px 10px; background:var(--surface); color:var(--ink);
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; background:var(--surface-2); color:var(--ink);
   }
   .transfer-arrow{ text-align:center; font-size:18px; color:var(--faint); margin:2px 0; }
   .list-cat.transfer-label{ color:var(--transfer); }
-  label.field-label{ display:block; font-size:12px; color:var(--faint); margin-top:14px; margin-bottom:6px; }
+  label.field-label{ display:block; font-size:12px; color:var(--faint); font-weight:600; margin-top:16px; margin-bottom:7px; text-transform:uppercase; letter-spacing:0.3px; }
   input#amount{
-    width:100%; font-size:28px; font-weight:600; border:none; border-bottom:2px solid var(--line);
-    background:transparent; padding:4px 0; outline:none; color:var(--ink); font-family:'Courier New', monospace;
+    width:100%; font-size:32px; font-weight:800; border:none; border-bottom:2px solid var(--line);
+    background:transparent; padding:4px 0; outline:none; color:var(--ink); font-family:'SFMono-Regular', Consolas, 'Roboto Mono', monospace;
   }
+  input#amount:focus{ border-bottom-color:var(--accent1); }
+  .quick-amount-row{ display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+  .quick-amount-btn{
+    font-family:inherit; font-size:13px; font-weight:600; color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:20px; padding:7px 14px; cursor:pointer;
+  }
+  .quick-amount-btn:active{ background:var(--accent1); color:#fff; border-color:transparent; }
+  .quick-amount-btn.clear{ color:var(--faint); background:none; border-style:dashed; margin-left:auto; }
   .cat-grid{ display:flex; flex-wrap:wrap; gap:8px; }
   .cat-chip-wrap{
     display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:20px;
-    background:var(--surface); overflow:hidden;
+    background:var(--surface-2); overflow:hidden;
   }
   .cat-chip-wrap.selected-expense{ background:var(--expense); border-color:transparent; }
   .cat-chip-wrap.selected-income{ background:var(--income); border-color:transparent; }
@@ -227,7 +278,7 @@
   .cat-chip-wrap.selected-income .cat-chip-del,
   .cat-chip-wrap.selected-saving .cat-chip-del{ color:#fff; }
   .cat-chip-label{
-    background:none; border:none; font-family:inherit; font-size:13.5px; cursor:pointer; color:var(--ink);
+    background:none; border:none; font-family:inherit; font-size:13.5px; font-weight:500; cursor:pointer; color:var(--ink);
     padding:8px 4px 8px 14px;
   }
   .cat-chip-del{
@@ -235,31 +286,169 @@
     padding:8px 12px 8px 4px; opacity:0.7;
   }
   .cat-chip{
-    padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--surface);
-    font-family:inherit; font-size:13.5px; cursor:pointer; color:var(--ink);
+    padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--surface-2);
+    font-family:inherit; font-size:13.5px; font-weight:500; cursor:pointer; color:var(--ink);
   }
   .cat-chip.add-chip{ border-style:dashed; color:var(--faint); }
   input#date, input#note{
-    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
-    padding:8px 10px; background:var(--surface); color:var(--ink);
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; background:var(--surface-2); color:var(--ink);
   }
+  input#date::-webkit-calendar-picker-indicator{ filter:invert(1) brightness(1.6); }
   .text-input{
-    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px;
-    padding:8px 10px; background:var(--surface); color:var(--ink); margin-bottom:2px;
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; background:var(--surface-2); color:var(--ink); margin-bottom:2px;
   }
-  .upcoming-item{ padding:12px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .text-input::-webkit-calendar-picker-indicator{ filter:invert(1) brightness(1.6); }
+  .upcoming-item{ padding:13px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
   .upcoming-item:first-child{ border-top:none; }
   .upcoming-actions{ display:flex; gap:6px; flex-direction:column; align-items:flex-end; }
   .small-btn{
-    font-family:inherit; font-size:11.5px; color:var(--ink); background:var(--paper); border:1px solid var(--line);
-    border-radius:8px; padding:5px 9px; cursor:pointer; white-space:nowrap;
+    font-family:inherit; font-size:11.5px; font-weight:600; color:var(--ink); background:var(--surface-2); border:1px solid var(--line);
+    border-radius:9px; padding:6px 10px; cursor:pointer; white-space:nowrap;
   }
-  .small-btn.primary{ background:var(--ink); color:#fff; border-color:transparent; }
+  .small-btn.primary{ background:var(--accent1); color:#fff; border-color:transparent; }
   #submitBtn{
-    width:100%; margin-top:22px; padding:13px 0; border-radius:12px; border:none; color:#fff;
-    font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;
+    width:100%; margin-top:24px; padding:15px 0; border-radius:14px; border:none; color:#fff;
+    font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer; background:var(--accent-grad);
+    box-shadow:0 8px 20px rgba(102,60,220,0.4);
   }
-  #submitBtn:disabled{ opacity:0.4; }
+  #submitBtn:disabled{ opacity:0.35; box-shadow:none; }
+  input::placeholder, select{ color-scheme: dark; }
+  /* ===== AI Layer (Milestone 1): Settings + NL Input UI ===== */
+  .settings-icon-btn{
+    margin-left:auto; width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--faint);
+    font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .fab-ai{
+    position:fixed; bottom:calc(28px + env(safe-area-inset-bottom)); right:92px;
+    width:48px; height:48px; border-radius:50%; background:var(--surface-2); border:1px solid var(--accent1);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4); font-size:20px; color:var(--accent1); z-index:5;
+  }
+  .ai-status-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin-bottom:16px;
+  }
+  .ai-status-label{ font-size:12px; color:var(--faint); font-weight:600; }
+  .ai-status-value{ font-size:12.5px; font-weight:700; }
+  .ai-key-actions{ display:flex; gap:8px; margin-top:12px; }
+  .ai-key-actions button{ flex:1; }
+  .ai-key-actions .danger-btn{
+    font-family:inherit; font-size:13px; font-weight:600; color:var(--expense); background:var(--expense-soft);
+    border:1px solid rgba(251,69,112,0.3); border-radius:12px; padding:10px 0; cursor:pointer;
+  }
+  /* ===== AI Layer (Milestone 3): Settings cards + Profile/Memory UI ===== */
+  .settings-card{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:16px;
+    padding:14px 14px 16px; margin-bottom:14px;
+  }
+  .settings-card:last-child{ margin-bottom:0; }
+  .settings-card-title{ font-size:13px; font-weight:700; color:var(--ink); margin:0 0 2px; display:flex; align-items:center; gap:8px; }
+  .settings-card .field-label{ margin-top:12px; }
+  .settings-card .field-label:first-of-type{ margin-top:12px; }
+  .settings-card .ai-status-row{ margin-bottom:0; }
+  .goal-list{ margin-top:10px; }
+  .goal-row{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:10px 0; border-top:1px solid var(--line);
+  }
+  .goal-row:first-child{ border-top:none; }
+  .goal-row-info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .goal-row-name{ font-size:13.5px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .goal-row-meta{ font-size:12px; color:var(--faint); }
+  .goal-add-row{
+    display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);
+  }
+  .goal-add-inputs{ display:flex; gap:8px; }
+  .goal-add-inputs input{
+    font-family:inherit; font-size:13px; border:1px solid var(--line); border-radius:10px;
+    padding:9px 10px; background:var(--surface); color:var(--ink);
+  }
+  #aiGoalNameInput{ flex:1.4; min-width:0; }
+  #aiGoalAmountInput{ flex:1; min-width:0; }
+  #aiGoalDeadlineInput{ flex:1; min-width:0; color-scheme:dark; }
+  #addAiGoalBtn{
+    font-family:inherit; font-size:13px; font-weight:600; color:#fff; background:var(--accent1);
+    border:none; border-radius:10px; padding:10px 0; cursor:pointer;
+  }
+  textarea.ai-textarea{
+    width:100%; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; background:var(--surface-2); color:var(--ink); min-height:92px; resize:vertical; line-height:1.5;
+  }
+  .ai-input-error{
+    font-size:12.5px; color:#FF87A0; background:rgba(251,69,112,0.14); border:1px solid rgba(251,69,112,0.3);
+    border-radius:10px; padding:9px 12px; margin-top:10px; display:none;
+  }
+  .ai-hint{ font-size:12px; color:var(--faint); margin:8px 0 0; line-height:1.5; }
+  #aiProcessBtn{
+    width:100%; margin-top:16px; padding:15px 0; border-radius:14px; border:none; color:#fff;
+    font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer; background:var(--accent-grad);
+    box-shadow:0 8px 20px rgba(102,60,220,0.4);
+  }
+  #aiProcessBtn:disabled{ opacity:0.55; cursor:default; }
+  /* ===== AI Layer (Milestone 1) Phase 3: Confirmation Sheet ===== */
+  .ai-confirm-quote{
+    font-size:12.5px; color:var(--faint); background:var(--surface-2); border:1px solid var(--line);
+    border-radius:10px; padding:10px 12px; margin-bottom:12px; line-height:1.5; font-style:italic;
+  }
+  .ai-confirm-badge-row{ margin-bottom:4px; }
+  .ai-confirm-badge{
+    display:inline-block; font-size:12px; font-weight:700; padding:5px 13px; border-radius:20px; color:#fff;
+  }
+  .ai-confirm-badge.badge-expense{ background:var(--expense); }
+  .ai-confirm-badge.badge-income{ background:var(--income); }
+  .ai-confirm-badge.badge-saving{ background:var(--saving); }
+  .ai-confirm-badge.badge-transfer{ background:var(--transfer); }
+  .ai-confirm-badge.badge-lend{ background:var(--accent1); }
+  #aiConfirmAmount{
+    width:100%; font-size:32px; font-weight:800; border:none; border-bottom:2px solid var(--line);
+    background:transparent; padding:4px 0; outline:none; color:var(--ink); font-family:'SFMono-Regular', Consolas, 'Roboto Mono', monospace;
+  }
+  #aiConfirmAmount:focus{ border-bottom-color:var(--accent1); }
+  .field-ambiguous{ border-color:var(--transfer) !important; box-shadow:0 0 0 1px var(--transfer); }
+  input.field-ambiguous, select.field-ambiguous{ border-radius:10px; }
+  #aiConfirmAmount.field-ambiguous{ border-bottom-width:2px; box-shadow:none; }
+  .ambiguous-hint{ font-size:11px; color:var(--transfer); font-weight:600; margin-top:6px; }
+  .ai-confirm-actions{ display:flex; gap:10px; margin-top:22px; }
+  .ai-confirm-actions button{ flex:1; font-family:inherit; cursor:pointer; border-radius:14px; padding:15px 0; font-size:15px; font-weight:700; }
+  #aiConfirmCancelBtn{ background:var(--surface-2); color:var(--ink); border:1px solid var(--line); }
+  #aiConfirmSubmitBtn{ background:var(--accent-grad); color:#fff; border:none; box-shadow:0 8px 20px rgba(102,60,220,0.4); }
+  /* ===== AI Layer (Milestone 2): Financial Analyst overlay ===== */
+  .ai-analyst-body{ font-size:14px; line-height:1.75; color:var(--ink); margin-top:2px; }
+  .ai-analyst-body strong{ font-weight:700; }
+  /* ===== Milestone 5: Debt Management Engine ===== */
+  .debt-card{ background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-top:10px; }
+  .debt-card:first-child{ margin-top:0; }
+  .debt-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .debt-name{ font-size:13.5px; font-weight:700; color:var(--ink); }
+  .debt-grace-badge{
+    font-size:10.5px; font-weight:600; color:var(--transfer); background:var(--transfer-soft);
+    border-radius:8px; padding:2px 7px; margin-left:4px; vertical-align:middle; white-space:nowrap;
+  }
+  .debt-balance{ font-size:19px; font-weight:800; color:var(--expense); margin-top:2px; }
+  .debt-quick-row{ display:flex; gap:8px; margin-top:10px; }
+  .debt-quick-btn{
+    flex:1; font-family:inherit; font-size:12.5px; font-weight:600; color:var(--accent1); background:rgba(124,92,255,0.12);
+    border:1px solid rgba(124,92,255,0.3); border-radius:10px; padding:8px 4px; cursor:pointer;
+  }
+  .debt-history{ margin-top:10px; border-top:1px dashed var(--line); padding-top:8px; }
+  .debt-history-row{ display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--faint); padding:4px 0; }
+  .debt-action-row{ display:flex; flex-direction:column; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+  .debt-add-form{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+  .debt-bump-banner{
+    margin:14px 20px 0; font-size:12.5px; color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:12px; padding:10px 14px; display:none;
+    align-items:center; justify-content:space-between; gap:10px;
+  }
+  .debt-bump-banner.show{ display:flex; }
+  .debt-bump-banner-actions{ display:flex; gap:6px; align-items:center; flex-shrink:0; }
+  .debt-bump-banner button{
+    font-family:inherit; font-size:12px; font-weight:600; color:#fff; background:var(--accent1);
+    border:1px solid transparent; border-radius:8px; padding:5px 11px; cursor:pointer; white-space:nowrap;
+  }
+  .debt-bump-banner .dismiss{ background:none; border:none; color:var(--faint); font-size:14px; padding:0 2px; }
 </style>
 </head>
 <body>
@@ -279,6 +468,9 @@
       <div class="pill"><span style="color:var(--faint)">ออก</span><span class="mono" style="color:var(--expense);font-weight:600" id="pillExpense">฿0</span></div>
       <div class="pill"><span style="color:var(--faint)">ออม</span><span class="mono" style="color:var(--saving);font-weight:600" id="pillSaving">฿0</span></div>
     </div>
+  </header>
+
+  <div class="hero-cards">
     <div class="networth-card">
       <div class="networth-top">
         <span class="networth-label">เงินทั้งหมด (ทุกบัญชี)</span>
@@ -287,11 +479,13 @@
       <div class="networth-sub"><span>กันไว้</span><span class="mono" id="reservedNum">฿0</span></div>
       <div class="networth-sub"><span>ใช้ได้จริง</span><span class="mono real" id="availableNum">฿0</span></div>
       <div class="networth-sub"><span>คนอื่นติดเงิน</span><span class="mono" id="receivablesNum">฿0</span></div>
+      <div class="networth-sub"><span>หนี้สินรวม</span><span class="mono" id="totalDebtsNum" style="color:var(--expense)">฿0</span></div>
       <div id="accountsList"></div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="manage-accounts-btn" id="manageAccountsBtn">จัดการบัญชี</button>
         <button class="manage-accounts-btn" id="manageReservedBtn">เงินกันไว้</button>
         <button class="manage-accounts-btn" id="manageLoansBtn">เงินให้ยืม</button>
+        <button class="manage-accounts-btn" id="manageDebtsBtn">หนี้สิน</button>
         <button class="manage-accounts-btn" id="manageRecurringBtn">ค่าใช้จ่ายประจำ</button>
         <button class="manage-accounts-btn" id="openForecastBtn">คาดการณ์กระแสเงินสด</button>
       </div>
@@ -306,12 +500,22 @@
       <button class="manage-accounts-btn" id="viewUpcomingBtn" style="width:100%; margin-top:10px;">ดูทั้งหมด</button>
     </div>
 
+    <div class="networth-card" id="aiProactiveCard" style="display:none; padding:14px 40px 14px 16px; border-width:1.5px;">
+      <button class="icon-btn" id="aiProactiveRefreshBtn" type="button" aria-label="รีเฟรชการวิเคราะห์" title="รีเฟรชการวิเคราะห์" style="position:absolute; top:8px; right:8px;">🔄</button>
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <span id="aiProactiveIcon" style="font-size:16px; line-height:1.5;">💡</span>
+        <div id="aiProactiveBody" style="font-size:13px; line-height:1.55; color:var(--ink); flex:1; min-width:0;"></div>
+      </div>
+    </div>
+
     <div class="backup-row">
       <button class="backup-link" id="exportBtn">สำรองข้อมูล</button>
       <button class="backup-link" id="importBtn">กู้คืนข้อมูล</button>
       <input type="file" id="importFile" accept=".json" style="display:none" />
+      <button class="settings-icon-btn" id="settingsBtn" type="button" title="ตั้งค่า AI" aria-label="ตั้งค่า AI">⚙️</button>
     </div>
-  </header>
+  </div>
+
 
   <div class="error-banner" id="errorBanner">บันทึกไม่สำเร็จ ลองใหม่อีกที</div>
   <div class="backup-banner" id="backupBanner">
@@ -319,6 +523,13 @@
     <span style="display:flex; gap:6px; align-items:center;">
       <button id="backupNowBtn" type="button">สำรองเลย</button>
       <button class="dismiss" id="backupDismissBtn" type="button" aria-label="ปิด">✕</button>
+    </span>
+  </div>
+  <div class="debt-bump-banner" id="debtBumpBanner">
+    <span id="debtBumpText"></span>
+    <span class="debt-bump-banner-actions">
+      <button id="debtBumpConfirmBtn" type="button">เพิ่มยอด</button>
+      <button class="dismiss" id="debtBumpDismissBtn" type="button" aria-label="ไม่ต้อง">✕</button>
     </span>
   </div>
 
@@ -400,6 +611,7 @@
 </div>
 
 <div class="page-anchor">
+  <button class="fab-ai" id="aiFabBtn" type="button" title="พิมพ์รายการด้วยภาษาพูด" aria-label="พิมพ์รายการด้วยภาษาพูด">✨</button>
   <button class="fab" id="fabBtn">+</button>
 </div>
 
@@ -419,6 +631,13 @@
     </div>
     <label class="field-label">จำนวนเงิน (บาท)</label>
     <input id="amount" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
+    <div class="quick-amount-row" id="quickAmountRow">
+      <button type="button" class="quick-amount-btn" data-add="20">+20</button>
+      <button type="button" class="quick-amount-btn" data-add="50">+50</button>
+      <button type="button" class="quick-amount-btn" data-add="100">+100</button>
+      <button type="button" class="quick-amount-btn" data-add="500">+500</button>
+      <button type="button" class="quick-amount-btn clear" id="quickAmountClear">ล้าง</button>
+    </div>
     <div id="categoryFieldGroup">
       <label class="field-label">หมวด</label>
       <div class="cat-grid" id="catGrid"></div>
@@ -437,6 +656,139 @@
     <label class="field-label">โน้ต (ไม่บังคับ)</label>
     <input id="note" type="text" placeholder="เช่น ค่าข้าวเที่ยง" autocomplete="off" />
     <button id="submitBtn">บันทึก</button>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">ตั้งค่า AI</span>
+      <button class="close-btn" id="closeSettingsBtn">✕</button>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">🔑 Gemini API Key</div>
+      <div class="ai-status-row" style="margin-top:10px;">
+        <span class="ai-status-label">Gemini API Key</span>
+        <span class="ai-status-value" id="apiKeyStatus">ยังไม่ได้ตั้งค่า</span>
+      </div>
+      <label class="field-label">วาง API Key</label>
+      <input class="text-input" id="apiKeyInput" type="password" placeholder="วาง Gemini API Key ที่นี่" autocomplete="off" />
+      <p class="ai-hint">Key จะถูกเก็บไว้ในเครื่องนี้เท่านั้น (localStorage) ไม่ถูกส่งไปรวมในไฟล์สำรองข้อมูล และไม่ถูกอัปโหลดไปที่ไหนนอกจากตอนเรียก AI</p>
+      <div class="ai-key-actions">
+        <button id="saveApiKeyBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">บันทึก</button>
+        <button class="danger-btn" id="clearApiKeyBtn" style="display:none;">ลบคีย์</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">🧠 โปรไฟล์การเงิน (สำหรับ AI)</div>
+      <div class="ai-status-row" style="margin-top:10px;">
+        <span class="ai-status-label">สถานะโปรไฟล์</span>
+        <span class="ai-status-value" id="aiProfileStatus">ยังไม่ได้ตั้งค่า</span>
+      </div>
+      <p class="ai-hint">ข้อมูลนี้ช่วยให้ AI เข้าใจเป้าหมายและข้อจำกัดของคุณ เก็บไว้ในเครื่องนี้เท่านั้นเช่นเดียวกับ API Key</p>
+      <label class="field-label">ชื่อที่อยากให้ AI เรียก</label>
+      <input class="text-input" id="aiProfileNickname" type="text" placeholder="เช่น เจ้านาย, พี่หนึ่ง" autocomplete="off" />
+      <label class="field-label">รายได้ประมาณการต่อเดือน (บาท)</label>
+      <input class="text-input" id="aiProfileIncome" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
+      <label class="field-label">เงินสำรองฉุกเฉินขั้นต่ำที่ต้องการคงไว้ (บาท)</label>
+      <input class="text-input" id="aiProfileReserve" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
+      <label class="field-label">ข้อจำกัด/นิสัยการเงิน (ไม่บังคับ)</label>
+      <textarea class="ai-textarea" id="aiProfileNotes" placeholder="เช่น กำลังพยายามลดค่ากาแฟ, ห้ามแตะเงินในบัญชีออม"></textarea>
+      <div class="ai-key-actions">
+        <button id="saveAIProfileBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">บันทึกโปรไฟล์</button>
+        <button class="danger-btn" id="clearAIProfileBtn">ลบโปรไฟล์ทั้งหมด</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">🎯 เป้าหมายทางการเงิน</div>
+      <div class="goal-list" id="aiGoalsList"></div>
+      <div class="goal-add-row">
+        <div class="goal-add-inputs">
+          <input id="aiGoalNameInput" type="text" placeholder="ชื่อเป้าหมาย" autocomplete="off" />
+          <input id="aiGoalAmountInput" type="number" inputmode="decimal" step="any" min="0" placeholder="ยอดเงิน" autocomplete="off" />
+          <input id="aiGoalDeadlineInput" type="date" autocomplete="off" />
+        </div>
+        <button id="addAiGoalBtn" type="button">+ เพิ่มเป้าหมาย</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="aiInputOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">พิมพ์รายการด้วยภาษาพูด</span>
+      <button class="close-btn" id="closeAiInputBtn">✕</button>
+    </div>
+    <textarea class="ai-textarea" id="aiInputText" placeholder="เช่น จ่ายค่าข้าวเที่ยง 60 บาท จากบัญชีกสิกร"></textarea>
+    <p class="ai-hint">พิมพ์เป็นภาษาพูดได้เลย เช่น รายรับ รายจ่าย เงินออม โอนเงินข้ามบัญชี หรือให้เพื่อนยืมเงิน</p>
+    <div class="ai-input-error" id="aiInputError"></div>
+    <button id="aiProcessBtn">ประมวลผล</button>
+  </div>
+</div>
+
+<div class="overlay" id="aiConfirmOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">ตรวจสอบรายการ</span>
+      <button class="close-btn" id="closeAiConfirmBtn">✕</button>
+    </div>
+    <div class="ai-confirm-quote" id="aiConfirmQuote"></div>
+    <div class="ai-confirm-badge-row"><span class="ai-confirm-badge" id="aiConfirmBadge"></span></div>
+
+    <label class="field-label">จำนวนเงิน (บาท)</label>
+    <input id="aiConfirmAmount" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
+
+    <div id="aiConfirmCategoryGroup">
+      <label class="field-label">หมวด</label>
+      <select class="field-select" id="aiConfirmCategory"></select>
+      <label class="field-label">บัญชี</label>
+      <select class="field-select" id="aiConfirmAccount"></select>
+    </div>
+
+    <div id="aiConfirmTransferGroup" style="display:none">
+      <label class="field-label">จากบัญชี</label>
+      <select class="field-select" id="aiConfirmFromAccount"></select>
+      <div class="transfer-arrow">↓</div>
+      <label class="field-label">ไปบัญชี</label>
+      <select class="field-select" id="aiConfirmToAccount"></select>
+    </div>
+
+    <div id="aiConfirmLendGroup" style="display:none">
+      <label class="field-label">ให้ใครยืม</label>
+      <input class="text-input" id="aiConfirmPerson" type="text" placeholder="ชื่อคนยืม" autocomplete="off" />
+      <label class="field-label">บัญชีที่หักเงิน</label>
+      <select class="field-select" id="aiConfirmLendAccount"></select>
+      <label class="field-label">วันนัดคืน (ไม่บังคับ)</label>
+      <input id="aiConfirmDueDate" type="date" autocomplete="off" />
+    </div>
+
+    <label class="field-label">วันที่</label>
+    <input id="aiConfirmDate" type="date" autocomplete="off" />
+    <label class="field-label">โน้ต (ไม่บังคับ)</label>
+    <input class="text-input" id="aiConfirmNote" type="text" autocomplete="off" />
+
+    <div class="ai-input-error" id="aiConfirmError"></div>
+
+    <div class="ai-confirm-actions">
+      <button id="aiConfirmCancelBtn">ยกเลิก</button>
+      <button id="aiConfirmSubmitBtn">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="aiAnalystOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">วิเคราะห์การเงิน</span>
+      <button class="close-btn" id="closeAiAnalystBtn">✕</button>
+    </div>
+    <div class="ai-confirm-quote" id="aiAnalystQuote"></div>
+    <div class="ai-analyst-body" id="aiAnalystBody"></div>
+    <button id="aiAnalystCloseBtn" style="width:100%; margin-top:20px; padding:15px 0; border-radius:14px; border:none; color:#fff; font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer; background:var(--accent-grad); box-shadow:0 8px 20px rgba(102,60,220,0.4);">ปิด</button>
   </div>
 </div>
 
@@ -472,6 +824,40 @@
     <p style="font-size:12.5px; color:var(--faint); margin:0 0 12px;">เงินออกจากมือแต่ยังเป็นสิทธิ์ของเรา ไม่นับเป็นรายจ่าย — เมื่อคืนก็ไม่นับเป็นรายรับ</p>
     <div id="loansManageList"></div>
     <button class="manage-accounts-btn" id="addLoanBtn" style="width:100%; margin-top:14px;">+ บันทึกเงินให้ยืม</button>
+  </div>
+</div>
+
+<div class="overlay" id="debtsOverlay">
+  <div class="sheet-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">หนี้สิน</span>
+      <button class="close-btn" id="closeDebtsBtn">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--faint); margin:0 0 12px;">หนี้ที่ยังไม่ตัดเงินสดตอนนี้ (เช่น กยศ. ที่อยู่ใน Grace Period) — ไม่กระทบคาดการณ์กระแสเงินสด แต่นับรวมอยู่ใน Net Worth</p>
+    <div id="debtsManageList"></div>
+
+    <div class="debt-action-row">
+      <label class="field-label" style="margin-top:0;">แก้ไข / บันทึกรายการหนี้</label>
+      <select class="field-select" id="debtActionSelect"></select>
+      <select class="field-select" id="debtActionType">
+        <option value="increase">เพิ่มยอด (อื่นๆ)</option>
+        <option value="repayment">บันทึกชำระคืน</option>
+        <option value="set">แก้ยอดคงค้างเป็น...</option>
+      </select>
+      <input class="text-input" id="debtActionAmount" type="number" inputmode="decimal" step="any" min="0" placeholder="จำนวนเงิน (บาท)" autocomplete="off" />
+      <input class="text-input" id="debtActionNote" type="text" placeholder="โน้ต (ไม่บังคับ)" autocomplete="off" />
+      <button id="debtActionSubmitBtn" class="manage-accounts-btn" style="width:100%;">บันทึก</button>
+    </div>
+
+    <button class="manage-accounts-btn" id="addDebtBtn" style="width:100%; margin-top:14px;">+ เพิ่มหนี้ใหม่</button>
+    <div class="debt-add-form" id="debtAddForm" style="display:none;">
+      <input class="text-input" id="debtNewName" type="text" placeholder="ชื่อหนี้ เช่น กยศ." autocomplete="off" />
+      <input class="text-input" id="debtNewAmount" type="number" inputmode="decimal" step="any" min="0" placeholder="ยอดคงค้างเริ่มต้น (บาท)" autocomplete="off" />
+      <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--faint); margin-top:2px;">
+        <input type="checkbox" id="debtNewGrace" checked /> อยู่ใน Grace Period (ยังไม่มีดอกเบี้ย/ยังไม่ต้องผ่อน)
+      </label>
+      <button id="debtNewSubmitBtn" class="manage-accounts-btn" style="width:100%; margin-top:4px;">บันทึกหนี้ใหม่</button>
+    </div>
   </div>
 </div>
 
@@ -551,7 +937,7 @@
     <input id="markPaidDate" class="text-input" type="date" autocomplete="off" />
     <label class="field-label">โน้ต (ไม่บังคับ)</label>
     <input id="markPaidNote" class="text-input" type="text" autocomplete="off" />
-    <button id="markPaidSubmitBtn" style="width:100%; margin-top:22px; padding:13px 0; border-radius:12px; border:none; color:#fff; background:var(--ink); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;">ยืนยันว่าจ่ายแล้ว</button>
+    <button id="markPaidSubmitBtn" style="width:100%; margin-top:22px; padding:14px 0; border-radius:14px; border:none; color:#fff; background:var(--accent-grad); box-shadow:0 8px 20px rgba(102,60,220,0.4); font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer;">ยืนยันว่าจ่ายแล้ว</button>
   </div>
 </div>
 
@@ -574,6 +960,17 @@ const LAST_ACC_KEY = "finance_tracker_last_account_v1";
 const RESERVED_KEY = "finance_tracker_reserved_v1";
 const LOANS_KEY = "finance_tracker_loans_v1";
 const RECURRING_KEY = "finance_tracker_recurring_v1";
+// ===== AI Layer (Milestone 1) =====
+// กฎเหล็ก: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn (บรรทัดที่ประกอบ payload สำรองข้อมูล) เด็ดขาด
+// เพราะเป็น secret เฉพาะเครื่อง ไม่ใช่ข้อมูลทางการเงินที่ควรอยู่ในไฟล์ backup ที่แชร์ได้
+const AI_APIKEY_KEY = "finance_tracker_ai_apikey_v1";
+// ===== AI Layer (Milestone 3) =====
+// กฎเหล็กเดียวกับ AI_APIKEY_KEY: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn เด็ดขาด — เป็นข้อมูลเฉพาะเครื่อง ไม่ใช่ backup การเงิน
+const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
+// Milestone 4: แคชผลวิเคราะห์ Proactive Insight — เก็บแยกจากทุกคีย์ข้างบน ห้ามรวมเข้า exportBtn backup
+const AI_PROACTIVE_KEY = "finance_tracker_ai_proactive_v1";
+// Milestone 5: หนี้สิน (เช่น กยศ.) — เก็บรวมกับ exportBtn backup ได้ตามปกติ (ไม่ใช่ secret เฉพาะเครื่อง)
+const DEBTS_KEY = "finance_tracker_debts_v1";
 const UNASSIGNED_ACCOUNT_ID = "unassigned";
 
 let entries = [];
@@ -583,6 +980,8 @@ let accounts = []; // { id, name, initialBalance }
 let lastUsedAccountId = "";
 let reservedItems = []; // { id, name, amount, dueDate, note }
 let loans = []; // { id, person, amount, date, dueDate, note, accountId, repayments:[{id,amount,date,accountId}] }
+// debt: { id, name, type, outstandingBalance, gracePeriod, note, history:[{id,type:"increase"|"adjustment"|"repayment",amount,date,note}] }
+let debts = [];
 // ===== Phase 4: Recurring Expenses + Upcoming Payments =====
 // recurringExpenses: { id, name, amount, category, accountId, frequency, nextDueDate, startDate, endDate, note, status, reservedItemId, lastPaidDate }
 // frequency: weekly | monthly | bimonthly | quarterly | yearly
@@ -615,6 +1014,9 @@ let expandedBreakdown = { income:false, expense:false, saving:false }; // แต
 let forecastRangePreset = "30"; // "7" | "30" | "60" | "90" | "custom"
 let forecastCustomDays = 30;
 let forecastTimelineExpanded = false;
+// ===== AI Layer (Milestone 3) state =====
+// สำเนาโปรไฟล์ที่กำลังแก้ไขอยู่ในหน้า Settings — sync กับ localStorage ทันทีทุกครั้งที่เพิ่ม/ลบเป้าหมาย
+let aiProfileDraft = null;
 
 function makeId(){
   if(window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -663,6 +1065,7 @@ function saveEntries(){
   try{
     const res = localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
     document.getElementById("errorBanner").style.display = "none";
+    refreshProactiveCard();
     return true;
   }catch(e){
     document.getElementById("errorBanner").style.display = "block";
@@ -735,6 +1138,60 @@ function loadLoans(){
 }
 function saveLoans(){
   try{ localStorage.setItem(LOANS_KEY, JSON.stringify(loans)); }catch(e){}
+  refreshProactiveCard();
+}
+// ===== Milestone 5: Debt Management Engine — storage =====
+function loadDebts(){
+  try{
+    const raw = localStorage.getItem(DEBTS_KEY);
+    debts = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(debts)) debts = [];
+  }catch(e){ debts = []; }
+  debts.forEach(d => { if(!Array.isArray(d.history)) d.history = []; });
+}
+function saveDebts(){
+  try{ localStorage.setItem(DEBTS_KEY, JSON.stringify(debts)); }catch(e){}
+  refreshProactiveCard();
+}
+function getTotalDebts(){
+  return debts.reduce((s,d) => s + toCents(d.outstandingBalance), 0) / 100;
+}
+function debtHistoryLabel(type){
+  return { increase:"เพิ่มยอด", adjustment:"แก้ยอด", repayment:"ชำระคืน" }[type] || type;
+}
+// เพิ่ม/ลดยอดหนี้แบบ relative (ใช้กับปุ่มลัดเพิ่มยอด และบันทึกชำระคืน) — บันทึก history เสมอ
+function addDebtHistory(debtId, type, amount, note, date){
+  const d = debts.find(x => x.id === debtId);
+  if(!d) return false;
+  const amt = Math.round(parseFloat(amount) * 100) / 100;
+  if(!amt || amt <= 0) return false;
+  const signedCents = (type === "repayment") ? -toCents(amt) : toCents(amt);
+  d.outstandingBalance = Math.max(0, toCents(d.outstandingBalance) + signedCents) / 100;
+  d.history.unshift({ id: makeId(), type, amount: amt, date: date || todayISO(), note: (note || "").trim() });
+  saveDebts();
+  return true;
+}
+// แก้ยอดคงค้างตรงๆ (ไม่ใช่ relative) — ใช้ตอนแก้ยอดให้ตรงกับความเป็นจริง เช่น หลังเช็คสมุด กยศ.
+function setDebtBalance(debtId, newBalance, note){
+  const d = debts.find(x => x.id === debtId);
+  if(!d) return false;
+  const nb = Math.round(parseFloat(newBalance) * 100) / 100;
+  if(isNaN(nb) || nb < 0) return false;
+  const diff = Math.round((toCents(nb) - toCents(d.outstandingBalance))) / 100;
+  d.outstandingBalance = nb;
+  d.history.unshift({ id: makeId(), type:"adjustment", amount: diff, date: todayISO(), note: (note || "แก้ยอดคงค้างด้วยตนเอง").trim() });
+  saveDebts();
+  return true;
+}
+// สร้างหนี้ กยศ. เริ่มต้นให้อัตโนมัติครั้งแรกที่เปิดใช้งาน ตามยอดจริงของผู้ใช้ตอนเริ่ม Milestone 5 — ทำครั้งเดียวถ้ายังไม่เคยมีข้อมูลหนี้เลย
+function ensureDefaultDebts(){
+  if(debts.length) return;
+  debts.push({
+    id: makeId(), name: "กยศ.", type: "student_loan",
+    outstandingBalance: 121600, gracePeriod: true, note: "",
+    history: [{ id: makeId(), type:"adjustment", amount:121600, date: todayISO(), note:"ยอดเริ่มต้นตอนเปิดใช้งาน Debt Management" }]
+  });
+  saveDebts();
 }
 function loadRecurring(){
   try{
@@ -1440,6 +1897,7 @@ function renderAccountsSummary(){
   document.getElementById("reservedNum").textContent = "฿" + fmt(reserved);
   document.getElementById("availableNum").textContent = "฿" + fmt(total - reserved);
   document.getElementById("receivablesNum").textContent = "฿" + fmt(getTotalReceivablesOutstanding());
+  document.getElementById("totalDebtsNum").textContent = "฿" + fmt(getTotalDebts());
   const listEl = document.getElementById("accountsList");
   listEl.innerHTML = accounts.map(a => `
     <div class="account-row"><span class="acc-name">${escapeHtml(a.name)}</span><span class="mono">฿${fmt(computeAccountBalance(a.id))}</span></div>
@@ -1459,9 +1917,11 @@ function render(){
   const totals = getTotals();
   document.getElementById("balanceNum").textContent = (totals.balance<0?"-":"") + "฿" + fmt(Math.abs(totals.balance));
   document.getElementById("balanceNum").style.color = totals.balance<0 ? "var(--expense)" : "var(--ink)";
-  const netWorth = totals.income - totals.expense; // เงินออมยังเป็นของเรา จึงไม่ถูกหักออกจากมูลค่าสุทธิ
+  // มูลค่าสุทธิที่แท้จริง = เงินรวมทุกบัญชี (นับรวมเงินออม/เงินลงทุนที่อยู่ในบัญชีอยู่แล้ว) + เงินที่คนอื่นติดค้างเรา − หนี้สินรวม (Milestone 5)
+  // ไม่ใช่รายรับลบรายจ่ายของเดือนนี้ ซึ่งเป็นคนละความหมายกัน (นั่นคือกระแสเงินสดของเดือน ไม่ใช่มูลค่าสุทธิสะสม)
+  const netWorth = getTotalMoneyAllAccounts() + getTotalReceivablesOutstanding() - getTotalDebts();
   document.getElementById("netWorthNum").textContent =
-    "มูลค่าสุทธิ (รวมเงินออม): " + (netWorth<0?"-":"") + "฿" + fmt(Math.abs(netWorth));
+    "มูลค่าสุทธิรวม (ทุกบัญชี + เงินให้ยืม − หนี้สิน): " + (netWorth<0?"-":"") + "฿" + fmt(Math.abs(netWorth));
   document.getElementById("pillIncome").textContent = "฿"+fmt(totals.income);
   document.getElementById("pillExpense").textContent = "฿"+fmt(totals.expense);
   document.getElementById("pillSaving").textContent = "฿"+fmt(totals.saving);
@@ -1519,31 +1979,33 @@ function render(){
           const toName = accounts.find(a=>a.id===e.toAccountId)?.name || "บัญชีที่ถูกลบ";
           return `<li class="list-item" data-id="${e.id}">
             <div class="list-item-left">
-              <span class="list-date">${dayLabel(e.date)}</span>
+              <span class="list-icon" style="background:var(--transfer-soft);color:var(--transfer)">⇄</span>
               <div>
                 <div class="list-cat transfer-label">โอน: ${escapeHtml(fromName)} → ${escapeHtml(toName)}</div>
-                ${e.note ? `<div class="list-note">${escapeHtml(e.note)}</div>` : ""}
+                <div class="list-note">${dayLabel(e.date)}${e.note ? " · "+escapeHtml(e.note) : ""}</div>
               </div>
             </div>
             <div class="list-item-right">
-              <span class="mono" style="font-weight:600;color:var(--transfer)">฿${fmt(e.amount)}</span>
+              <span class="mono" style="font-weight:700;color:var(--transfer)">฿${fmt(e.amount)}</span>
               <button class="icon-btn edit-btn" data-id="${e.id}" aria-label="แก้ไข">✏️</button>
               <button class="icon-btn delete-btn" data-id="${e.id}" aria-label="ลบ">🗑</button>
             </div>
           </li>`;
         }
         const color = e.type==="income" ? "var(--income)" : e.type==="saving" ? "var(--saving)" : "var(--expense)";
+        const soft = e.type==="income" ? "var(--income-soft)" : e.type==="saving" ? "var(--saving-soft)" : "var(--expense-soft)";
         const sign = e.type==="income" ? "+" : e.type==="saving" ? "→" : "−";
+        const glyph = e.type==="income" ? "↑" : e.type==="saving" ? "◆" : "↓";
         return `<li class="list-item" data-id="${e.id}">
           <div class="list-item-left">
-            <span class="list-date">${dayLabel(e.date)}</span>
+            <span class="list-icon" style="background:${soft};color:${color}">${e.recurringId ? "🔁" : glyph}</span>
             <div>
-              <div class="list-cat">${e.recurringId ? "🔁 " : ""}${escapeHtml(e.category)}</div>
-              ${e.note ? `<div class="list-note">${escapeHtml(e.note)}</div>` : ""}
+              <div class="list-cat">${escapeHtml(e.category)}</div>
+              <div class="list-note">${dayLabel(e.date)}${e.note ? " · "+escapeHtml(e.note) : ""}</div>
             </div>
           </div>
           <div class="list-item-right">
-            <span class="mono" style="font-weight:600;color:${color}">${sign}฿${fmt(e.amount)}</span>
+            <span class="mono" style="font-weight:700;color:${color}">${sign}฿${fmt(e.amount)}</span>
             <button class="icon-btn edit-btn" data-id="${e.id}" aria-label="แก้ไข">✏️</button>
             <button class="icon-btn delete-btn" data-id="${e.id}" aria-label="ลบ">🗑</button>
           </div>
@@ -1721,6 +2183,22 @@ document.getElementById("amount").addEventListener("input", () => {
   const v = parseFloat(document.getElementById("amount").value);
   document.getElementById("submitBtn").disabled = !v || v<=0;
 });
+document.querySelectorAll(".quick-amount-btn[data-add]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const amountInput = document.getElementById("amount");
+    const current = parseFloat(amountInput.value) || 0;
+    const add = parseFloat(btn.dataset.add) || 0;
+    // รวมด้วยหน่วยสตางค์ก่อนหารกลับ กันปัญหา floating point เพี้ยนสะสม
+    amountInput.value = (toCents(current) + toCents(add)) / 100;
+    amountInput.dispatchEvent(new Event("input"));
+  });
+});
+document.getElementById("quickAmountClear").addEventListener("click", () => {
+  const amountInput = document.getElementById("amount");
+  amountInput.value = "";
+  amountInput.dispatchEvent(new Event("input"));
+  amountInput.focus();
+});
 document.getElementById("monthSelect").addEventListener("change", (e) => {
   selectedMonth = e.target.value;
   render();
@@ -1729,46 +2207,93 @@ document.getElementById("typeFilter").addEventListener("change", (e) => {
   typeFilter = e.target.value;
   render();
 });
-document.getElementById("submitBtn").addEventListener("click", () => {
-  let amount = parseFloat(document.getElementById("amount").value);
-  if(!amount || amount<=0) return;
+// ===== AI Layer integration point: pure data-in commit function =====
+// รับ payload ตรงๆ ไม่พึ่ง DOM เพื่อให้ทั้ง UI ฟอร์มเดิม และ AI Confirmation Sheet
+// เรียกจุดเดียวกันได้ ผลลัพธ์และ side-effect เหมือนโค้ดเดิมทุกประการ
+// payload: { type, category, accountId, fromAccountId, toAccountId, amount, date, note, editingId }
+// return: { ok:true, entry } | { ok:false, error }
+function commitEntry(payload){
+  let amount = parseFloat(payload.amount);
+  if(!amount || amount<=0) return { ok:false, error:"invalid_amount" };
   amount = Math.round(amount * 100) / 100; // ตัดเศษทศนิยมเกิน 2 ตำแหน่ง กันสตางค์เพี้ยนจาก floating point
-  const date = document.getElementById("date").value || todayISO();
-  const note = document.getElementById("note").value.trim();
+  const date = payload.date || todayISO();
+  const note = (payload.note || "").trim();
+  const editingId = payload.editingId || null;
+  const type = payload.type;
 
-  if(formType === "transfer"){
-    const fromAccountId = document.getElementById("fromAccount").value;
-    const toAccountId = document.getElementById("toAccount").value;
+  if(type === "transfer"){
+    const fromAccountId = payload.fromAccountId;
+    const toAccountId = payload.toAccountId;
     if(!fromAccountId || !toAccountId || fromAccountId === toAccountId){
-      showToast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");
-      return;
+      return { ok:false, error:"invalid_transfer_accounts" };
     }
+    let entry;
     if(editingId){
       const idx = entries.findIndex(e => e.id === editingId);
-      if(idx !== -1){
-        entries[idx] = { ...entries[idx], type: "transfer", category: undefined, fromAccountId, toAccountId, amount, date, note };
-      }
+      if(idx === -1) return { ok:false, error:"entry_not_found" };
+      entries[idx] = { ...entries[idx], type: "transfer", category: undefined, fromAccountId, toAccountId, amount, date, note };
+      entry = entries[idx];
     }else{
-      entries.unshift({ id: makeId(), type: "transfer", fromAccountId, toAccountId, amount, date, note });
+      entry = { id: makeId(), type: "transfer", fromAccountId, toAccountId, amount, date, note };
+      entries.unshift(entry);
     }
+    saveEntries();
+    return { ok:true, entry };
   }else{
-    const accountId = document.getElementById("entryAccount").value || UNASSIGNED_ACCOUNT_ID;
+    const accountId = payload.accountId || UNASSIGNED_ACCOUNT_ID;
+    const category = payload.category;
+    let entry;
     if(editingId){
       const idx = entries.findIndex(e => e.id === editingId);
-      if(idx !== -1){
-        entries[idx] = { ...entries[idx], type: formType, category: selectedCategory, accountId, amount, date, note };
-      }
+      if(idx === -1) return { ok:false, error:"entry_not_found" };
+      entries[idx] = { ...entries[idx], type, category, accountId, amount, date, note };
+      entry = entries[idx];
     }else{
-      entries.unshift({ id: makeId(), type: formType, category: selectedCategory, accountId, amount, date, note });
+      entry = { id: makeId(), type, category, accountId, amount, date, note };
+      entries.unshift(entry);
     }
-    lastUsedCat[formType] = selectedCategory;
+    lastUsedCat[type] = category;
     saveLastCat();
     lastUsedAccountId = accountId;
     saveLastAccount();
+    saveEntries();
+    // Milestone 5: รายรับหมวด "กยศ." รายการใหม่ (ไม่ใช่การแก้ไข) — เสนอปุ่มลัดเพิ่มยอดหนี้ให้ทันที ไม่บังคับอัตโนมัติ
+    if(!editingId && type === "income" && category === "กยศ." && debts.length){
+      const targetDebt = debts.find(d => d.type === "student_loan") || debts[0];
+      showDebtBumpBanner(targetDebt, amount);
+    }
+    return { ok:true, entry };
   }
-  saveEntries();
+}
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  const amountRaw = document.getElementById("amount").value;
+  const date = document.getElementById("date").value || todayISO();
+  const note = document.getElementById("note").value;
+
+  const payload = formType === "transfer"
+    ? {
+        type: "transfer",
+        fromAccountId: document.getElementById("fromAccount").value,
+        toAccountId: document.getElementById("toAccount").value,
+        amount: amountRaw, date, note, editingId
+      }
+    : {
+        type: formType,
+        category: selectedCategory,
+        accountId: document.getElementById("entryAccount").value,
+        amount: amountRaw, date, note, editingId
+      };
+
+  const result = commitEntry(payload);
+  if(!result.ok){
+    if(result.error === "invalid_transfer_accounts") showToast("เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน");
+    // invalid_amount: เดิมไม่มี toast (ปุ่มถูก disable อยู่แล้วเมื่อจำนวนเงินไม่ถูกต้อง) — คงพฤติกรรมเดิม
+    return;
+  }
+
   closeForm();
-  selectedMonth = monthKey(date);
+  selectedMonth = monthKey(result.entry.date);
   render();
 });
 
@@ -1785,7 +2310,7 @@ document.getElementById("backupDismissBtn").addEventListener("click", () => {
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, exportedAt: todayISO() };
+  const payload = { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, debts, exportedAt: todayISO() };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1845,6 +2370,12 @@ document.getElementById("importFile").addEventListener("change", (e) => {
         data.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
         saveRecurring();
       }
+      // Backup เก่าที่ไม่มี debts เลย (ก่อน Milestone 5) ให้ถือเป็น [] โดยไม่ทำให้ restore พัง
+      if(Array.isArray(data.debts)){
+        const existingDebtIds = new Set(debts.map(d => d.id));
+        data.debts.forEach(d => { if(d && d.id && !existingDebtIds.has(d.id)){ if(!Array.isArray(d.history)) d.history=[]; debts.push(d); } });
+        saveDebts();
+      }
       saveEntries();
       render();
       showToast("กู้คืนข้อมูลสำเร็จ");
@@ -1856,6 +2387,999 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   reader.readAsText(file);
 });
 
+// ===== AI Layer (Milestone 1): Settings panel — API Key =====
+function refreshApiKeyStatus(){
+  const has = !!localStorage.getItem(AI_APIKEY_KEY);
+  const statusEl = document.getElementById("apiKeyStatus");
+  statusEl.textContent = has ? "ตั้งค่าแล้ว ✓" : "ยังไม่ได้ตั้งค่า";
+  statusEl.style.color = has ? "var(--income)" : "var(--faint)";
+  document.getElementById("clearApiKeyBtn").style.display = has ? "block" : "none";
+}
+document.getElementById("settingsBtn").addEventListener("click", () => {
+  document.getElementById("apiKeyInput").value = "";
+  refreshApiKeyStatus();
+  aiProfileDraft = loadAIProfile() || { nickname:"", monthlyIncomeEstimate:null, minReserveTarget:null, financialGoals:[], notes:"" };
+  renderAIProfileForm();
+  document.getElementById("settingsOverlay").classList.add("open");
+});
+document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+  document.getElementById("settingsOverlay").classList.remove("open");
+});
+document.getElementById("settingsOverlay").addEventListener("click", () => {
+  document.getElementById("settingsOverlay").classList.remove("open");
+});
+document.getElementById("saveApiKeyBtn").addEventListener("click", () => {
+  const val = document.getElementById("apiKeyInput").value.trim();
+  if(!val){ showToast("กรอก API Key ก่อน"); return; }
+  // สำคัญ: เก็บเฉพาะคีย์นี้ ห้ามนำไปรวมกับ payload ของ exportBtn เด็ดขาด (ดูคอมเมนต์ตรง const ด้านบน)
+  localStorage.setItem(AI_APIKEY_KEY, val);
+  document.getElementById("apiKeyInput").value = "";
+  refreshApiKeyStatus();
+  showToast("บันทึก API Key แล้ว");
+});
+document.getElementById("clearApiKeyBtn").addEventListener("click", () => {
+  localStorage.removeItem(AI_APIKEY_KEY);
+  refreshApiKeyStatus();
+  showToast("ลบ API Key แล้ว");
+});
+
+// ===== AI Layer (Milestone 3): Profile / Memory — storage helpers =====
+// คืน null ถ้าผู้ใช้ยังไม่เคยตั้งค่าอะไรเลย (แยกจากกรณีตั้งค่าแล้วแต่ทุกฟิลด์ว่าง) — สำคัญสำหรับ analyzeFinancialQuery()
+function loadAIProfile(){
+  try{
+    const raw = localStorage.getItem(AI_PROFILE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    return {
+      nickname: parsed.nickname || "",
+      monthlyIncomeEstimate: (typeof parsed.monthlyIncomeEstimate === "number" && !isNaN(parsed.monthlyIncomeEstimate)) ? parsed.monthlyIncomeEstimate : null,
+      minReserveTarget: (typeof parsed.minReserveTarget === "number" && !isNaN(parsed.minReserveTarget)) ? parsed.minReserveTarget : null,
+      financialGoals: Array.isArray(parsed.financialGoals) ? parsed.financialGoals : [],
+      notes: parsed.notes || "",
+    };
+  }catch(e){ return null; }
+}
+function saveAIProfile(profile){
+  try{ localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(profile)); return true; }catch(e){ return false; }
+}
+function hasAIProfileContent(p){
+  if(!p) return false;
+  return !!(p.nickname || p.monthlyIncomeEstimate!=null || p.minReserveTarget!=null || p.notes || (p.financialGoals && p.financialGoals.length));
+}
+function refreshAIProfileStatus(){
+  const has = !!localStorage.getItem(AI_PROFILE_KEY);
+  const statusEl = document.getElementById("aiProfileStatus");
+  statusEl.textContent = has ? "ตั้งค่าแล้ว ✓" : "ยังไม่ได้ตั้งค่า";
+  statusEl.style.color = has ? "var(--income)" : "var(--faint)";
+}
+
+// ===== AI Layer (Milestone 3): Profile / Memory — form rendering =====
+function renderAIProfileForm(){
+  refreshAIProfileStatus();
+  document.getElementById("aiProfileNickname").value = aiProfileDraft.nickname || "";
+  document.getElementById("aiProfileIncome").value = aiProfileDraft.monthlyIncomeEstimate!=null ? aiProfileDraft.monthlyIncomeEstimate : "";
+  document.getElementById("aiProfileReserve").value = aiProfileDraft.minReserveTarget!=null ? aiProfileDraft.minReserveTarget : "";
+  document.getElementById("aiProfileNotes").value = aiProfileDraft.notes || "";
+  renderAIGoalsList();
+}
+function renderAIGoalsList(){
+  const el = document.getElementById("aiGoalsList");
+  const goals = aiProfileDraft.financialGoals || [];
+  if(!goals.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีเป้าหมาย</div>`;
+    return;
+  }
+  el.innerHTML = goals.map(g => `
+    <div class="goal-row">
+      <div class="goal-row-info">
+        <span class="goal-row-name">${escapeHtml(g.name)}</span>
+        <span class="goal-row-meta mono">฿${fmt(g.targetAmount)}${g.deadline ? ` · ครบกำหนด ${dayLabel(g.deadline)}` : ""}</span>
+      </div>
+      <button class="icon-btn delete-ai-goal-btn" data-id="${g.id}" aria-label="ลบเป้าหมาย">🗑</button>
+    </div>
+  `).join("");
+  el.querySelectorAll(".delete-ai-goal-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      aiProfileDraft.financialGoals = (aiProfileDraft.financialGoals || []).filter(g => g.id !== btn.dataset.id);
+      saveAIProfile(aiProfileDraft);
+      refreshAIProfileStatus();
+      renderAIGoalsList();
+      showToast("ลบเป้าหมายแล้ว");
+    });
+  });
+}
+// เพิ่มเป้าหมายจากฟอร์มแนวนอนแล้วบันทึกทันที — ห้ามใช้ window.prompt() ตามข้อกำหนด
+document.getElementById("addAiGoalBtn").addEventListener("click", () => {
+  const nameEl = document.getElementById("aiGoalNameInput");
+  const amountEl = document.getElementById("aiGoalAmountInput");
+  const deadlineEl = document.getElementById("aiGoalDeadlineInput");
+  const name = nameEl.value.trim();
+  const amount = parseFloat(amountEl.value);
+  const deadline = deadlineEl.value ? deadlineEl.value.trim() : null;
+  if(!name){ showToast("กรอกชื่อเป้าหมายก่อน"); return; }
+  if(!amount || amount <= 0){ showToast("กรอกยอดเงินให้ถูกต้อง"); return; }
+
+  // เก็บตกบั๊ก Milestone 3: ดึงค่าจาก input อื่นๆ (nickname/income/reserve/notes) มารวมบันทึกด้วยเสมอ
+  // ป้องกันข้อมูลที่พิมพ์ค้างไว้ในฟอร์มหลุดหายตอนกด "+ เพิ่มเป้าหมาย" โดยยังไม่ได้กด "บันทึกโปรไฟล์"
+  const nicknameVal = document.getElementById("aiProfileNickname").value.trim();
+  const incomeVal = parseFloat(document.getElementById("aiProfileIncome").value);
+  const reserveVal = parseFloat(document.getElementById("aiProfileReserve").value);
+  const notesVal = document.getElementById("aiProfileNotes").value.trim();
+  aiProfileDraft.nickname = nicknameVal;
+  aiProfileDraft.monthlyIncomeEstimate = (!isNaN(incomeVal) && incomeVal >= 0) ? incomeVal : null;
+  aiProfileDraft.minReserveTarget = (!isNaN(reserveVal) && reserveVal >= 0) ? reserveVal : null;
+  aiProfileDraft.notes = notesVal;
+
+  aiProfileDraft.financialGoals = aiProfileDraft.financialGoals || [];
+  aiProfileDraft.financialGoals.push({ id: makeId(), name, targetAmount: amount, deadline: deadline || null });
+  saveAIProfile(aiProfileDraft);
+  refreshAIProfileStatus();
+
+  nameEl.value = ""; amountEl.value = ""; deadlineEl.value = "";
+  renderAIGoalsList();
+  showToast("เพิ่มเป้าหมายแล้ว");
+  refreshProactiveCard(true);
+});
+document.getElementById("saveAIProfileBtn").addEventListener("click", () => {
+  const nickname = document.getElementById("aiProfileNickname").value.trim();
+  const incomeVal = parseFloat(document.getElementById("aiProfileIncome").value);
+  const reserveVal = parseFloat(document.getElementById("aiProfileReserve").value);
+
+  aiProfileDraft.nickname = nickname;
+  aiProfileDraft.monthlyIncomeEstimate = (!isNaN(incomeVal) && incomeVal >= 0) ? incomeVal : null;
+  aiProfileDraft.minReserveTarget = (!isNaN(reserveVal) && reserveVal >= 0) ? reserveVal : null;
+  aiProfileDraft.notes = document.getElementById("aiProfileNotes").value.trim();
+  aiProfileDraft.financialGoals = aiProfileDraft.financialGoals || [];
+
+  saveAIProfile(aiProfileDraft);
+  refreshAIProfileStatus();
+  showToast("บันทึกโปรไฟล์แล้ว");
+  refreshProactiveCard(true);
+});
+document.getElementById("clearAIProfileBtn").addEventListener("click", () => {
+  if(!confirm("ลบโปรไฟล์การเงินทั้งหมด (รวมเป้าหมายทุกรายการ) ใช่ไหม?")) return;
+  localStorage.removeItem(AI_PROFILE_KEY);
+  aiProfileDraft = { nickname:"", monthlyIncomeEstimate:null, minReserveTarget:null, financialGoals:[], notes:"" };
+  renderAIProfileForm();
+  showToast("ลบโปรไฟล์แล้ว");
+  refreshProactiveCard(true);
+});
+
+// ===== AI Layer (Milestone 1): Context builder =====
+// ส่งเฉพาะ enum/id ที่จำเป็นต่อการตัดสินใจของ AI (บัญชี, หมวดหมู่, ค่าที่ใช้ล่าสุด, วันนี้)
+// ไม่ส่ง entries/transactions ย้อนหลังเพื่อความเร็วและประหยัด token
+function buildAIContext(){
+  return {
+    today: todayISO(),
+    accounts: accounts.map(a => ({ id: a.id, name: a.name })),
+    categories: CATS_BY_TYPE,
+    lastUsedAccountId: lastUsedAccountId || null,
+    lastUsedCat: lastUsedCat
+  };
+}
+
+function buildAISystemPrompt(context){
+  return [
+    "คุณคือตัวแปลงข้อความภาษาไทย (ภาษาพูดก็ได้) ให้เป็นข้อมูลธุรกรรมการเงินแบบมีโครงสร้าง สำหรับแอป Banchee",
+    "ตอบกลับเป็น JSON ล้วนตาม schema ที่กำหนดเท่านั้น ห้ามมีข้อความอื่นนอก JSON",
+    "",
+    "Context ปัจจุบันของผู้ใช้:",
+    JSON.stringify(context),
+    "",
+    "กติกาการแปล:",
+    '- action มีได้แค่ 5 ค่า: "expense" (รายจ่าย), "income" (รายรับ), "saving" (เงินออม/ลงทุน), "transfer" (โอนเงินข้ามบัญชี), "lend" (ให้ยืมเงิน)',
+    "- amount ต้องเป็นตัวเลขบวกเสมอ ถ้าข้อความไม่มีจำนวนเงินที่ชัดเจน ให้เดาที่ใกล้เคียงที่สุดไม่ได้ ให้ใส่ 0 และเพิ่ม \"amount\" เข้าไปใน ambiguousFields",
+    "- date: ถ้าไม่ได้ระบุ ให้เป็น null (ระบบจะใช้วันนี้เอง) ถ้าระบุเป็นคำ เช่น เมื่อวาน/พรุ่งนี้ ให้คำนวณจาก today ใน context แล้วตอบเป็น YYYY-MM-DD",
+    "- category: ต้องเลือกจากรายการใน categories[action] เท่านั้น (เฉพาะ expense/income/saving) ถ้าข้อความไม่ตรงกับหมวดไหนชัดเจน ให้เดาหมวดที่ใกล้เคียงที่สุด และเพิ่ม \"category\" เข้า ambiguousFields",
+    "- accountId: ต้องเป็น id จาก accounts ใน context เท่านั้น ถ้าผู้ใช้ไม่ได้ระบุบัญชี ให้ใช้ lastUsedAccountId เป็นค่าเริ่มต้น (ถ้ามี) และเพิ่ม \"accountId\" เข้า ambiguousFields เสมอเมื่อเป็นการเดา ไม่ใช่ระบุตรงๆ",
+    "- fromAccountId/toAccountId: ใช้เฉพาะ action=transfer ต้องเป็น id จาก accounts และห้ามเหมือนกัน ถ้าเดาไม่ได้ให้เป็น null และเพิ่มใน ambiguousFields",
+    "- person: ใช้เฉพาะ action=lend คือชื่อคนที่ให้ยืม",
+    "- dueDate: ใช้เฉพาะ action=lend ถ้าไม่ได้ระบุให้เป็น null",
+    "- lend บังคับต้องมี accountId เสมอ (เงินให้ยืมต้องตัดออกจากบัญชีจริง) ถ้าเดาบัญชีไม่ได้เลย ให้ใช้ lastUsedAccountId และเพิ่ม \"accountId\" เข้า ambiguousFields",
+    "- confidence: \"high\" ถ้าทุกฟิลด์ที่จำเป็นระบุชัดเจนในข้อความหรือเดาได้อย่างมั่นใจ, \"needs_confirmation\" ถ้ามีฟิลด์ใดๆ ใน ambiguousFields",
+    "- ambiguousFields: array ของชื่อฟิลด์ (string) ที่เป็นการเดา/fallback ไม่ใช่สิ่งที่ผู้ใช้ระบุตรงๆ ถ้าไม่มีให้เป็น array ว่าง",
+    "- note: สรุปสั้นๆ จากข้อความต้นฉบับ (ถ้ามีรายละเอียดเพิ่มเติมนอกเหนือจากฟิลด์อื่น)"
+  ].join("\n");
+}
+
+// ===== AI Layer (Milestone 1): Gemini call =====
+const AI_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    action: { type: "STRING", enum: ["expense","income","saving","transfer","lend"] },
+    amount: { type: "NUMBER" },
+    date: { type: "STRING", nullable: true },
+    note: { type: "STRING" },
+    category: { type: "STRING", nullable: true },
+    accountId: { type: "STRING", nullable: true },
+    fromAccountId: { type: "STRING", nullable: true },
+    toAccountId: { type: "STRING", nullable: true },
+    person: { type: "STRING", nullable: true },
+    dueDate: { type: "STRING", nullable: true },
+    confidence: { type: "STRING", enum: ["high","needs_confirmation"] },
+    ambiguousFields: { type: "ARRAY", items: { type: "STRING" } }
+  },
+  required: ["action","amount","note","confidence","ambiguousFields"]
+};
+
+// รับข้อความภาษาคน คืน { ok:true, payload } ตาม schema ในข้อ 2 ของแผน หรือ { ok:false, error }
+async function parseNaturalLanguageEntry(text){
+  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
+  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(!text || !text.trim()) return { ok:false, error:"empty_input" };
+
+  const context = buildAIContext();
+  const systemPrompt = buildAISystemPrompt(context);
+
+  let res;
+  try{
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: text.trim() }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            response_mime_type: "application/json",
+            response_schema: AI_RESPONSE_SCHEMA
+          }
+        })
+      }
+    );
+  }catch(e){
+    return { ok:false, error:"network_error" };
+  }
+
+  if(!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0,300); }catch(e){}
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+  }
+
+  let data;
+  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!raw) return { ok:false, error:"empty_response" };
+
+  let payload;
+  try{ payload = JSON.parse(raw); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  return { ok:true, payload };
+}
+
+// ===== AI Layer (Milestone 2): Dual-Intent Router =====
+const INTENT_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    intent: { type: "STRING", enum: ["transaction","query"] }
+  },
+  required: ["intent"]
+};
+
+// ตรวจว่าข้อความของผู้ใช้เป็น "transaction" (ต้องการบันทึกรายการ) หรือ "query" (คำถาม/ขอวิเคราะห์)
+// ด่านแรกก่อนเข้า flow ใดๆ — คืน { ok:true, intent } หรือ { ok:false, error } รูปแบบเดียวกับ parseNaturalLanguageEntry
+async function classifyIntent(text){
+  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
+  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(!text || !text.trim()) return { ok:false, error:"empty_input" };
+
+  const systemPrompt = [
+    "คุณคือตัวจัดประเภทข้อความสำหรับแอปการเงินส่วนตัว Banchee",
+    "หน้าที่ของคุณคือดูข้อความที่ผู้ใช้พิมพ์ แล้วตัดสินว่าเป็นประเภทไหนใน 2 แบบนี้เท่านั้น:",
+    '- "transaction": ข้อความที่มีเจตนา "บันทึก" ธุรกรรมการเงินใหม่ มีกริยาบันทึก เช่น จ่าย/ได้เงิน/โอน/ให้ยืม/ออมเงิน และ/หรือมีจำนวนเงินที่ต้องการบันทึกเป็นรายการใหม่ชัดเจน',
+    '- "query": ข้อความที่เป็นคำถาม ขอให้วิเคราะห์ หรือสงสัยเกี่ยวกับสถานะการเงิน เช่น ถามยอดเงินคงเหลือ ถามว่าเดือนนี้ใช้จ่ายไปเท่าไหร่ เทียบเดือนที่แล้วเป็นยังไง จะมีเงินพอจ่ายไหม ไม่ใช่การขอให้บันทึกรายการใหม่',
+    "ถ้าข้อความกำกวมมีทั้งสองอย่างปนกัน ให้เลือกตามเจตนาหลักที่เด่นที่สุดของข้อความ",
+    "ตอบกลับเป็น JSON ล้วนตาม schema ที่กำหนดเท่านั้น ห้ามมีข้อความอื่นนอก JSON"
+  ].join("\n");
+
+  let res;
+  try{
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: text.trim() }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            response_mime_type: "application/json",
+            response_schema: INTENT_RESPONSE_SCHEMA
+          }
+        })
+      }
+    );
+  }catch(e){
+    return { ok:false, error:"network_error" };
+  }
+
+  if(!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0,300); }catch(e){}
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+  }
+
+  let data;
+  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!raw) return { ok:false, error:"empty_response" };
+
+  let payload;
+  try{ payload = JSON.parse(raw); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  // fallback ที่ปลอดภัย: ถ้า AI ตอบค่าแปลกๆ นอก enum ให้ถือเป็น transaction (flow เดิมที่มี validation ของตัวเองอยู่แล้ว)
+  const intent = (payload && payload.intent === "query") ? "query" : "transaction";
+  return { ok:true, intent };
+}
+
+// ===== AI Layer (Milestone 2): Deterministic Financial Snapshot =====
+// ฟังก์ชัน Pure — ไม่แตะ DOM/localStorage ใดๆ คำนวณจากข้อมูลปัจจุบันแล้วคืนตัวเลขที่ผ่านการคำนวณแล้วเท่านั้น
+// ห้ามส่ง raw entries ทั้งหมดให้ AI — ส่งเฉพาะ Snapshot นี้
+// หมายเหตุ: เรียก computePeriodAnalysisForRange() ตรงๆ กำหนดช่วงวันเองจาก monthBoundsISO() แทนการเรียก
+// computePeriodAnalysis()/getTotals() ที่ผูกกับ Global State (analysisPreset/selectedMonth) เพื่อกันปัญหา
+// Snapshot ไปติดอยู่กับตัวกรองที่ผู้ใช้เผลอตั้งไว้บนหน้าจอ
+function buildFinancialSnapshot(){
+  const today = todayISO();
+  const now = new Date();
+
+  const thisMonthBounds = monthBoundsISO(now.getFullYear(), now.getMonth());
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthBounds = monthBoundsISO(lastMonthDate.getFullYear(), lastMonthDate.getMonth());
+
+  const thisMonthAnalysis = computePeriodAnalysisForRange(thisMonthBounds.start, thisMonthBounds.end, null);
+  const lastMonthAnalysis = computePeriodAnalysisForRange(lastMonthBounds.start, lastMonthBounds.end, null);
+
+  const top5 = (analysis) => analysis.breakdown.slice(0, 5).map(r => ({ category: r.cat, amount: r.amount, pct: r.pct }));
+
+  const totalMoney = getTotalMoneyAllAccounts();
+  const reserved = getTotalReserved();
+  const receivables = getTotalReceivablesOutstanding();
+
+  // จำนวนวันที่เหลือจริงถึงสิ้นเดือน (รวมวันนี้) — ถ้าวันนี้เลยสิ้นเดือนไปแล้ว (ไม่ควรเกิดขึ้น) กันขั้นต่ำไว้ที่ 1 วัน
+  const daysRemainingInMonth = Math.max(1, daysBetweenInclusive(today, thisMonthBounds.end));
+  const forecastToMonthEnd = computeForecast(daysRemainingInMonth);
+  const forecast30d = computeForecast(30);
+
+  return {
+    generatedAt: today,
+    netWorth: {
+      totalMoneyAllAccounts: totalMoney,
+      reserved: reserved,
+      available: totalMoney - reserved,
+      receivablesOutstanding: receivables,
+    },
+    thisMonth: {
+      range: thisMonthBounds,
+      income: thisMonthAnalysis.income,
+      expense: thisMonthAnalysis.expense,
+      saving: thisMonthAnalysis.saving,
+      netCashFlow: thisMonthAnalysis.netCashFlow,
+      transactionCount: thisMonthAnalysis.count,
+      topExpenseCategories: top5(thisMonthAnalysis),
+    },
+    lastMonth: {
+      range: lastMonthBounds,
+      income: lastMonthAnalysis.income,
+      expense: lastMonthAnalysis.expense,
+      saving: lastMonthAnalysis.saving,
+      netCashFlow: lastMonthAnalysis.netCashFlow,
+      transactionCount: lastMonthAnalysis.count,
+      topExpenseCategories: top5(lastMonthAnalysis),
+      // Milestone 4 fix: breakdown เต็มทุกหมวด (ไม่ตัดเหลือ Top 5) ใช้เทียบใน Rule B ของ evaluateProactiveRules()
+      // เพื่อไม่ให้หมวดอันดับ 6 ลงไปถูกมองเป็น ฿0 อย่างผิดๆ (False Alarm)
+      expenseBreakdownFull: lastMonthAnalysis.breakdown.map(r => ({ category: r.cat, amount: r.amount, pct: r.pct })),
+    },
+    monthComparison: {
+      incomeChange: thisMonthAnalysis.income - lastMonthAnalysis.income,
+      expenseChange: thisMonthAnalysis.expense - lastMonthAnalysis.expense,
+      savingChange: thisMonthAnalysis.saving - lastMonthAnalysis.saving,
+      netCashFlowChange: thisMonthAnalysis.netCashFlow - lastMonthAnalysis.netCashFlow,
+    },
+    upcoming: getUpcomingSummary(),
+    forecastToMonthEnd: {
+      daysRemaining: daysRemainingInMonth,
+      currentTotalMoney: forecastToMonthEnd.current,
+      reserved: forecastToMonthEnd.reserved,
+      upcomingPayments: forecastToMonthEnd.upcoming,
+      forecastTotalMoney: forecastToMonthEnd.forecast,
+      forecastAvailable: forecastToMonthEnd.forecastAvailable,
+    },
+    forecast30d: {
+      currentTotalMoney: forecast30d.current,
+      reserved: forecast30d.reserved,
+      upcomingPayments: forecast30d.upcoming,
+      forecastTotalMoney: forecast30d.forecast,
+      forecastAvailable: forecast30d.forecastAvailable,
+    },
+    // Milestone 5: หนี้สิน — ตั้งใจไม่รวมใน forecastToMonthEnd/forecast30d ด้านบน (ยังไม่ตัดเงินสด)
+    debts: {
+      totalDebt: getTotalDebts(),
+      list: debts.map(d => ({ name: d.name, outstandingBalance: d.outstandingBalance, gracePeriod: !!d.gracePeriod })),
+    },
+  };
+}
+
+function buildFinancialAnalystSystemPrompt(snapshot, profile){
+  const hasProfile = hasAIProfileContent(profile);
+  const lines = [
+    "คุณคือ Personal Financial Manager ส่วนตัวของผู้ใช้แอปการเงิน Banchee ทำหน้าที่ตอบคำถาม/วิเคราะห์สถานะการเงินของผู้ใช้",
+    "ตอบโดยอิงจากตัวเลขใน Financial Snapshot ด้านล่างเท่านั้น ห้ามคำนวณตัวเลขเอง ห้ามประมาณ/เดาตัวเลขที่ไม่มีอยู่ใน Snapshot",
+    "ตอบสั้น กระชับ ตรงประเด็น เป็นภาษาไทย แยกแต่ละประเด็นด้วยเครื่องหมายขีด (-) ขึ้นบรรทัดใหม่ ไม่ต้องมีคำนำหรือคำลงท้ายยืดยาว",
+    "ใช้ **ข้อความ** ล้อมรอบตัวเลขเงินหรือประเด็นสำคัญที่ต้องการเน้นให้ผู้ใช้เห็นชัด",
+    "ถ้าคำถามของผู้ใช้ต้องการข้อมูลที่ไม่มีอยู่ใน Snapshot ให้บอกตรงๆ ว่าไม่มีข้อมูลส่วนนั้น อย่าสร้างตัวเลขขึ้นมาเอง",
+    "",
+    "เรื่องหนี้สิน (debts): หนี้ กยศ. เป็นหนี้เพื่อการศึกษาที่ยังอยู่ใน Grace Period (ระหว่างศึกษา) — ยังไม่มีดอกเบี้ยเดินและยังไม่ต้องผ่อนชำระรายเดือนตอนนี้",
+    "ห้ามเอา debts.totalDebt ไปหักออกจาก netWorth.available หรือมองว่ากระทบสภาพคล่อง/กระแสเงินสดของเดือนนี้เด็ดขาด (Cash Flow Forecast ในระบบก็ไม่ได้หักหนี้นี้ออกเช่นกัน)",
+    "ให้มองหนี้นี้เป็นภาระผูกพันระยะยาวที่แยกต่างหากจากสภาพคล่องปัจจุบัน แต่ให้นำมาพิจารณาประกอบเวลาประเมินภาพรวม Net Worth หรือแผนการเงินระยะยาวของผู้ใช้",
+  ];
+
+  if(hasProfile){
+    lines.push(
+      "",
+      "ผู้ใช้มี User Profile (บริบท/เป้าหมาย/ข้อจำกัดทางการเงินของผู้ใช้) แนบมาด้วย — ให้นำไปใช้ประกอบคำแนะนำเสมอ ไม่ใช่ดูแค่ตัวเลขดิบใน Snapshot:",
+      profile.nickname ? `- ถ้าเหมาะสม เรียกผู้ใช้ว่า "${profile.nickname}" ในคำตอบได้` : null,
+      "- ถ้ามีการตั้ง minReserveTarget ไว้ ให้เทียบกับ netWorth.available เสมอ: ถ้า available ต่ำกว่า minReserveTarget อยู่แล้ว หรือจะทำให้ต่ำกว่าหลังจ่ายตามที่ผู้ใช้ถาม ให้แจ้งผลกระทบต่อเงินสำรองนี้เป็นเรื่องแรกก่อนเรื่องอื่น โดยเฉพาะเวลาผู้ใช้ถามว่าจะซื้อของชิ้นไหนไหวไหม",
+      "- ถ้ามีการตั้ง monthlyIncomeEstimate ไว้ ให้เทียบกับ thisMonth.income ใน Snapshot เพื่อประเมินว่าเดือนนี้รายรับเข้ามาตามที่คาดไว้ ต่ำกว่า หรือสูงกว่า แล้วนำผลนั้นไปประกอบคำแนะนำ",
+      "- ถ้ามี financialGoals ให้พิจารณาว่าคำถาม/รายจ่ายที่ผู้ใช้ถามถึง จะกระทบความคืบหน้าไปสู่เป้าหมายเหล่านั้นอย่างไร (เช่น ทำให้ต้องเลื่อนเป้าหมาย หรือยังไปถึงได้ตามกำหนด)",
+      "- ถ้ามี notes (ข้อจำกัด/นิสัยการเงิน) ให้เคารพข้อจำกัดเหล่านั้นในคำแนะนำด้วย เช่น ถ้าโน้ตบอกว่าห้ามแตะเงินในบัญชีออม ก็ไม่ควรแนะนำให้ดึงเงินออมมาใช้",
+      "- ห้ามฟันธงแทนผู้ใช้ว่า \"ซื้อได้\"/\"ห้ามซื้อ\" เด็ดขาด ให้อธิบายผลกระทบต่อเงินสำรอง/เป้าหมายอย่างตรงไปตรงมา แล้วให้ผู้ใช้ตัดสินใจเอง",
+      "",
+      "User Profile:",
+      JSON.stringify(profile)
+    );
+  }
+
+  lines.push(
+    "",
+    "Financial Snapshot (ตัวเลขที่คำนวณไว้แล้วทั้งหมด หน่วยเป็นบาท):",
+    JSON.stringify(snapshot)
+  );
+
+  return lines.filter(l => l !== null).join("\n");
+}
+
+// ส่ง Snapshot + Profile + คำถามผู้ใช้ ให้ Gemini วิเคราะห์ คืน { ok:true, text } หรือ { ok:false, error }
+async function analyzeFinancialQuery(query, snapshot){
+  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
+  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(!query || !query.trim()) return { ok:false, error:"empty_input" };
+
+  const profile = loadAIProfile(); // null ถ้าผู้ใช้ยังไม่เคยตั้งค่า — ไม่ทำให้ query flow พังถ้าไม่มีโปรไฟล์
+  const systemPrompt = buildFinancialAnalystSystemPrompt(snapshot, profile);
+
+  let res;
+  try{
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: query.trim() }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        })
+      }
+    );
+  }catch(e){
+    return { ok:false, error:"network_error" };
+  }
+
+  if(!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0,300); }catch(e){}
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+  }
+
+  let data;
+  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text) return { ok:false, error:"empty_response" };
+
+  return { ok:true, text };
+}
+
+// แปลง Markdown พื้นฐาน (**ตัวหนา** และขึ้นบรรทัดใหม่) เป็น HTML อย่างปลอดภัย — escapeHtml() ก่อนเสมอ กัน XSS จากคำตอบ AI
+function simpleMarkdownToHtml(text){
+  const escaped = escapeHtml(text);
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--accent1)">$1</strong>')
+    .replace(/\n/g, "<br>");
+}
+
+// ===== AI Layer (Milestone 4): Proactive Financial Advisor =====
+
+// --- Deterministic Rule Engine — Pure Local Function 100%, ไม่ยิง Network ---
+function evaluateProactiveRules(snapshot, profile){
+  const findings = [];
+
+  // Rule A: เงินสำรองเสี่ยง — เทียบ netWorth.available กับ profile.minReserveTarget
+  if(profile && profile.minReserveTarget != null && profile.minReserveTarget > 0){
+    const available = snapshot.netWorth.available;
+    const target = profile.minReserveTarget;
+    if(available < target){
+      findings.push({ id:"A", severity:"critical", data:{ available, target, shortfall: target - available } });
+    }else if(available < target * 1.15){
+      findings.push({ id:"A", severity:"warning", data:{ available, target } });
+    }
+  }
+
+  // Rule D: กระแสเงินสดตึงตัว — forecastToMonthEnd.forecastAvailable ติดลบ
+  if(snapshot.forecastToMonthEnd.forecastAvailable < 0){
+    findings.push({ id:"D", severity:"critical", data:{
+      forecastAvailable: snapshot.forecastToMonthEnd.forecastAvailable,
+      daysRemaining: snapshot.forecastToMonthEnd.daysRemaining
+    }});
+  }
+
+  // Rule C: ภาระใกล้ถึง (7 วัน) ที่ไม่มีเงินกันไว้ หรือกันไว้ไม่พอ — overdue/dueToday = critical, อื่นๆ = warning
+  getUpcomingOccurrences("7d").forEach(o => {
+    const link = getReservedLinkInfo(o.r);
+    const insufficient = !link || link.shortfall > 0;
+    if(!insufficient) return;
+    const severity = (o.status === "overdue" || o.status === "dueToday") ? "critical" : "warning";
+    findings.push({ id:"C", severity, data:{
+      name: o.r.name, amount: o.r.amount, status: o.status, nextDueDate: o.r.nextDueDate,
+      shortfall: link ? link.shortfall : o.r.amount
+    }});
+  });
+
+  // Rule B: ค่าใช้จ่ายพุ่งผิดปกติ — เทียบรายจ่ายตามหมวดหมู่ thisMonth vs lastMonth, ดักหารด้วยศูนย์
+  // ใช้ expenseBreakdownFull ของ lastMonth (ไม่ใช่ topExpenseCategories ที่ตัดเหลือ Top 5) กันหมวดอันดับ 6 ลงไปโดนมองเป็น ฿0 ผิดๆ
+  const thisMap = {}; snapshot.thisMonth.topExpenseCategories.forEach(r => { thisMap[r.category] = r.amount; });
+  const lastMap = {};
+  (snapshot.lastMonth.expenseBreakdownFull || snapshot.lastMonth.topExpenseCategories).forEach(r => { lastMap[r.category] = r.amount; });
+  new Set([...Object.keys(thisMap), ...Object.keys(lastMap)]).forEach(cat => {
+    const thisMonthAmt = thisMap[cat] || 0;
+    const lastMonthAmt = lastMap[cat] || 0;
+    const diff = thisMonthAmt - lastMonthAmt;
+    const spike = (lastMonthAmt === 0 && thisMonthAmt >= 500) || (lastMonthAmt > 0 && thisMonthAmt >= lastMonthAmt * 2 && diff >= 300);
+    if(spike){
+      findings.push({ id:"B", severity:"warning", data:{ category:cat, thisMonthAmt, lastMonthAmt, diff } });
+    }
+  });
+
+  if(findings.length === 0){
+    findings.push({ id:"OK", severity:"positive", data:{} });
+  }
+
+  const severityRank = { critical:3, warning:2, positive:1 };
+  findings.sort((a,b) => severityRank[b.severity] - severityRank[a.severity]);
+
+  return { severity: findings[0].severity, topRuleId: findings[0].id, findings };
+}
+
+// --- Smart Cache & Invalidation ---
+// dataFingerprint ครอบคลุมทั้งการให้ยืมเงิน (loans), การแก้ตัวเลข (edit), และการเพิ่ม/ลบรายการ
+function getProactiveDataFingerprint(snapshot){
+  return `${entries.length}_${loans.length}_${snapshot.netWorth.available}_${entries[0]?.id || ""}`;
+}
+function loadProactiveCache(){
+  try{
+    const raw = localStorage.getItem(AI_PROACTIVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function saveProactiveCache(cache){
+  try{ localStorage.setItem(AI_PROACTIVE_KEY, JSON.stringify(cache)); }catch(e){}
+}
+
+function proactiveRuleLabel(id){
+  return { A:"เงินสำรองเสี่ยง", B:"ค่าใช้จ่ายพุ่งผิดปกติ", C:"ภาระใกล้ถึงกำหนด", D:"กระแสเงินสดตึงตัว", OK:"ภาพรวมการเงิน" }[id] || "ภาพรวมการเงิน";
+}
+
+function buildProactiveSystemPrompt(evalResult, snapshot, profile){
+  const hasProfile = hasAIProfileContent(profile);
+  const lines = [
+    "คุณคือ Personal Financial Manager ของแอป Banchee ทำหน้าที่เขียนข้อความสั้นๆ แสดงบนการ์ด Insight หน้า Dashboard",
+    "เขียนแค่ 1-2 ประโยค กระชับ ตรงประเด็น เป็นภาษาไทย ไม่ต้องมีคำนำหรือคำลงท้าย",
+    "ใช้ **ตัวหนา** ล้อมรอบตัวเลขเงินหรือหมวดหมู่/รายการที่สำคัญที่สุดที่ต้องการเน้น",
+    "อ้างอิงเฉพาะตัวเลขจาก Findings/Snapshot ด้านล่างเท่านั้น ห้ามคำนวณหรือสร้างตัวเลขขึ้นมาเอง",
+    `เรื่องที่สำคัญที่สุดตอนนี้คือ: ${proactiveRuleLabel(evalResult.topRuleId)} (severity: ${evalResult.severity})`,
+    evalResult.severity === "positive"
+      ? "ไม่มีความเสี่ยงเร่งด่วน — ให้ชมเชยสั้นๆ หรือสรุปความคืบหน้าไปเป้าหมาย/สถานะการเงินโดยรวมในเชิงบวก"
+      : "ให้เตือนเฉพาะเรื่องที่สำคัญที่สุด (ตาม Findings อันดับแรก) อย่างตรงไปตรงมา ไม่ต้องพูดถึงทุกเรื่องพร้อมกัน",
+  ];
+  if(hasProfile){
+    lines.push(
+      "",
+      profile.nickname ? `- ถ้าเหมาะสม เรียกผู้ใช้ว่า "${profile.nickname}" ในข้อความได้` : null,
+      "User Profile:",
+      JSON.stringify(profile)
+    );
+  }
+  lines.push("", "Findings (เรียงตามความสำคัญแล้ว):", JSON.stringify(evalResult.findings));
+  lines.push("", "Financial Snapshot:", JSON.stringify(snapshot));
+  return lines.filter(l => l !== null).join("\n");
+}
+
+// ส่ง Findings + Snapshot + Profile ให้ Gemini เรียบเรียงเป็นข้อความ คืน { ok:true, text } หรือ { ok:false, error }
+async function generateProactiveInsight(evalResult, snapshot, profile){
+  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
+  if(!apiKey) return { ok:false, error:"missing_api_key" };
+
+  const systemPrompt = buildProactiveSystemPrompt(evalResult, snapshot, profile);
+
+  let res;
+  try{
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: "สร้างข้อความสำหรับการ์ด Insight ตาม system prompt ด้านบน" }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        })
+      }
+    );
+  }catch(e){
+    return { ok:false, error:"network_error" };
+  }
+
+  if(!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0,300); }catch(e){}
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+  }
+
+  let data;
+  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text) return { ok:false, error:"empty_response" };
+
+  return { ok:true, text };
+}
+
+// --- UI: #aiProactiveCard บน Dashboard ---
+const PROACTIVE_SEVERITY_META = {
+  critical: { icon:"🚨", color:"var(--expense)" },
+  warning:  { icon:"⚠️", color:"var(--transfer)" },
+  positive: { icon:"💡", color:"var(--saving)" },
+};
+let proactiveCardBusy = false;
+
+function renderProactiveCard(severity, text, state){
+  const card = document.getElementById("aiProactiveCard");
+  if(!card) return;
+  const meta = PROACTIVE_SEVERITY_META[severity] || PROACTIVE_SEVERITY_META.positive;
+  card.style.display = "block";
+  card.style.borderColor = meta.color;
+  document.getElementById("aiProactiveIcon").textContent = meta.icon;
+
+  const bodyEl = document.getElementById("aiProactiveBody");
+  if(state === "loading"){
+    bodyEl.innerHTML = `<span style="color:var(--faint)">กำลังวิเคราะห์สถานะการเงิน...</span>`;
+  }else if(state === "needsApiKey"){
+    bodyEl.innerHTML = `<span style="color:var(--faint)">ตั้งค่า API Key (⚙️) เพื่อเปิดใช้งานการวิเคราะห์อัตโนมัติ</span>`;
+  }else if(state === "error" && !text){
+    bodyEl.innerHTML = `<span style="color:var(--faint)">เรียก AI ไม่สำเร็จ — กด 🔄 เพื่อลองใหม่</span>`;
+  }else if(text){
+    bodyEl.innerHTML = simpleMarkdownToHtml(text);
+  }else{
+    card.style.display = "none";
+  }
+}
+
+// เรียกประเมิน + สร้างการ์ดใหม่เฉพาะเมื่อจำเป็น (cache miss หรือ force=true)
+async function refreshProactiveCard(force){
+  if(proactiveCardBusy) return;
+  const card = document.getElementById("aiProactiveCard");
+  if(!card) return;
+
+  const snapshot = buildFinancialSnapshot();
+  const profile = loadAIProfile();
+  const evalResult = evaluateProactiveRules(snapshot, profile);
+  const fingerprint = getProactiveDataFingerprint(snapshot);
+
+  const cache = loadProactiveCache();
+  // Milestone 4 fix: ต้องเช็ควันที่ด้วยเสมอ — ข้ามวันใหม่ต้องประเมิน/ดึง Insight ใหม่ทุกครั้ง แม้ fingerprint จะเหมือนเดิม
+  const cacheValid = !!cache && cache.generatedAt === todayISO() && cache.fingerprint === fingerprint
+    && cache.topRuleId === evalResult.topRuleId && cache.severity === evalResult.severity;
+
+  if(cacheValid && !force){
+    renderProactiveCard(evalResult.severity, cache.text);
+    return;
+  }
+
+  if(!localStorage.getItem(AI_APIKEY_KEY)){
+    renderProactiveCard(evalResult.severity, null, "needsApiKey");
+    return;
+  }
+
+  proactiveCardBusy = true;
+  renderProactiveCard(evalResult.severity, null, "loading");
+
+  const result = await generateProactiveInsight(evalResult, snapshot, profile);
+  proactiveCardBusy = false;
+
+  if(!result.ok){
+    // เรียก AI ไม่สำเร็จ — ถ้ามีแคชเก่าอยู่ (แม้ fingerprint จะเปลี่ยนไปแล้ว) ให้โชว์ไว้ก่อนดีกว่าไม่มีอะไรเลย
+    renderProactiveCard(evalResult.severity, cache ? cache.text : null, "error");
+    return;
+  }
+
+  saveProactiveCache({
+    fingerprint, topRuleId: evalResult.topRuleId, severity: evalResult.severity,
+    text: result.text, generatedAt: todayISO()
+  });
+  renderProactiveCard(evalResult.severity, result.text);
+}
+
+document.getElementById("aiProactiveRefreshBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  refreshProactiveCard(true);
+});
+
+// ===== AI Layer (Milestone 1): NL Input UI (Bottom Sheet) =====
+function closeAiInputSheet(){
+  document.getElementById("aiInputOverlay").classList.remove("open");
+}
+document.getElementById("aiFabBtn").addEventListener("click", () => {
+  if(!localStorage.getItem(AI_APIKEY_KEY)){
+    showToast("ยังไม่ได้ตั้งค่า API Key — กดไอคอน ⚙️ เพื่อตั้งค่าก่อน");
+    return;
+  }
+  document.getElementById("aiInputText").value = "";
+  document.getElementById("aiInputError").style.display = "none";
+  document.getElementById("aiInputOverlay").classList.add("open");
+  document.getElementById("aiInputText").focus();
+});
+document.getElementById("closeAiInputBtn").addEventListener("click", closeAiInputSheet);
+document.getElementById("aiInputOverlay").addEventListener("click", closeAiInputSheet);
+
+const AI_ERROR_MESSAGES = {
+  missing_api_key: "ยังไม่ได้ตั้งค่า API Key",
+  empty_input: "พิมพ์ข้อความก่อน",
+  invalid_api_key: "API Key ไม่ถูกต้อง หรือหมดสิทธิ์ใช้งาน",
+  api_error: "เรียก AI ไม่สำเร็จ ลองใหม่อีกครั้ง",
+  empty_response: "AI ไม่ตอบกลับข้อมูล ลองพิมพ์ใหม่อีกครั้ง",
+  invalid_json: "แปลผลลัพธ์จาก AI ไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง",
+  network_error: "เชื่อมต่อไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต"
+};
+
+// ===== AI Layer (Milestone 2): Financial Analyst result sheet =====
+function openAiAnalystSheet(query, analysisText){
+  document.getElementById("aiAnalystQuote").textContent = `ถาม: "${query}"`;
+  document.getElementById("aiAnalystBody").innerHTML = simpleMarkdownToHtml(analysisText);
+  document.getElementById("aiAnalystOverlay").classList.add("open");
+}
+function closeAiAnalystSheet(){
+  document.getElementById("aiAnalystOverlay").classList.remove("open");
+}
+document.getElementById("closeAiAnalystBtn").addEventListener("click", closeAiAnalystSheet);
+document.getElementById("aiAnalystOverlay").addEventListener("click", closeAiAnalystSheet);
+document.getElementById("aiAnalystCloseBtn").addEventListener("click", closeAiAnalystSheet);
+
+document.getElementById("aiProcessBtn").addEventListener("click", async () => {
+  const text = document.getElementById("aiInputText").value.trim();
+  const errBox = document.getElementById("aiInputError");
+  errBox.style.display = "none";
+  if(!text) return;
+
+  const btn = document.getElementById("aiProcessBtn");
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "กำลังคัดกรอง...";
+
+  // ด่านแรกเสมอ: ตัดสินว่าข้อความนี้คือ "บันทึกรายการ" หรือ "คำถาม/ขอวิเคราะห์"
+  const intentResult = await classifyIntent(text);
+
+  if(!intentResult.ok){
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+    errBox.textContent = AI_ERROR_MESSAGES[intentResult.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    errBox.style.display = "block";
+    return;
+  }
+
+  if(intentResult.intent === "query"){
+    // Flow วิเคราะห์การเงิน — ไม่แตะ Flow บันทึกรายการเดิมเลย
+    btn.textContent = "กำลังวิเคราะห์ข้อมูลการเงิน...";
+    const snapshot = buildFinancialSnapshot();
+    const analysisResult = await analyzeFinancialQuery(text, snapshot);
+
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+
+    if(!analysisResult.ok){
+      errBox.textContent = AI_ERROR_MESSAGES[analysisResult.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+      errBox.style.display = "block";
+      return;
+    }
+
+    closeAiInputSheet();
+    openAiAnalystSheet(text, analysisResult.text);
+    return;
+  }
+
+  // Flow บันทึกรายการเดิม (ห้ามแตะต้อง) — เดิมเรียก parseNaturalLanguageEntry() ตรงๆ ทันที
+  btn.textContent = "กำลังตีความรายการ...";
+  const result = await parseNaturalLanguageEntry(text);
+
+  btn.disabled = false;
+  btn.textContent = originalLabel;
+
+  if(!result.ok){
+    errBox.textContent = AI_ERROR_MESSAGES[result.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    errBox.style.display = "block";
+    return;
+  }
+
+  closeAiInputSheet();
+  handleAiParseResult(result.payload, text);
+});
+
+// ===== AI Layer (Milestone 1) Phase 3: Confirmation Bottom Sheet =====
+let aiConfirmType = null;
+
+function handleAiParseResult(payload, originalText){
+  openAiConfirmSheet(payload, originalText);
+}
+
+function closeAiConfirmSheet(){
+  document.getElementById("aiConfirmOverlay").classList.remove("open");
+}
+
+function clearAmbiguousMarks(){
+  document.querySelectorAll("#aiConfirmOverlay .field-ambiguous").forEach(el => el.classList.remove("field-ambiguous"));
+  document.querySelectorAll("#aiConfirmOverlay .ambiguous-hint").forEach(el => el.remove());
+}
+function markAmbiguous(el){
+  if(!el) return;
+  el.classList.add("field-ambiguous");
+  const hint = document.createElement("div");
+  hint.className = "ambiguous-hint";
+  hint.textContent = "*(แนะนำให้ตรวจสอบ)*";
+  el.insertAdjacentElement("afterend", hint);
+}
+
+function openAiConfirmSheet(payload, originalText){
+  aiConfirmType = ["expense","income","saving","transfer","lend"].includes(payload.action) ? payload.action : "expense";
+  document.getElementById("aiConfirmError").style.display = "none";
+  document.getElementById("aiConfirmQuote").textContent = `ตีความจาก: "${originalText}"`;
+
+  const badgeLabel = { expense:"รายจ่าย", income:"รายรับ", saving:"ออม/ลงทุน", transfer:"โอนเงิน", lend:"ให้ยืมเงิน" }[aiConfirmType];
+  const badgeEl = document.getElementById("aiConfirmBadge");
+  badgeEl.textContent = badgeLabel;
+  badgeEl.className = "ai-confirm-badge badge-" + aiConfirmType;
+
+  const isCatType = aiConfirmType === "expense" || aiConfirmType === "income" || aiConfirmType === "saving";
+  const isTransfer = aiConfirmType === "transfer";
+  const isLend = aiConfirmType === "lend";
+
+  document.getElementById("aiConfirmCategoryGroup").style.display = isCatType ? "block" : "none";
+  document.getElementById("aiConfirmTransferGroup").style.display = isTransfer ? "block" : "none";
+  document.getElementById("aiConfirmLendGroup").style.display = isLend ? "block" : "none";
+
+  document.getElementById("aiConfirmAmount").value = payload.amount || "";
+  document.getElementById("aiConfirmDate").value = isValidISODate(payload.date) ? payload.date : todayISO();
+  document.getElementById("aiConfirmNote").value = payload.note || "";
+
+  const accOptsHtml = accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+  const isValidAccountId = (id) => !!id && accounts.some(a => a.id === id);
+  const fallbackAccountId = () => (isValidAccountId(lastUsedAccountId) ? lastUsedAccountId : (accounts[0]?.id || ""));
+
+  if(isCatType){
+    const cats = CATS_BY_TYPE[aiConfirmType] || [];
+    document.getElementById("aiConfirmCategory").innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    const lastCat = lastUsedCat[aiConfirmType];
+    const cat = (payload.category && cats.includes(payload.category)) ? payload.category
+      : (lastCat && cats.includes(lastCat)) ? lastCat
+      : (cats[0] || "");
+    document.getElementById("aiConfirmCategory").value = cat;
+
+    document.getElementById("aiConfirmAccount").innerHTML = accOptsHtml;
+    document.getElementById("aiConfirmAccount").value = isValidAccountId(payload.accountId) ? payload.accountId : fallbackAccountId();
+  }
+
+  if(isTransfer){
+    document.getElementById("aiConfirmFromAccount").innerHTML = accOptsHtml;
+    document.getElementById("aiConfirmToAccount").innerHTML = accOptsHtml;
+    const fromId = isValidAccountId(payload.fromAccountId) ? payload.fromAccountId : fallbackAccountId();
+    const toId = (isValidAccountId(payload.toAccountId) && payload.toAccountId !== fromId)
+      ? payload.toAccountId
+      : (accounts.find(a => a.id !== fromId)?.id || fromId);
+    document.getElementById("aiConfirmFromAccount").value = fromId;
+    document.getElementById("aiConfirmToAccount").value = toId;
+  }
+
+  if(isLend){
+    document.getElementById("aiConfirmPerson").value = payload.person || "";
+    document.getElementById("aiConfirmLendAccount").innerHTML = accOptsHtml;
+    // กฎเหล็ก: บัญชีสำหรับ lend ห้าม null เสมอ — ถ้า AI เดาไม่ได้เลยก็ยังต้อง fallback ให้มีค่าเสมอ
+    document.getElementById("aiConfirmLendAccount").value = isValidAccountId(payload.accountId) ? payload.accountId : fallbackAccountId();
+    document.getElementById("aiConfirmDueDate").value = isValidISODate(payload.dueDate) ? payload.dueDate : "";
+  }
+
+  clearAmbiguousMarks();
+  const ambiguous = Array.isArray(payload.ambiguousFields) ? payload.ambiguousFields : [];
+  ambiguous.forEach(field => {
+    if(field === "amount") markAmbiguous(document.getElementById("aiConfirmAmount"));
+    else if(field === "date") markAmbiguous(document.getElementById("aiConfirmDate"));
+    else if(field === "category" && isCatType) markAmbiguous(document.getElementById("aiConfirmCategory"));
+    else if(field === "accountId"){
+      if(isCatType) markAmbiguous(document.getElementById("aiConfirmAccount"));
+      else if(isLend) markAmbiguous(document.getElementById("aiConfirmLendAccount"));
+    }
+    else if(field === "fromAccountId" && isTransfer) markAmbiguous(document.getElementById("aiConfirmFromAccount"));
+    else if(field === "toAccountId" && isTransfer) markAmbiguous(document.getElementById("aiConfirmToAccount"));
+    else if(field === "person" && isLend) markAmbiguous(document.getElementById("aiConfirmPerson"));
+    else if(field === "dueDate" && isLend) markAmbiguous(document.getElementById("aiConfirmDueDate"));
+  });
+
+  document.getElementById("aiConfirmOverlay").classList.add("open");
+}
+
+document.getElementById("closeAiConfirmBtn").addEventListener("click", closeAiConfirmSheet);
+document.getElementById("aiConfirmOverlay").addEventListener("click", closeAiConfirmSheet);
+document.getElementById("aiConfirmCancelBtn").addEventListener("click", closeAiConfirmSheet);
+
+const AI_CONFIRM_ERROR_MESSAGES = {
+  invalid_amount: "จำนวนเงินไม่ถูกต้อง",
+  invalid_transfer_accounts: "เลือกบัญชีต้นทางกับปลายทางให้ต่างกัน",
+  entry_not_found: "ไม่พบรายการที่จะแก้ไข",
+  missing_person: "กรอกชื่อคนยืมก่อน",
+  missing_account: "เลือกบัญชีที่หักเงินก่อน",
+  loan_not_found: "ไม่พบรายการเงินให้ยืมที่จะแก้ไข"
+};
+
+document.getElementById("aiConfirmSubmitBtn").addEventListener("click", () => {
+  const errBox = document.getElementById("aiConfirmError");
+  errBox.style.display = "none";
+
+  const amount = document.getElementById("aiConfirmAmount").value;
+  const date = document.getElementById("aiConfirmDate").value || todayISO();
+  const note = document.getElementById("aiConfirmNote").value;
+
+  let result;
+  if(aiConfirmType === "transfer"){
+    result = commitEntry({
+      type: "transfer",
+      fromAccountId: document.getElementById("aiConfirmFromAccount").value,
+      toAccountId: document.getElementById("aiConfirmToAccount").value,
+      amount, date, note
+    });
+  }else if(aiConfirmType === "lend"){
+    result = commitLoan({
+      person: document.getElementById("aiConfirmPerson").value,
+      amount,
+      accountId: document.getElementById("aiConfirmLendAccount").value,
+      dueDate: document.getElementById("aiConfirmDueDate").value,
+      date, note
+    });
+  }else{
+    result = commitEntry({
+      type: aiConfirmType,
+      category: document.getElementById("aiConfirmCategory").value,
+      accountId: document.getElementById("aiConfirmAccount").value,
+      amount, date, note
+    });
+  }
+
+  if(!result.ok){
+    errBox.textContent = AI_CONFIRM_ERROR_MESSAGES[result.error] || "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง";
+    errBox.style.display = "block";
+    return;
+  }
+
+  closeAiConfirmSheet();
+  if(aiConfirmType !== "lend"){
+    selectedMonth = monthKey(result.entry.date);
+  }
+  render();
+  if(aiConfirmType === "lend"){
+    renderLoansManageList();
+  }
+  const doneLabel = { expense:"รายจ่าย", income:"รายรับ", saving:"ออม/ลงทุน", transfer:"โอนเงิน", lend:"ให้ยืมเงิน" }[aiConfirmType];
+  showToast(`บันทึก${doneLabel}เรียบร้อย ✓`);
+});
+
 loadEntries();
 loadCategories();
 loadLastCat();
@@ -1864,8 +3388,12 @@ loadLastAccount();
 loadReserved();
 loadLoans();
 loadRecurring();
+loadDebts();
+ensureDefaultDebts();
 selectedMonth = monthKey(todayISO());
 render();
+refreshApiKeyStatus();
+refreshProactiveCard();
 
 function renderAccountsManageList(){
   const el = document.getElementById("accountsManageList");
@@ -2075,6 +3603,39 @@ document.getElementById("closeLoansBtn").addEventListener("click", () => {
 document.getElementById("loansOverlay").addEventListener("click", () => {
   document.getElementById("loansOverlay").classList.remove("open");
 });
+// ===== AI Layer integration point: pure data-in commit function =====
+// payload: { person, amount, accountId, dueDate, date, note, editingId }
+// return: { ok:true, loan } | { ok:false, error }
+// กฎเหล็ก: accountId บังคับเสมอ (เงินให้ยืมต้องตัดออกจากบัญชีจริง ห้ามเป็น null)
+function commitLoan(payload){
+  const person = (payload.person || "").trim();
+  if(!person) return { ok:false, error:"missing_person" };
+  let amount = parseFloat(payload.amount);
+  if(!amount || amount<=0) return { ok:false, error:"invalid_amount" };
+  amount = Math.round(amount * 100) / 100; // ตัดเศษทศนิยมเกิน 2 ตำแหน่ง กันสตางค์เพี้ยนจาก floating point
+  const accountId = payload.accountId;
+  if(!accountId || !accounts.some(a => a.id === accountId)){
+    return { ok:false, error:"missing_account" };
+  }
+  const dueDate = payload.dueDate ? String(payload.dueDate).trim() : "";
+  const note = (payload.note || "").trim();
+  const editingId = payload.editingId || null;
+
+  let loan;
+  if(editingId){
+    const idx = loans.findIndex(l => l.id === editingId);
+    if(idx === -1) return { ok:false, error:"loan_not_found" };
+    loans[idx] = { ...loans[idx], person, amount, dueDate, note, accountId };
+    loan = loans[idx];
+  }else{
+    const date = payload.date || todayISO();
+    loan = { id: makeId(), person, amount, date, dueDate, note, accountId, repayments: [] };
+    loans.push(loan);
+  }
+  saveLoans();
+  return { ok:true, loan };
+}
+
 document.getElementById("addLoanBtn").addEventListener("click", () => {
   if(!accounts.length){ showToast("ยังไม่มีบัญชีเลย เพิ่มบัญชีก่อน"); return; }
   const person = prompt("ให้ใครยืม:");
@@ -2087,11 +3648,155 @@ document.getElementById("addLoanBtn").addEventListener("click", () => {
   const accIdx = (parseInt(accIdxStr) || 1) - 1;
   const accountId = accounts[accIdx]?.id || accounts[0].id;
   const due = prompt("วันครบกำหนดคืน (YYYY-MM-DD, เว้นว่างได้):", "");
-  loans.push({ id: makeId(), person: person.trim(), amount: amt, date: todayISO(), dueDate: due ? due.trim() : "", note: "", accountId, repayments: [] });
-  saveLoans();
+
+  const result = commitLoan({ person, amount: amt, accountId, dueDate: due });
+  if(!result.ok) return; // เดิม validate ผ่าน prompt flow ครบแล้ว จุดนี้ไม่ควรพลาดในทางปฏิบัติ
+
   renderLoansManageList();
   render();
 });
+
+// ===== Milestone 5: Debt Management Engine — UI =====
+function renderDebtsManageList(){
+  const el = document.getElementById("debtsManageList");
+  if(!debts.length){
+    el.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลหนี้สิน</div>`;
+  }else{
+    el.innerHTML = debts.map(d => `
+      <div class="debt-card" data-id="${d.id}">
+        <div class="debt-card-top">
+          <div>
+            <div class="debt-name">${escapeHtml(d.name)}${d.gracePeriod ? `<span class="debt-grace-badge">Grace Period</span>` : ""}</div>
+            <div class="debt-balance mono">฿${fmt(d.outstandingBalance)}</div>
+          </div>
+          <button class="icon-btn delete-debt-btn" data-id="${d.id}" aria-label="ลบ">🗑</button>
+        </div>
+        <div class="debt-quick-row">
+          <button class="debt-quick-btn" data-id="${d.id}" data-amount="3000" data-note="ค่าครองชีพ">+3,000 (ค่าครองชีพ)</button>
+          <button class="debt-quick-btn" data-id="${d.id}" data-amount="9250" data-note="ค่าเทอม">+9,250 (ค่าเทอม)</button>
+        </div>
+        <div class="debt-history">
+          ${d.history.length ? d.history.slice(0,8).map(h => `
+            <div class="debt-history-row">
+              <span>${dayLabel(h.date)} · ${debtHistoryLabel(h.type)}${h.note ? " · "+escapeHtml(h.note) : ""}</span>
+              <span class="mono" style="color:${h.type==='repayment' ? 'var(--income)' : 'var(--expense)'}">${h.type==='repayment' ? '−' : '+'}฿${fmt(Math.abs(h.amount))}</span>
+            </div>
+          `).join("") : `<div class="empty-state" style="padding:6px 0;">ยังไม่มีประวัติ</div>`}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  // Sync ตัวเลือกฟอร์มด้านล่างให้ตรงกับ debts ปัจจุบันเสมอ
+  const select = document.getElementById("debtActionSelect");
+  const prevSelected = select.value;
+  select.innerHTML = debts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("");
+  if(debts.some(d => d.id === prevSelected)) select.value = prevSelected;
+  document.getElementById("debtActionAmount").value = "";
+  document.getElementById("debtActionNote").value = "";
+
+  el.querySelectorAll(".debt-quick-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      addDebtHistory(btn.dataset.id, "increase", btn.dataset.amount, btn.dataset.note);
+      renderDebtsManageList();
+      render();
+      showToast("บันทึกยอดหนี้เพิ่มแล้ว");
+    });
+  });
+  el.querySelectorAll(".delete-debt-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!confirm("ลบข้อมูลหนี้นี้ทั้งหมด (รวมประวัติ) ใช่ไหม?")) return;
+      debts = debts.filter(x => x.id !== btn.dataset.id);
+      saveDebts();
+      renderDebtsManageList();
+      render();
+      showToast("ลบข้อมูลหนี้แล้ว");
+    });
+  });
+}
+document.getElementById("manageDebtsBtn").addEventListener("click", () => {
+  document.getElementById("debtAddForm").style.display = "none";
+  renderDebtsManageList();
+  document.getElementById("debtsOverlay").classList.add("open");
+});
+document.getElementById("closeDebtsBtn").addEventListener("click", () => {
+  document.getElementById("debtsOverlay").classList.remove("open");
+});
+document.getElementById("debtsOverlay").addEventListener("click", () => {
+  document.getElementById("debtsOverlay").classList.remove("open");
+});
+
+// ฟอร์มแก้ไข/บันทึกรายการหนี้ — ไม่ใช้ window.prompt() เด็ดขาด ใช้ input ใน Modal เท่านั้น
+document.getElementById("debtActionSubmitBtn").addEventListener("click", () => {
+  const debtId = document.getElementById("debtActionSelect").value;
+  const actionType = document.getElementById("debtActionType").value;
+  const amount = document.getElementById("debtActionAmount").value;
+  const note = document.getElementById("debtActionNote").value;
+  if(!debtId){ showToast("ยังไม่มีรายการหนี้ให้เลือก — เพิ่มหนี้ใหม่ก่อน"); return; }
+  const amt = parseFloat(amount);
+  if(!amt || amt<=0){ showToast("กรอกจำนวนเงินให้ถูกต้อง"); return; }
+
+  const ok = (actionType === "set")
+    ? setDebtBalance(debtId, amt, note)
+    : addDebtHistory(debtId, actionType, amt, note);
+
+  if(!ok){ showToast("บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง"); return; }
+  renderDebtsManageList();
+  render();
+  showToast("บันทึกแล้ว");
+});
+
+// ฟอร์มเพิ่มหนี้ใหม่ (แสดง/ซ่อนแบบ inline แทน prompt())
+document.getElementById("addDebtBtn").addEventListener("click", () => {
+  const formEl = document.getElementById("debtAddForm");
+  const showing = formEl.style.display !== "none";
+  formEl.style.display = showing ? "none" : "flex";
+  if(!showing){
+    document.getElementById("debtNewName").value = "";
+    document.getElementById("debtNewAmount").value = "";
+    document.getElementById("debtNewGrace").checked = true;
+    document.getElementById("debtNewName").focus();
+  }
+});
+document.getElementById("debtNewSubmitBtn").addEventListener("click", () => {
+  const name = document.getElementById("debtNewName").value.trim();
+  const amt = parseFloat(document.getElementById("debtNewAmount").value);
+  const grace = document.getElementById("debtNewGrace").checked;
+  if(!name){ showToast("กรอกชื่อหนี้ก่อน"); return; }
+  if(isNaN(amt) || amt<0){ showToast("กรอกยอดคงค้างเริ่มต้นให้ถูกต้อง"); return; }
+
+  debts.push({
+    id: makeId(), name, type: "other", outstandingBalance: amt, gracePeriod: grace, note: "",
+    history: [{ id: makeId(), type:"adjustment", amount: amt, date: todayISO(), note:"ยอดเริ่มต้น" }]
+  });
+  saveDebts();
+  document.getElementById("debtAddForm").style.display = "none";
+  renderDebtsManageList();
+  render();
+  showToast("เพิ่มหนี้ใหม่แล้ว");
+});
+
+// ===== Milestone 5: แจ้งเตือนเสนอเพิ่มยอดหนี้อัตโนมัติ เมื่อบันทึกรายรับหมวด "กยศ." =====
+let pendingDebtBump = null; // { debtId, amount }
+function showDebtBumpBanner(debt, amount){
+  if(!debt) return;
+  pendingDebtBump = { debtId: debt.id, amount };
+  document.getElementById("debtBumpText").textContent =
+    `บันทึกรายรับ "กยศ." ฿${fmt(amount)} — เพิ่มยอดหนี้ ${debt.name} ตามนี้ด้วยไหม?`;
+  document.getElementById("debtBumpBanner").classList.add("show");
+}
+function hideDebtBumpBanner(){
+  pendingDebtBump = null;
+  document.getElementById("debtBumpBanner").classList.remove("show");
+}
+document.getElementById("debtBumpConfirmBtn").addEventListener("click", () => {
+  if(!pendingDebtBump) return;
+  addDebtHistory(pendingDebtBump.debtId, "increase", pendingDebtBump.amount, "จากรายรับ กยศ. อัตโนมัติ");
+  hideDebtBumpBanner();
+  render();
+  showToast("เพิ่มยอดหนี้แล้ว");
+});
+document.getElementById("debtBumpDismissBtn").addEventListener("click", hideDebtBumpBanner);
 
 // ===== Phase 4: Recurring Expenses + Upcoming Payments — UI =====
 
