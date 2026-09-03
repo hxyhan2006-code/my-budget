@@ -222,7 +222,7 @@
   .page-anchor{ max-width:460px; margin:0 auto; position:relative; }
   .overlay{
     position:fixed; inset:0; background:rgba(4,3,10,0.6); display:none;
-    align-items:flex-end; justify-content:center; z-index:1000 !important; backdrop-filter:blur(2px);
+    align-items:flex-end; justify-content:center; z-index:10; backdrop-filter:blur(2px);
   }
   .overlay.open{ display:flex; }
   .sheet-modal{
@@ -1003,144 +1003,21 @@ h1,h2,h3,h4,.title,.brand-name{letter-spacing:-.02em}
 }
 </style>
 
-<style id="vaultet-notification-mobile-accordion">
-/* Notification Modal — mobile-first layout */
-#notificationOverlay .notification-sheet{
-  width:min(520px,100%); max-height:min(92dvh,760px); height:auto;
-  display:flex; flex-direction:column; overflow:hidden;
-  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
-}
-#notificationOverlay .notification-modal-head{
-  flex:0 0 auto; padding:2px 0 12px; margin:0;
-}
-#notificationOverlay .notification-history-section{
-  flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
-  margin-top:10px;
-}
-#notificationOverlay .notification-section-head{
-  flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
-  gap:10px; margin:0 0 8px;
-}
-#notificationOverlay .notification-section-head h3{
-  margin:0; font-size:13px; line-height:1.25;
-}
-#notificationOverlay .notification-section-head p{
-  margin:3px 0 0; color:var(--faint); font-size:10px; line-height:1.35;
-}
-#notificationOverlay .notification-count{
-  min-width:26px; height:26px; padding:0 7px; display:inline-flex; align-items:center; justify-content:center;
-  border-radius:999px; background:#1A1A1D; border:1px solid #2B2B30;
-  color:var(--faint); font:600 10px/1 var(--font-sans,inherit);
-}
-#notificationOverlay .notification-list{
-  flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch; padding:1px 2px 4px 0; display:flex; flex-direction:column; gap:7px;
-  scrollbar-width:thin;
-}
-#notificationOverlay .notification-list:empty::before{
-  content:"ยังไม่มีประวัติการแจ้งเตือน"; display:block; padding:28px 12px; text-align:center;
-  color:var(--faint); font-size:11px;
-}
-#notificationOverlay .notification-settings-section{
-  flex:0 0 auto; margin-top:10px; border-top:1px solid #27272A; padding-top:9px;
-}
-#notificationOverlay .notification-settings-toggle{
-  width:100%; min-height:46px; padding:7px 10px; border:1px solid #29292E; border-radius:13px;
-  background:#171719; color:var(--text); display:flex; align-items:center; justify-content:space-between;
-  text-align:left; cursor:pointer;
-}
-#notificationOverlay .notification-settings-toggle:active{background:#1C1C20}
-#notificationOverlay .notification-settings-label{display:flex; align-items:center; gap:9px; min-width:0}
-#notificationOverlay .notification-settings-icon{
-  width:30px; height:30px; flex:0 0 30px; display:grid; place-items:center; border-radius:9px;
-  background:#202024; font-size:14px;
-}
-#notificationOverlay .notification-settings-label strong{display:block; font-size:12px; line-height:1.25}
-#notificationOverlay .notification-settings-label small{display:block; margin-top:2px; color:var(--faint); font-size:9px; line-height:1.3}
-#notificationOverlay .notification-settings-chevron{
-  width:25px; height:25px; display:grid; place-items:center; border-radius:50%; color:var(--faint);
-  background:#202024; font-size:15px; line-height:1; transition:transform .18s ease;
-}
-#notificationOverlay .notification-settings-toggle[aria-expanded="true"] .notification-settings-chevron{transform:rotate(180deg)}
-#notificationOverlay .notification-settings-panel{
-  padding-top:8px; max-height:46vh; overflow-y:auto; overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
-#notificationOverlay .notification-settings-panel[hidden]{display:none!important}
-#notificationOverlay .notification-permission{
-  margin:0 0 8px!important; padding:8px 10px!important; border-radius:11px!important;
-  font-size:9.5px!important; line-height:1.45!important;
-}
-#notificationOverlay .notification-actions{
-  display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:8px;
-}
-#notificationOverlay .notification-actions .manage-accounts-btn{
-  min-width:0; min-height:34px; padding:6px 5px; font-size:9.5px;
-}
-#notificationOverlay .notification-settings-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0!important;
-}
-#notificationOverlay .notification-setting{
-  padding:8px 9px!important; border-radius:11px!important;
-}
-#notificationOverlay .notification-setting label{font-size:10.5px!important}
-#notificationOverlay .notification-setting small{font-size:8.5px!important; line-height:1.35!important}
-#notificationOverlay .notification-privacy{
-  flex:0 0 auto; margin-top:8px; padding:7px 2px 0; color:var(--faint); font-size:8.5px; line-height:1.4;
-}
-@media (min-width:601px){
-  #notificationOverlay .notification-sheet{max-height:86vh; padding:18px 18px 20px}
-  #notificationOverlay .notification-history-section{min-height:280px}
-  #notificationOverlay .notification-list{max-height:390px}
-  #notificationOverlay .notification-settings-panel{max-height:360px}
-}
-@media (max-width:380px){
-  #notificationOverlay .notification-sheet{max-height:94dvh; padding-left:11px; padding-right:11px}
-  #notificationOverlay .notification-settings-grid{grid-template-columns:1fr}
-  #notificationOverlay .notification-actions{grid-template-columns:1fr 1fr 1fr}
-  #notificationOverlay .notification-setting{padding:7px 8px!important}
-  #notificationOverlay .notification-privacy{display:none}
-}
-</style>
-
-<style id="vaultet-modal-overlay-final-fix">
-/* Modal/Overlay must always sit above navigation and floating actions. */
-.overlay{z-index:1000 !important;}
-body:has(.overlay.open) .ux-bottom-nav,
-body:has(.overlay.open) .fab,
-body:has(.overlay.open) .fab-ai,
-body:has(.overlay.open) .page-anchor{
-  display:none !important;
-}
-
-/* Notification close button: reliable mobile touch target. */
-#notificationOverlay #closeNotificationBtn{
-  min-width:40px !important;
-  min-height:40px !important;
-  width:40px !important;
-  height:40px !important;
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex:0 0 40px !important;
-  cursor:pointer !important;
-  touch-action:manipulation !important;
-}
-
-/* Notification bottom sheet: stable, spacious mobile height. */
-#notificationOverlay .notification-sheet{
-  min-height:65dvh !important;
-  height:70dvh !important;
-  max-height:94dvh !important;
-  box-sizing:border-box !important;
-}
-@media (min-width:601px){
-  #notificationOverlay .notification-sheet{
-    height:auto !important;
-    min-height:65vh !important;
-    max-height:86vh !important;
-  }
-}
+<style id="vaultet-ai-modal-overhaul">
+#aiAnalystOverlay,#aiAnalystOverlay .sheet-modal,#aiAnalystBody{overflow-x:hidden!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+#aiChatInput,.ai-chat-input-row input,.ai-textarea{font-size:16px!important;line-height:1.5!important;box-sizing:border-box!important}
+#aiAnalystOverlay{background:#0A0A0C!important}
+#aiAnalystOverlay .sheet-modal{background:#0A0A0C!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+#aiAnalystOverlay .ai-message,#aiAnalystOverlay .assistant-message,#aiAnalystOverlay .ai-bubble,#aiAnalystOverlay .model-message{background:transparent!important;border:0!important;box-shadow:none!important;color:#F4F4F5!important;line-height:1.65!important}
+#aiAnalystOverlay .user-message,#aiAnalystOverlay .user-bubble{margin-left:auto!important;margin-right:0!important;width:fit-content!important;max-width:min(84%,560px)!important;background:#212124!important;color:#F4F4F5!important;border:0!important;border-radius:22px!important;padding:10px 15px!important;box-shadow:none!important}
+#aiAnalystOverlay .message-actions,#aiAnalystOverlay .chat-actions,#aiAnalystOverlay .ai-message-actions{display:flex!important;gap:4px!important;margin-top:5px!important;opacity:.72!important}
+#aiAnalystOverlay .message-actions button,#aiAnalystOverlay .chat-actions button,#aiAnalystOverlay .ai-message-actions button{width:28px!important;height:28px!important;min-width:28px!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#A1A1AA!important;font-size:13px!important}
+#aiAnalystOverlay .message-actions button:hover,#aiAnalystOverlay .chat-actions button:hover,#aiAnalystOverlay .ai-message-actions button:hover{background:#18181B!important;color:#E4E4E7!important}
+#aiAnalystOverlay #aiChatInput,#aiAnalystOverlay .ai-chat-input-row,#aiAnalystOverlay .ai-chat-input-container{background:#18181B!important;border:1px solid #27272A!important;border-radius:28px!important}
+#aiAnalystOverlay #aiChatInput,#aiAnalystOverlay .ai-chat-input-row input{color:#F4F4F5!important;background:transparent!important;border:0!important;outline:0!important}
+#aiAnalystOverlay .ai-chat-input-row button,#aiAnalystOverlay #aiChatSend{width:40px!important;height:40px!important;min-width:40px!important;border-radius:50%!important;border:0!important;background:#F4F4F5!important;color:#0A0A0C!important}
+#aiAnalystOverlay .ai-chat-notice,#aiAnalystOverlay .ai-mode-notice,#aiAnalystOverlay .chat-notice{font-size:10px!important;font-weight:400!important;opacity:.45!important;margin:4px 0!important;padding:0!important;background:transparent!important;border:0!important}
+@media(max-width:600px){#aiAnalystOverlay .sheet-modal{min-height:100dvh!important;height:100dvh!important;padding-left:12px!important;padding-right:12px!important}#aiAnalystBody{min-width:0!important;max-width:100%!important}}
 </style>
 </head>
 <body>
@@ -4714,7 +4591,7 @@ function renderVaultetNotifications(){
  const a=loadVaultetNotifications(),unread=a.filter(n=>!n.read).length,badge=document.getElementById("notificationUnreadBadge"),dot=document.getElementById("uxBellDot");
  if(badge){badge.textContent=unread;badge.style.display=unread?"flex":"none"}if(dot)dot.style.display=unread?"block":"none";
  const draw=(arr,target)=>{if(!target)return;target.innerHTML=arr.length?arr.map(n=>`<div class="notification-item ${n.read?"":"unread"}" data-notif-id="${escapeHtml(n.id)}"><div class="notification-icon">${n.icon||"🔔"}</div><div class="notification-content"><div class="notification-item-title">${escapeHtml(n.title)}</div><div class="notification-item-body">${escapeHtml(n.body)}</div></div><div class="notification-time">${escapeHtml(n.day===todayISO()?new Date(n.createdAt).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}):dayLabel(n.day))}</div></div>`).join(""):"<div class=\"notification-empty\">ยังไม่มีการแจ้งเตือน 🎉</div>";target.querySelectorAll("[data-notif-id]").forEach(el=>el.onclick=()=>{const x=loadVaultetNotifications(),n=x.find(v=>v.id===el.dataset.notifId);if(n)n.read=true;saveVaultetNotifications(x);renderVaultetNotifications()})};
- draw(a.slice(0,3),document.getElementById("notificationPreviewList"));draw(a,document.getElementById("notificationFullList"));const countEl=document.getElementById("notificationHistoryCount");if(countEl)countEl.textContent=String(a.length);
+ draw(a.slice(0,3),document.getElementById("notificationPreviewList"));draw(a,document.getElementById("notificationFullList"));
  const sub=document.getElementById("notificationDashboardSub");if(sub)sub.textContent=unread?`มี ${unread} รายการที่ยังไม่ได้อ่าน`:"ไม่มีรายการใหม่";
 }
 function openVaultetNotificationCenter(){renderVaultetNotifications();document.getElementById("notificationOverlay")?.classList.add("open")}
@@ -4728,8 +4605,6 @@ function initVaultetNotifications(){
  document.getElementById("notificationViewAllBtn")?.addEventListener("click",openVaultetNotificationCenter);
  document.getElementById("notificationSettingsBtn")?.addEventListener("click",openVaultetNotificationCenter);
  document.getElementById("closeNotificationBtn")?.addEventListener("click",closeVaultetNotificationCenter);
-  const notificationSettingsToggle=document.getElementById("notificationSettingsToggle"),notificationSettingsPanel=document.getElementById("notificationSettingsPanel");
-  notificationSettingsToggle?.addEventListener("click",()=>{const open=notificationSettingsToggle.getAttribute("aria-expanded")==="true";notificationSettingsToggle.setAttribute("aria-expanded",String(!open));if(notificationSettingsPanel){notificationSettingsPanel.hidden=open;}});
  document.getElementById("notificationOverlay")?.addEventListener("click",e=>{if(e.target.id==="notificationOverlay")closeVaultetNotificationCenter()});
  document.getElementById("markNotificationsReadBtn")?.addEventListener("click",()=>{const a=loadVaultetNotifications();a.forEach(n=>n.read=true);saveVaultetNotifications(a);renderVaultetNotifications();showToast("อ่านการแจ้งเตือนทั้งหมดแล้ว")});
  document.getElementById("clearNotificationsBtn")?.addEventListener("click",()=>{saveVaultetNotifications([]);renderVaultetNotifications();showToast("ล้างประวัติการแจ้งเตือนแล้ว")});
@@ -6274,51 +6149,31 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
 
   <!-- ===== Round 4: Notification Center Overlay ===== -->
   <div class="overlay" id="notificationOverlay">
-    <div class="sheet notification-sheet" role="dialog" aria-modal="true" aria-labelledby="notificationModalTitle">
-      <div class="sheet-head notification-modal-head">
-        <strong id="notificationModalTitle">🔔 การแจ้งเตือนของ Vaultet</strong>
-        <button class="icon-btn" id="closeNotificationBtn" type="button" aria-label="ปิด" onclick="closeVaultetNotificationCenter()">✕</button>
+    <div class="sheet" style="max-height:88vh;overflow:auto;">
+      <div class="sheet-head"><strong>🔔 การแจ้งเตือนของ Vaultet</strong><button class="icon-btn" id="closeNotificationBtn" type="button">✕</button></div>
+      <div class="notification-permission" id="notificationPermissionBox">การแจ้งเตือนในแอปทำงานได้ทันที ส่วนการแจ้งเตือนระดับระบบเมื่อแอปถูกปิดต้องติดตั้งเป็น PWA และมี Web Push backend ของ Vaultet</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="manage-accounts-btn" id="requestNotificationBtn">เปิดการแจ้งเตือนบนเครื่อง</button>
+        <button class="manage-accounts-btn" id="markNotificationsReadBtn">อ่านทั้งหมด</button>
+        <button class="manage-accounts-btn" id="clearNotificationsBtn">ล้างประวัติ</button>
       </div>
-
-      <section class="notification-history-section" aria-labelledby="notificationHistoryTitle">
-        <div class="notification-section-head">
-          <div>
-            <h3 id="notificationHistoryTitle">ประวัติ</h3>
-            <p>การแจ้งเตือนล่าสุดของคุณ</p>
-          </div>
-          <span class="notification-count" id="notificationHistoryCount">0</span>
-        </div>
-        <div id="notificationFullList" class="notification-list" aria-live="polite"></div>
-      </section>
-
-      <section class="notification-settings-section" aria-labelledby="notificationSettingsTitle">
-        <button type="button" class="notification-settings-toggle" id="notificationSettingsToggle" aria-expanded="false" aria-controls="notificationSettingsPanel">
-          <span class="notification-settings-label"><span class="notification-settings-icon">⚙️</span><span><strong id="notificationSettingsTitle">การตั้งค่า</strong><small>ปรับประเภทการแจ้งเตือน 8 ตัวเลือก</small></span></span>
-          <span class="notification-settings-chevron" aria-hidden="true">⌄</span>
-        </button>
-        <div class="notification-settings-panel" id="notificationSettingsPanel" hidden>
-          <div class="notification-permission" id="notificationPermissionBox">การแจ้งเตือนในแอปทำงานได้ทันที ส่วนการแจ้งเตือนระดับระบบเมื่อแอปถูกปิดต้องติดตั้งเป็น PWA และมี Web Push backend ของ Vaultet</div>
-          <div class="notification-actions">
-            <button class="manage-accounts-btn" id="requestNotificationBtn" type="button">เปิดการแจ้งเตือนบนเครื่อง</button>
-            <button class="manage-accounts-btn" id="markNotificationsReadBtn" type="button">อ่านทั้งหมด</button>
-            <button class="manage-accounts-btn" id="clearNotificationsBtn" type="button">ล้างประวัติ</button>
-          </div>
-          <div class="notification-settings-grid">
-            <div class="notification-setting"><label><span>เปิดระบบแจ้งเตือน</span><input type="checkbox" id="notifEnabledInput"></label><small>ให้ Vaultet ตรวจสอบและสร้างการแจ้งเตือนอัตโนมัติ</small></div>
-            <div class="notification-setting"><label><span>แจ้งเตือนเชิงบวก</span><input type="checkbox" id="notifPositiveInput"></label><small>เช่น เงินสำรองถึงเป้าหมายหรือการเงินแข็งแรง</small></div>
-            <div class="notification-setting"><label><span>งบประมาณ</span><input type="checkbox" id="notifBudgetInput"></label><small>เตือนเมื่อเกินงบหรือใช้ pace เร็วเกินไป</small></div>
-            <div class="notification-setting"><label><span>เงินสำรอง</span><input type="checkbox" id="notifEmergencyInput"></label><small>เตือนเมื่อเงินสำรองต่ำกว่าเป้าหมาย</small></div>
-            <div class="notification-setting"><label><span>Forecast / กระแสเงินสด</span><input type="checkbox" id="notifForecastInput"></label><small>เตือนเมื่อเงินอาจไม่พอถึงสิ้นช่วง</small></div>
-            <div class="notification-setting"><label><span>ค่าใช้จ่ายประจำ / หนี้</span><input type="checkbox" id="notifObligationInput"></label><small>เตือนภาระใกล้ถึงกำหนดและแรงกดดันจากหนี้</small></div>
-            <div class="notification-setting"><label><span>พฤติกรรมการใช้เงิน</span><input type="checkbox" id="notifBehaviorInput"></label><small>เช่น spending spike, รายรับลดลง, อัตราออมต่ำ</small></div>
-            <div class="notification-setting"><label><span>เงียบช่วง 23:00–07:00</span><input type="checkbox" id="notifQuietInput"></label><small>Critical ยังสามารถข้าม quiet hours ได้</small></div>
-          </div>
-        </div>
-      </section>
-
-      <div class="notification-privacy">ความเป็นส่วนตัว: notification payload ไม่ควรมี API Key หรือข้อมูลการเงินละเอียดเกินจำเป็น หากเปิด Web Push ในอนาคต ให้ส่งเพียง notification ID/ชนิด แล้วดึงรายละเอียดจากบัญชีที่ยืนยันตัวตน</div>
+      <div style="margin-top:14px;font-size:12px;font-weight:800;">การตั้งค่า</div>
+      <div class="notification-settings-grid" style="margin-top:8px">
+        <div class="notification-setting"><label><span>เปิดระบบแจ้งเตือน</span><input type="checkbox" id="notifEnabledInput"></label><small>ให้ Vaultet ตรวจสอบและสร้างการแจ้งเตือนอัตโนมัติ</small></div>
+        <div class="notification-setting"><label><span>แจ้งเตือนเชิงบวก</span><input type="checkbox" id="notifPositiveInput"></label><small>เช่น เงินสำรองถึงเป้าหมายหรือการเงินแข็งแรง</small></div>
+        <div class="notification-setting"><label><span>งบประมาณ</span><input type="checkbox" id="notifBudgetInput"></label><small>เตือนเมื่อเกินงบหรือใช้ pace เร็วเกินไป</small></div>
+        <div class="notification-setting"><label><span>เงินสำรอง</span><input type="checkbox" id="notifEmergencyInput"></label><small>เตือนเมื่อเงินสำรองต่ำกว่าเป้าหมาย</small></div>
+        <div class="notification-setting"><label><span>Forecast / กระแสเงินสด</span><input type="checkbox" id="notifForecastInput"></label><small>เตือนเมื่อเงินอาจไม่พอถึงสิ้นช่วง</small></div>
+        <div class="notification-setting"><label><span>ค่าใช้จ่ายประจำ / หนี้</span><input type="checkbox" id="notifObligationInput"></label><small>เตือนภาระใกล้ถึงกำหนดและแรงกดดันจากหนี้</small></div>
+        <div class="notification-setting"><label><span>พฤติกรรมการใช้เงิน</span><input type="checkbox" id="notifBehaviorInput"></label><small>เช่น spending spike, รายรับลดลง, อัตราออมต่ำ</small></div>
+        <div class="notification-setting"><label><span>เงียบช่วง 23:00–07:00</span><input type="checkbox" id="notifQuietInput"></label><small>Critical ยังสามารถข้าม quiet hours ได้</small></div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;font-weight:800;">ประวัติ</div>
+      <div id="notificationFullList" class="notification-list" style="margin-top:8px"></div>
+      <div style="margin-top:14px;font-size:10px;color:var(--faint);line-height:1.5">ความเป็นส่วนตัว: notification payload ไม่ควรมี API Key หรือข้อมูลการเงินละเอียดเกินจำเป็น หากเปิด Web Push ในอนาคต ให้ส่งเพียง notification ID/ชนิด แล้วดึงรายละเอียดจากบัญชีที่ยืนยันตัวตน</div>
     </div>
   </div>
+
 
 <script>
 /* ===== Round 5 UX/UI navigation layer ===== */
@@ -6537,6 +6392,10 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
 })();
 </script>
 
+<script id="vaultet-notification-settings-toggle-fix">
+function toggleNotificationSettings(){const panel=document.getElementById("notificationSettingsPanel");const toggle=document.getElementById("notificationSettingsToggle");if(!panel||!toggle)return;const isClosed=panel.style.display==="none"||panel.hidden;panel.hidden=!isClosed;panel.style.display=isClosed?"block":"none";toggle.setAttribute("aria-expanded",String(isClosed));}
+document.addEventListener("click",function(e){const toggle=e.target.closest("#notificationSettingsToggle");if(!toggle)return;e.preventDefault();e.stopPropagation();toggleNotificationSettings();},true);
+</script>
 </body>
 </html>
 <style id="vaultet-round10-spacing">
