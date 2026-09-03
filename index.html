@@ -106,6 +106,7 @@
     font-family:inherit; font-size:12px; font-weight:600; color:var(--ink); background:var(--surface-2); border:1px solid var(--line);
     border-radius:20px; padding:8px 13px; cursor:pointer; margin-top:8px;
   }
+  .manage-accounts-btn.flex-btn{ flex:1; margin-top:0; text-align:center; white-space:nowrap; }
   .backup-row{ display:flex; gap:16px; padding:2px 2px 0; }
   .backup-link{
     font-family:inherit; font-size:12px; color:var(--faint); background:none; border:none; font-weight:500;
@@ -561,13 +562,15 @@
       <div class="networth-sub"><span>คนอื่นติดเงิน</span><span class="mono" id="receivablesNum">฿0</span></div>
       <div class="networth-sub"><span>หนี้สินรวม</span><span class="mono" id="totalDebtsNum" style="color:var(--expense)">฿0</span></div>
       <div id="accountsList"></div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="manage-accounts-btn" id="manageAccountsBtn">จัดการบัญชี</button>
-        <button class="manage-accounts-btn" id="manageReservedBtn">เงินกันไว้</button>
-        <button class="manage-accounts-btn" id="manageLoansBtn">เงินให้ยืม</button>
-        <button class="manage-accounts-btn" id="manageDebtsBtn">หนี้สิน</button>
-        <button class="manage-accounts-btn" id="manageRecurringBtn">ค่าใช้จ่ายประจำ</button>
-        <button class="manage-accounts-btn" id="openForecastBtn">คาดการณ์กระแสเงินสด</button>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="manage-accounts-btn flex-btn" id="manageAccountsBtn">จัดการบัญชี</button>
+        <button class="manage-accounts-btn flex-btn" id="manageReservedBtn">เงินกันไว้</button>
+        <button class="manage-accounts-btn flex-btn" id="manageRecurringBtn">ค่าใช้จ่ายประจำ</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="manage-accounts-btn flex-btn" id="manageDebtsBtn">หนี้สิน</button>
+        <button class="manage-accounts-btn flex-btn" id="manageLoansBtn">เงินให้ยืม</button>
+        <button class="manage-accounts-btn flex-btn" id="openForecastBtn">คาดการณ์กระแสเงินสด</button>
       </div>
     </div>
 
@@ -2772,6 +2775,19 @@ const AI_RESPONSE_SCHEMA = {
   required: ["action","amount","note","confidence","ambiguousFields"]
 };
 
+// เรียก Gemini API พร้อม auto-retry เงียบๆ ถ้าเจอ HTTP 429 (Too Many Requests — โควต้าฟรีต่อนาทีเต็มชั่วคราว)
+// รอสักพักแล้วลองซ้ำให้อัตโนมัติ ก่อนจะคืนผลให้โค้ดที่เรียกใช้จัดการ error ตามปกติถ้ายังไม่สำเร็จ
+// ผู้ใช้จะไม่เห็น error 429 เลยถ้า retry แล้วผ่านภายในจำนวนครั้งที่กำหนด
+async function fetchGeminiWithRetry(url, options, maxRetries = 2){
+  let attempt = 0;
+  while(true){
+    const res = await fetch(url, options);
+    if(res.status !== 429 || attempt >= maxRetries) return res;
+    attempt++;
+    await new Promise(r => setTimeout(r, 1500 * attempt)); // หน่วงเพิ่มขึ้นทีละรอบ: 1.5s, 3s
+  }
+}
+
 // รับข้อความภาษาคน คืน { ok:true, payload } ตาม schema ในข้อ 2 ของแผน หรือ { ok:false, error }
 async function parseNaturalLanguageEntry(text){
   const apiKey = localStorage.getItem(AI_APIKEY_KEY);
@@ -2783,7 +2799,7 @@ async function parseNaturalLanguageEntry(text){
 
   let res;
   try{
-    res = await fetch(
+    res = await fetchGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
@@ -2847,7 +2863,7 @@ async function classifyIntent(text){
 
   let res;
   try{
-    res = await fetch(
+    res = await fetchGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
@@ -3037,7 +3053,7 @@ async function analyzeFinancialQuery(query, snapshot){
 
   let res;
   try{
-    res = await fetch(
+    res = await fetchGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
@@ -3316,7 +3332,7 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
 
   let res;
   try{
-    res = await fetch(
+    res = await fetchGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
@@ -3468,7 +3484,7 @@ async function generateProactiveInsight(evalResult, snapshot, profile){
 
   let res;
   try{
-    res = await fetch(
+    res = await fetchGeminiWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
