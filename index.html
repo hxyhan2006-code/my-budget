@@ -416,8 +416,30 @@
   #aiConfirmCancelBtn{ background:var(--surface-2); color:var(--ink); border:1px solid var(--line); }
   #aiConfirmSubmitBtn{ background:var(--accent-grad); color:#fff; border:none; box-shadow:0 8px 20px rgba(102,60,220,0.4); }
   /* ===== AI Layer (Milestone 2): Financial Analyst overlay ===== */
-  .ai-analyst-body{ font-size:14px; line-height:1.75; color:var(--ink); margin-top:2px; }
+  .ai-analyst-body{
+    font-size:14px; line-height:1.75; color:var(--ink); margin-top:2px;
+    max-height:52vh; overflow-y:auto; display:flex; flex-direction:column; padding-right:2px;
+  }
   .ai-analyst-body strong{ font-weight:700; }
+  /* ===== Persistent AI Chat (Financial Advisor) ===== */
+  .ai-chat-bubble{ max-width:84%; padding:9px 13px; border-radius:15px; font-size:13.5px; line-height:1.6; margin-bottom:9px; word-break:break-word; }
+  .ai-chat-bubble.ai-chat-user{ background:var(--accent1); color:#fff; margin-left:auto; border-bottom-right-radius:4px; }
+  .ai-chat-bubble.ai-chat-model{ background:var(--surface-2); color:var(--ink); margin-right:auto; border-bottom-left-radius:4px; }
+  .ai-chat-empty{ text-align:center; color:var(--faint); font-size:13px; padding:24px 10px; }
+  .ai-chat-input-row{ display:flex; gap:8px; margin-top:12px; }
+  .ai-chat-input-row input{
+    flex:1; font-family:inherit; font-size:14px; border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; background:var(--surface-2); color:var(--ink);
+  }
+  .ai-chat-input-row button{
+    flex-shrink:0; font-family:inherit; font-size:13.5px; font-weight:700; color:#fff; border:none;
+    border-radius:12px; padding:0 18px; background:var(--accent-grad); cursor:pointer;
+  }
+  .ai-chat-input-row button:disabled{ opacity:0.5; cursor:default; }
+  .ai-chat-link-btn{
+    background:none; border:none; color:var(--accent1); font-family:inherit; font-size:12.5px;
+    text-decoration:underline; cursor:pointer; padding:8px 0 0; text-align:left;
+  }
   /* ===== Milestone 5: Debt Management Engine ===== */
   .debt-card{ background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-top:10px; }
   .debt-card:first-child{ margin-top:0; }
@@ -727,6 +749,7 @@
     <p class="ai-hint">พิมพ์เป็นภาษาพูดได้เลย เช่น รายรับ รายจ่าย เงินออม โอนเงินข้ามบัญชี หรือให้เพื่อนยืมเงิน</p>
     <div class="ai-input-error" id="aiInputError"></div>
     <button id="aiProcessBtn">ประมวลผล</button>
+    <button type="button" class="ai-chat-link-btn" id="openChatDirectBtn">💬 หรือคุยแบบอิสระกับที่ปรึกษาการเงิน (ไม่ต้องเป็นคำสั่ง) →</button>
   </div>
 </div>
 
@@ -783,12 +806,18 @@
 <div class="overlay" id="aiAnalystOverlay">
   <div class="sheet-modal" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <span class="modal-title">วิเคราะห์การเงิน</span>
-      <button class="close-btn" id="closeAiAnalystBtn">✕</button>
+      <span class="modal-title">ที่ปรึกษาการเงิน AI</span>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button class="icon-btn" id="clearAiChatBtn" type="button" title="ล้างประวัติการสนทนา">🗑️</button>
+        <button class="close-btn" id="closeAiAnalystBtn">✕</button>
+      </div>
     </div>
-    <div class="ai-confirm-quote" id="aiAnalystQuote"></div>
     <div class="ai-analyst-body" id="aiAnalystBody"></div>
-    <button id="aiAnalystCloseBtn" style="width:100%; margin-top:20px; padding:15px 0; border-radius:14px; border:none; color:#fff; font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer; background:var(--accent-grad); box-shadow:0 8px 20px rgba(102,60,220,0.4);">ปิด</button>
+    <div class="ai-chat-input-row">
+      <input id="aiChatInput" type="text" placeholder="พิมพ์คุยต่อได้เลย..." autocomplete="off" />
+      <button id="aiChatSendBtn" type="button">ส่ง</button>
+    </div>
+    <div class="ai-input-error" id="aiChatError"></div>
   </div>
 </div>
 
@@ -967,6 +996,7 @@ const AI_APIKEY_KEY = "finance_tracker_ai_apikey_v1";
 // ===== AI Layer (Milestone 3) =====
 // กฎเหล็กเดียวกับ AI_APIKEY_KEY: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn เด็ดขาด — เป็นข้อมูลเฉพาะเครื่อง ไม่ใช่ backup การเงิน
 const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
+const AI_CHAT_KEY = "finance_tracker_ai_chat_v1"; // ประวัติแชทที่ปรึกษาการเงิน AI (แยกจากรายการบันทึกทั่วไป — เก็บในเครื่องนี้เท่านั้น)
 // Milestone 4: แคชผลวิเคราะห์ Proactive Insight — เก็บแยกจากทุกคีย์ข้างบน ห้ามรวมเข้า exportBtn backup
 const AI_PROACTIVE_KEY = "finance_tracker_ai_proactive_v1";
 // Milestone 5: หนี้สิน (เช่น กยศ.) — เก็บรวมกับ exportBtn backup ได้ตามปกติ (ไม่ใช่ secret เฉพาะเครื่อง)
@@ -2883,6 +2913,88 @@ async function analyzeFinancialQuery(query, snapshot){
   return { ok:true, text };
 }
 
+// ===== Persistent AI Chat (ที่ปรึกษาการเงิน) — เก็บประวัติสนทนาไว้ในเครื่องนี้เท่านั้น =====
+function loadAIChatHistory(){
+  try{
+    const raw = localStorage.getItem(AI_CHAT_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveAIChatHistory(history){
+  try{ localStorage.setItem(AI_CHAT_KEY, JSON.stringify(history.slice(-40))); }catch(e){} // เก็บย้อนหลังไม่เกิน 40 ข้อความ กันไฟล์บวม
+}
+function clearAIChatHistory(){
+  try{ localStorage.removeItem(AI_CHAT_KEY); }catch(e){}
+}
+
+function renderAiChatBubbles(){
+  const history = loadAIChatHistory();
+  const body = document.getElementById("aiAnalystBody");
+  if(!body) return;
+  if(!history.length){
+    body.innerHTML = `<div class="ai-chat-empty">เริ่มคุยกับที่ปรึกษาการเงิน AI ได้เลย ถามอะไรก็ได้เกี่ยวกับสถานะการเงินของคุณ หรือแค่อยากระบายก็ได้</div>`;
+    return;
+  }
+  body.innerHTML = history.map(m => {
+    const cls = m.role === "user" ? "ai-chat-user" : "ai-chat-model";
+    const inner = m.role === "user" ? escapeHtml(m.text) : simpleMarkdownToHtml(m.text);
+    return `<div class="ai-chat-bubble ${cls}">${inner}</div>`;
+  }).join("");
+  body.scrollTop = body.scrollHeight;
+}
+
+// ระบบพรอมป์เดียวกับ buildFinancialAnalystSystemPrompt แต่เปิดกว้างขึ้นสำหรับการคุยแบบต่อเนื่อง/พูดคุยทั่วไป ไม่ใช่แค่ถามตัวเลข
+function buildAIChatSystemPrompt(snapshot, profile){
+  const base = buildFinancialAnalystSystemPrompt(snapshot, profile);
+  return base + "\n\n" +
+    [
+      "หมายเหตุเพิ่มเติมสำหรับโหมดแชทต่อเนื่องนี้:",
+      "- นี่คือการสนทนาต่อเนื่องหลายข้อความ ให้จำบริบทจากข้อความก่อนหน้าในบทสนทนาด้วยเสมอ",
+      "- ถ้าผู้ใช้พิมพ์มาแบบทั่วไป ไม่ใช่คำถามเชิงตัวเลข (เช่น บ่น/ระบาย/ทักทาย) ให้ตอบรับแบบเป็นมิตรในฐานะที่ปรึกษาการเงินส่วนตัวได้ตามปกติ โดยยังโยงกลับมาที่สถานะการเงินจริงของผู้ใช้เมื่อเหมาะสม แต่ไม่ต้องยัดตัวเลขเข้าไปทุกครั้งถ้าไม่เกี่ยวข้อง",
+      "- ยังคงห้ามสร้างตัวเลขที่ไม่มีอยู่ใน Financial Snapshot ขึ้นมาเองเด็ดขาด",
+    ].join("\n");
+}
+
+// ส่งข้อความต่อเนื่อง (พร้อมประวัติแชท) ให้ Gemini ตอบ คืน { ok:true, text } หรือ { ok:false, error }
+async function generateChatReply(priorHistory, userText, snapshot, profile){
+  const apiKey = localStorage.getItem(AI_APIKEY_KEY);
+  if(!apiKey) return { ok:false, error:"missing_api_key" };
+  if(!userText || !userText.trim()) return { ok:false, error:"empty_input" };
+
+  const systemPrompt = buildAIChatSystemPrompt(snapshot, profile);
+  const contents = priorHistory
+    .map(m => ({ role: m.role === "user" ? "user" : "model", parts:[{ text: m.text }] }))
+    .concat([{ role:"user", parts:[{ text: userText.trim() }] }]);
+
+  let res;
+  try{
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: systemPrompt }] } })
+      }
+    );
+  }catch(e){
+    return { ok:false, error:"network_error" };
+  }
+
+  if(!res.ok){
+    let detail = "";
+    try{ detail = (await res.text()).slice(0,300); }catch(e){}
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
+  }
+
+  let data;
+  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text) return { ok:false, error:"empty_response" };
+
+  return { ok:true, text };
+}
+
 // แปลง Markdown พื้นฐาน (**ตัวหนา** และขึ้นบรรทัดใหม่) เป็น HTML อย่างปลอดภัย — escapeHtml() ก่อนเสมอ กัน XSS จากคำตอบ AI
 function simpleMarkdownToHtml(text){
   const escaped = escapeHtml(text);
@@ -3146,10 +3258,14 @@ const AI_ERROR_MESSAGES = {
   network_error: "เชื่อมต่อไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต"
 };
 
-// ===== AI Layer (Milestone 2): Financial Analyst result sheet =====
+// ===== AI Layer (Milestone 2 → อัปเกรดเป็นแชทถาวร): Financial Advisor sheet =====
+// บันทึกคำถาม+คำตอบลงประวัติแชทถาวร (ไม่ใช่ popup ครั้งเดียวทิ้งเหมือนเดิม) แล้วเปิดหน้าต่างแชท
 function openAiAnalystSheet(query, analysisText){
-  document.getElementById("aiAnalystQuote").textContent = `ถาม: "${query}"`;
-  document.getElementById("aiAnalystBody").innerHTML = simpleMarkdownToHtml(analysisText);
+  const history = loadAIChatHistory();
+  history.push({ role:"user", text: query });
+  history.push({ role:"model", text: analysisText });
+  saveAIChatHistory(history);
+  renderAiChatBubbles();
   document.getElementById("aiAnalystOverlay").classList.add("open");
 }
 function closeAiAnalystSheet(){
@@ -3157,7 +3273,70 @@ function closeAiAnalystSheet(){
 }
 document.getElementById("closeAiAnalystBtn").addEventListener("click", closeAiAnalystSheet);
 document.getElementById("aiAnalystOverlay").addEventListener("click", closeAiAnalystSheet);
-document.getElementById("aiAnalystCloseBtn").addEventListener("click", closeAiAnalystSheet);
+
+document.getElementById("clearAiChatBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  clearAIChatHistory();
+  renderAiChatBubbles();
+});
+
+// ปุ่ม "คุยแบบอิสระ" ในหน้าพิมพ์รายการ — ข้ามการคัดกรองว่าเป็นรายการหรือคำถาม เปิดแชทตรงเลย
+document.getElementById("openChatDirectBtn").addEventListener("click", () => {
+  closeAiInputSheet();
+  renderAiChatBubbles();
+  document.getElementById("aiAnalystOverlay").classList.add("open");
+});
+
+// ส่งข้อความต่อเนื่องในหน้าต่างแชท (ไม่ผ่านการคัดกรองแบบหน้าพิมพ์รายการ — คุยได้อิสระเต็มที่)
+document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
+  const input = document.getElementById("aiChatInput");
+  const text = input.value.trim();
+  const errBox = document.getElementById("aiChatError");
+  errBox.style.display = "none";
+  if(!text) return;
+
+  if(!localStorage.getItem(AI_APIKEY_KEY)){
+    errBox.textContent = AI_ERROR_MESSAGES.missing_api_key;
+    errBox.style.display = "block";
+    return;
+  }
+
+  const priorHistory = loadAIChatHistory();
+  const historyWithUserMsg = priorHistory.concat([{ role:"user", text }]);
+  saveAIChatHistory(historyWithUserMsg);
+  renderAiChatBubbles();
+  input.value = "";
+
+  const sendBtn = document.getElementById("aiChatSendBtn");
+  sendBtn.disabled = true;
+  input.disabled = true;
+
+  const snapshot = buildFinancialSnapshot();
+  const profile = loadAIProfile();
+  const result = await generateChatReply(priorHistory, text, snapshot, profile);
+
+  sendBtn.disabled = false;
+  input.disabled = false;
+  input.focus();
+
+  if(!result.ok){
+    const label = AI_ERROR_MESSAGES[result.error] || "เรียก AI ไม่สำเร็จ";
+    const codeLine = result.error ? ` (โค้ด: ${result.error}${result.status ? " HTTP " + result.status : ""})` : "";
+    errBox.textContent = label + codeLine + " — ข้อความที่พิมพ์ไว้ยังอยู่ ลองกดส่งใหม่ได้เลย";
+    errBox.style.display = "block";
+    return;
+  }
+
+  const historyWithReply = historyWithUserMsg.concat([{ role:"model", text: result.text }]);
+  saveAIChatHistory(historyWithReply);
+  renderAiChatBubbles();
+});
+document.getElementById("aiChatInput").addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    document.getElementById("aiChatSendBtn").click();
+  }
+});
 
 document.getElementById("aiProcessBtn").addEventListener("click", async () => {
   const text = document.getElementById("aiInputText").value.trim();
