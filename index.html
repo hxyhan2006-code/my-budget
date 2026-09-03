@@ -531,6 +531,7 @@
   }
   .debt-bump-banner .dismiss{ background:none; border:none; color:var(--faint); font-size:14px; padding:0 2px; }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div class="page">
@@ -762,6 +763,36 @@
       <div class="ai-key-actions">
         <button id="saveApiKeyBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">เพิ่มคีย์</button>
       </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">☁️ สำรองอัตโนมัติขึ้น Google Drive</div>
+      <div class="ai-status-row" style="margin-top:10px;">
+        <span class="ai-status-label">การเชื่อมต่อ</span>
+        <span class="ai-status-value" id="gdriveConnStatus">ยังไม่ได้เชื่อมต่อ</span>
+      </div>
+      <div class="ai-status-row">
+        <span class="ai-status-label">สำรองล่าสุด</span>
+        <span class="ai-status-value" id="gdriveLastSyncStatus">ยังไม่เคย</span>
+      </div>
+      <p class="ai-hint">สำรองไฟล์ข้อมูล (ไม่รวม API Key) ขึ้น Google Drive ส่วนตัวของคุณโดยตรง เชื่อมครั้งเดียว ล้างเครื่องยังไงก็กู้คืนจาก Drive ได้เสมอ ต้องตั้งค่า Google OAuth Client ID ของตัวเองก่อน — ดูวิธีตั้งค่า</p>
+      <label class="field-label">Google OAuth Client ID</label>
+      <input class="text-input" id="gdriveClientIdInput" type="text" placeholder="xxxxxxxxxxxx.apps.googleusercontent.com" autocomplete="off" />
+      <div class="ai-key-actions">
+        <button id="saveGDriveClientIdBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">บันทึก Client ID</button>
+      </div>
+      <div class="ai-key-actions" style="margin-top:10px;">
+        <button id="gdriveConnectBtn" style="background:var(--accent1); color:#fff; border:none; border-radius:12px; padding:10px 0; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;">เชื่อมต่อ Google Drive</button>
+        <button class="danger-btn" id="gdriveDisconnectBtn" style="display:none;">ยกเลิกการเชื่อมต่อ</button>
+      </div>
+      <div class="ai-key-actions" style="margin-top:10px;">
+        <button id="gdriveSyncNowBtn">สำรองเดี๋ยวนี้</button>
+        <button id="gdriveRestoreBtn">กู้คืนจาก Drive</button>
+      </div>
+      <label class="field-label" style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:13px; margin-top:14px; cursor:pointer;">
+        <input type="checkbox" id="gdriveAutoSyncToggle" style="width:16px;height:16px;margin:0;" />
+        สำรองอัตโนมัติทุกครั้งที่ข้อมูลเปลี่ยน
+      </label>
     </div>
 
     <div class="settings-card">
@@ -1097,6 +1128,117 @@ function getApiKeys(){
 function saveApiKeys(arr){
   localStorage.setItem(AI_APIKEYS_KEY, JSON.stringify(arr));
 }
+
+// ===== Google Drive Auto-Backup =====
+// ทำงานทั้งหมดฝั่ง client ล้วนๆ ผ่าน Google Identity Services + Drive API ตรงๆ ไม่มี server กลาง
+// scope "drive.file" คือ scope แคบสุด — แอปเข้าถึงได้แค่ไฟล์ที่แอปนี้สร้างขึ้นเองเท่านั้น แตะไฟล์อื่นใน Drive ผู้ใช้ไม่ได้เลย
+const GDRIVE_CLIENT_ID_KEY = "finance_tracker_gdrive_client_id_v1"; // OAuth Client ID ของผู้ใช้เอง — เป็น public identifier ไม่ใช่ secret แต่ยังเก็บเฉพาะเครื่อง ไม่รวมใน exportBtn
+const GDRIVE_FILE_ID_KEY = "finance_tracker_gdrive_file_id_v1"; // Drive fileId ของไฟล์ backup ที่เคยสร้างไว้แล้ว — อัปเดตทับไฟล์เดิมเสมอ ไม่สร้างไฟล์ซ้ำ
+const GDRIVE_LAST_SYNC_KEY = "finance_tracker_gdrive_last_sync_v1";
+const GDRIVE_AUTOSYNC_KEY = "finance_tracker_gdrive_autosync_v1"; // "1" = เปิดสำรองอัตโนมัติ
+const GDRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+const GDRIVE_BACKUP_FILENAME = "finance-tracker-backup.json";
+
+let gdriveTokenClient = null;
+let gdriveAccessToken = null; // เก็บใน memory เท่านั้น ไม่เขียนลง localStorage
+let gdriveAccessTokenExpiry = 0;
+let gdriveAutoSyncTimer = null;
+let gdriveSyncBusy = false;
+
+function initGDriveTokenClient(){
+  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_KEY);
+  if(!clientId || typeof google === "undefined" || !google.accounts || !google.accounts.oauth2) return null;
+  gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: GDRIVE_SCOPE,
+    callback: "" // ตั้งทับใหม่ทุกครั้งก่อนขอ token จริงในฟังก์ชัน requestGDriveToken()
+  });
+  return gdriveTokenClient;
+}
+// promptMode: "" = ลองแบบเงียบๆ ก่อน (ใช้ session ที่ล็อกอิน Google ไว้อยู่แล้ว ไม่มี popup ถ้าเคย consent แล้ว)
+//             "consent" = เปิด popup ให้ผู้ใช้ล็อกอิน/ยืนยันสิทธิ์ใหม่ (ต้องเรียกจาก user gesture เท่านั้น กันโดน popup blocker)
+function requestGDriveToken(promptMode){
+  return new Promise((resolve, reject) => {
+    if(!gdriveTokenClient) initGDriveTokenClient();
+    if(!gdriveTokenClient){ reject(new Error("no_client_id")); return; }
+    gdriveTokenClient.callback = (resp) => {
+      if(!resp || resp.error){ reject(resp || new Error("token_error")); return; }
+      gdriveAccessToken = resp.access_token;
+      gdriveAccessTokenExpiry = Date.now() + (resp.expires_in * 1000 - 60000);
+      resolve(gdriveAccessToken);
+    };
+    gdriveTokenClient.requestAccessToken({ prompt: promptMode });
+  });
+}
+// คืน access token ที่ใช้ได้ — ใช้ตัวที่ cache ไว้ถ้ายังไม่หมดอายุ ไม่งั้นลองขอเงียบๆ ก่อน
+async function ensureGDriveToken(){
+  if(gdriveAccessToken && Date.now() < gdriveAccessTokenExpiry) return gdriveAccessToken;
+  return await requestGDriveToken("");
+}
+
+// รวม payload เดียวกับที่ exportBtn ใช้ ให้ทั้งดาวน์โหลดไฟล์และอัป Drive ตรงกันเป๊ะ ไม่มี API Key/secret ปนอยู่แน่นอน
+function buildBackupPayload(){
+  return { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, debts, exportedAt: todayISO() };
+}
+
+// สร้าง/อัปเดตไฟล์ backup เดิมบน Drive (multipart upload ตาม Drive API v3) — คืน Drive file object เมื่อสำเร็จ
+async function gdriveUploadBackup(){
+  const token = await ensureGDriveToken();
+  const payload = buildBackupPayload();
+  const fileId = localStorage.getItem(GDRIVE_FILE_ID_KEY);
+  const metadata = fileId ? {} : { name: GDRIVE_BACKUP_FILENAME, mimeType: "application/json" };
+  const boundary = "finance_tracker_backup_boundary";
+  const body =
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+    `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(payload, null, 2)}\r\n` +
+    `--${boundary}--`;
+  const url = fileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+  const res = await fetch(url, {
+    method: fileId ? "PATCH" : "POST",
+    headers: { "Authorization": "Bearer " + token, "Content-Type": `multipart/related; boundary=${boundary}` },
+    body
+  });
+  if(!res.ok) throw new Error("upload_failed_" + res.status);
+  const data = await res.json();
+  if(!fileId && data.id) localStorage.setItem(GDRIVE_FILE_ID_KEY, data.id);
+  localStorage.setItem(GDRIVE_LAST_SYNC_KEY, new Date().toISOString());
+  return data;
+}
+// ดึงไฟล์ backup ล่าสุดกลับมาจาก Drive เป็น object เดียวกับที่ import ไฟล์ธรรมดาใช้
+async function gdriveDownloadBackup(){
+  const token = await ensureGDriveToken();
+  const fileId = localStorage.getItem(GDRIVE_FILE_ID_KEY);
+  if(!fileId) throw new Error("no_backup_file_yet");
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  if(!res.ok) throw new Error("download_failed_" + res.status);
+  return await res.json();
+}
+// เรียกจากท้าย render() ทุกครั้ง — debounce ไว้ 4 วิ กันยิงอัปโหลดรัวๆ ตอนแก้ข้อมูลติดกันหลายจุด
+function scheduleGDriveAutoSync(){
+  if(localStorage.getItem(GDRIVE_AUTOSYNC_KEY) !== "1") return;
+  if(!localStorage.getItem(GDRIVE_CLIENT_ID_KEY)) return;
+  clearTimeout(gdriveAutoSyncTimer);
+  gdriveAutoSyncTimer = setTimeout(() => { runGDriveSync(true); }, 4000);
+}
+// silent=true คือเรียกจาก auto-sync เบื้องหลัง (ห้ามโชว์ toast ถ้าพลาด แค่อัปเดตสถานะเงียบๆ ให้ผู้ใช้เห็นตอนเข้าตั้งค่า)
+async function runGDriveSync(silent){
+  if(gdriveSyncBusy) return;
+  gdriveSyncBusy = true;
+  try{
+    await gdriveUploadBackup();
+    if(!silent) showToast("สำรองขึ้น Google Drive แล้ว");
+  }catch(e){
+    if(!silent) showToast("สำรองขึ้น Drive ไม่สำเร็จ — ลองกดเชื่อมต่อใหม่");
+  }finally{
+    gdriveSyncBusy = false;
+    if(document.getElementById("settingsOverlay").classList.contains("open")) refreshGDriveStatus();
+  }
+}
+
 // ===== AI Layer (Milestone 3) =====
 // กฎเหล็กเดียวกับ AI_APIKEY_KEY: ห้ามเพิ่มคีย์นี้เข้าไปใน object ของ exportBtn เด็ดขาด — เป็นข้อมูลเฉพาะเครื่อง ไม่ใช่ backup การเงิน
 const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
@@ -2188,6 +2330,7 @@ function render(){
       });
     });
   }
+  scheduleGDriveAutoSync();
 }
 
 function renderCatGrid(){
@@ -2463,7 +2606,7 @@ document.getElementById("backupDismissBtn").addEventListener("click", () => {
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, debts, exportedAt: todayISO() };
+  const payload = buildBackupPayload();
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -2481,6 +2624,55 @@ document.getElementById("exportBtn").addEventListener("click", () => {
 document.getElementById("importBtn").addEventListener("click", () => {
   document.getElementById("importFile").click();
 });
+// รวมข้อมูลจาก backup object (data) เข้ากับข้อมูลปัจจุบัน แบบ merge-by-id (ไม่ทับของเดิม แค่เติมของที่ยังไม่มี)
+// ใช้ร่วมกันทั้งกู้คืนจากไฟล์ (importFile) และกู้คืนจาก Google Drive — คืน true ถ้าสำเร็จ, false ถ้าข้อมูลไม่ถูกต้อง
+function applyImportedBackup(data){
+  if(!data || !Array.isArray(data.entries)) return false;
+  const existingIds = new Set(entries.map(en => en.id));
+  const merged = [...entries];
+  data.entries.forEach(en => { if(!existingIds.has(en.id)) merged.push(en); });
+  entries = merged;
+  if(data.categories){
+    ["income","expense","saving"].forEach(t => {
+      if(Array.isArray(data.categories[t])){
+        const set = new Set([...CATS_BY_TYPE[t], ...data.categories[t]]);
+        CATS_BY_TYPE[t] = Array.from(set);
+      }
+    });
+    saveCategories();
+  }
+  if(Array.isArray(data.accounts)){
+    const existingAccIds = new Set(accounts.map(a => a.id));
+    data.accounts.forEach(a => { if(a && a.id && !existingAccIds.has(a.id)) accounts.push(a); });
+    saveAccounts();
+  }
+  if(Array.isArray(data.reservedItems)){
+    const existingResIds = new Set(reservedItems.map(r => r.id));
+    data.reservedItems.forEach(r => { if(r && r.id && !existingResIds.has(r.id)) reservedItems.push(r); });
+    saveReserved();
+  }
+  if(Array.isArray(data.loans)){
+    const existingLoanIds = new Set(loans.map(l => l.id));
+    data.loans.forEach(l => { if(l && l.id && !existingLoanIds.has(l.id)){ if(!Array.isArray(l.repayments)) l.repayments=[]; loans.push(l); } });
+    saveLoans();
+  }
+  // Backup เก่าที่ไม่มี recurringExpenses เลย ให้ถือเป็น [] (ค่าเริ่มต้น) โดยไม่ทำให้ restore พัง
+  if(Array.isArray(data.recurringExpenses)){
+    const existingRecIds = new Set(recurringExpenses.map(r => r.id));
+    data.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
+    saveRecurring();
+  }
+  // Backup เก่าที่ไม่มี debts เลย (ก่อน Milestone 5) ให้ถือเป็น [] โดยไม่ทำให้ restore พัง
+  if(Array.isArray(data.debts)){
+    const existingDebtIds = new Set(debts.map(d => d.id));
+    data.debts.forEach(d => { if(d && d.id && !existingDebtIds.has(d.id)){ if(!Array.isArray(d.history)) d.history=[]; debts.push(d); } });
+    saveDebts();
+  }
+  saveEntries();
+  render();
+  return true;
+}
+
 document.getElementById("importFile").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if(!file) return;
@@ -2488,49 +2680,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   reader.onload = () => {
     try{
       const data = JSON.parse(reader.result);
-      if(!data || !Array.isArray(data.entries)) throw new Error("invalid");
-      const existingIds = new Set(entries.map(en => en.id));
-      const merged = [...entries];
-      data.entries.forEach(en => { if(!existingIds.has(en.id)) merged.push(en); });
-      entries = merged;
-      if(data.categories){
-        ["income","expense","saving"].forEach(t => {
-          if(Array.isArray(data.categories[t])){
-            const set = new Set([...CATS_BY_TYPE[t], ...data.categories[t]]);
-            CATS_BY_TYPE[t] = Array.from(set);
-          }
-        });
-        saveCategories();
-      }
-      if(Array.isArray(data.accounts)){
-        const existingAccIds = new Set(accounts.map(a => a.id));
-        data.accounts.forEach(a => { if(a && a.id && !existingAccIds.has(a.id)) accounts.push(a); });
-        saveAccounts();
-      }
-      if(Array.isArray(data.reservedItems)){
-        const existingResIds = new Set(reservedItems.map(r => r.id));
-        data.reservedItems.forEach(r => { if(r && r.id && !existingResIds.has(r.id)) reservedItems.push(r); });
-        saveReserved();
-      }
-      if(Array.isArray(data.loans)){
-        const existingLoanIds = new Set(loans.map(l => l.id));
-        data.loans.forEach(l => { if(l && l.id && !existingLoanIds.has(l.id)){ if(!Array.isArray(l.repayments)) l.repayments=[]; loans.push(l); } });
-        saveLoans();
-      }
-      // Backup เก่าที่ไม่มี recurringExpenses เลย ให้ถือเป็น [] (ค่าเริ่มต้น) โดยไม่ทำให้ restore พัง
-      if(Array.isArray(data.recurringExpenses)){
-        const existingRecIds = new Set(recurringExpenses.map(r => r.id));
-        data.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
-        saveRecurring();
-      }
-      // Backup เก่าที่ไม่มี debts เลย (ก่อน Milestone 5) ให้ถือเป็น [] โดยไม่ทำให้ restore พัง
-      if(Array.isArray(data.debts)){
-        const existingDebtIds = new Set(debts.map(d => d.id));
-        data.debts.forEach(d => { if(d && d.id && !existingDebtIds.has(d.id)){ if(!Array.isArray(d.history)) d.history=[]; debts.push(d); } });
-        saveDebts();
-      }
-      saveEntries();
-      render();
+      if(!applyImportedBackup(data)) throw new Error("invalid");
       showToast("กู้คืนข้อมูลสำเร็จ");
     }catch(err){
       showToast("ไฟล์ไม่ถูกต้อง กู้คืนไม่สำเร็จ");
@@ -2591,6 +2741,7 @@ function refreshApiKeyStatus(){
 document.getElementById("settingsBtn").addEventListener("click", () => {
   document.getElementById("apiKeyInput").value = "";
   refreshApiKeyStatus();
+  refreshGDriveStatus();
   aiProfileDraft = loadAIProfile() || { nickname:"", monthlyIncomeEstimate:null, minReserveTarget:null, financialGoals:[], notes:"" };
   renderAIProfileForm();
   renderAIMemoryList();
@@ -2613,6 +2764,77 @@ document.getElementById("saveApiKeyBtn").addEventListener("click", () => {
   document.getElementById("apiKeyInput").value = "";
   refreshApiKeyStatus();
   showToast(cur.length === 1 ? "บันทึก API Key แล้ว" : "เพิ่ม API Key สำรองแล้ว");
+});
+
+// ===== Google Drive Auto-Backup: Settings panel =====
+function gdriveTimeLabel(iso){
+  if(!iso) return "ยังไม่เคย";
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,"0");
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function refreshGDriveStatus(){
+  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_KEY);
+  const fileId = localStorage.getItem(GDRIVE_FILE_ID_KEY);
+  const connected = !!clientId && !!fileId; // ถือว่า "เชื่อมต่อแล้ว" หลังเคยสำรองสำเร็จอย่างน้อย 1 ครั้ง (มี fileId)
+  const connStatusEl = document.getElementById("gdriveConnStatus");
+  connStatusEl.textContent = connected ? "เชื่อมต่อแล้ว ✓" : (clientId ? "ตั้งค่า Client ID แล้ว ยังไม่เคยสำรอง" : "ยังไม่ได้เชื่อมต่อ");
+  connStatusEl.style.color = connected ? "var(--income)" : "var(--faint)";
+  document.getElementById("gdriveLastSyncStatus").textContent = gdriveTimeLabel(localStorage.getItem(GDRIVE_LAST_SYNC_KEY));
+  document.getElementById("gdriveClientIdInput").value = clientId || "";
+  document.getElementById("gdriveConnectBtn").style.display = clientId ? "block" : "none";
+  document.getElementById("gdriveDisconnectBtn").style.display = (clientId || fileId) ? "block" : "none";
+  document.getElementById("gdriveSyncNowBtn").disabled = !clientId;
+  document.getElementById("gdriveRestoreBtn").disabled = !fileId;
+  document.getElementById("gdriveAutoSyncToggle").checked = localStorage.getItem(GDRIVE_AUTOSYNC_KEY) === "1";
+  document.getElementById("gdriveAutoSyncToggle").disabled = !clientId;
+}
+document.getElementById("saveGDriveClientIdBtn").addEventListener("click", () => {
+  const val = document.getElementById("gdriveClientIdInput").value.trim();
+  if(!val){ showToast("กรอก Client ID ก่อน"); return; }
+  localStorage.setItem(GDRIVE_CLIENT_ID_KEY, val);
+  gdriveTokenClient = null; // บังคับสร้าง token client ใหม่ด้วย client id ล่าสุด
+  initGDriveTokenClient();
+  refreshGDriveStatus();
+  showToast("บันทึก Client ID แล้ว — กด \"เชื่อมต่อ Google Drive\" ต่อได้เลย");
+});
+document.getElementById("gdriveConnectBtn").addEventListener("click", async () => {
+  if(!localStorage.getItem(GDRIVE_CLIENT_ID_KEY)){ showToast("ใส่ Client ID แล้วกดบันทึกก่อน"); return; }
+  try{
+    await requestGDriveToken("consent"); // ต้องมี user gesture (มาจาก click นี้แหละ) ถึงจะเปิด popup ได้
+    await runGDriveSync(false); // สำรองครั้งแรกทันทีหลังเชื่อมต่อสำเร็จ เพื่อสร้างไฟล์บน Drive และยืนยันว่าเชื่อมต่อได้จริง
+    refreshGDriveStatus();
+  }catch(e){
+    showToast("เชื่อมต่อ Google Drive ไม่สำเร็จ ลองใหม่อีกครั้ง");
+  }
+});
+document.getElementById("gdriveDisconnectBtn").addEventListener("click", () => {
+  gdriveAccessToken = null;
+  gdriveAccessTokenExpiry = 0;
+  gdriveTokenClient = null;
+  localStorage.removeItem(GDRIVE_CLIENT_ID_KEY);
+  localStorage.removeItem(GDRIVE_FILE_ID_KEY);
+  localStorage.removeItem(GDRIVE_LAST_SYNC_KEY);
+  localStorage.removeItem(GDRIVE_AUTOSYNC_KEY);
+  refreshGDriveStatus();
+  showToast("ยกเลิกการเชื่อมต่อ Google Drive แล้ว (ไฟล์ backup บน Drive จริงยังอยู่ ไม่ถูกลบ)");
+});
+document.getElementById("gdriveSyncNowBtn").addEventListener("click", async () => {
+  await runGDriveSync(false);
+  refreshGDriveStatus();
+});
+document.getElementById("gdriveRestoreBtn").addEventListener("click", async () => {
+  try{
+    const data = await gdriveDownloadBackup();
+    if(!applyImportedBackup(data)) throw new Error("invalid");
+    showToast("กู้คืนข้อมูลจาก Google Drive สำเร็จ");
+  }catch(e){
+    showToast("กู้คืนจาก Drive ไม่สำเร็จ");
+  }
+});
+document.getElementById("gdriveAutoSyncToggle").addEventListener("change", (e) => {
+  localStorage.setItem(GDRIVE_AUTOSYNC_KEY, e.target.checked ? "1" : "0");
+  if(e.target.checked) scheduleGDriveAutoSync();
 });
 
 // ===== AI Layer (Milestone 3): Profile / Memory — storage helpers =====
