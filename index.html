@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Vaultet</title>
 
 <!-- PWA: Web App Manifest embedded as Data URI (no external manifest.json needed) -->
@@ -1159,6 +1159,44 @@ body:has(.overlay.open) .page-anchor{
     max-height:86vh !important;
   }
 }
+</style>
+
+<style>
+/* Android Chrome anti auto-zoom */
+input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important; }
+
+/* ChatGPT & Gemini Minimal Chat Theme */
+#aiAnalystOverlay .sheet-modal {
+  background: #0A0A0C !important;
+  border: none !important;
+  box-shadow: none !important;
+  max-width: 480px !important;
+  height: 88vh !important;
+}
+#aiAnalystOverlay .modal-header {
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  padding: 10px 4px 14px !important;
+}
+#aiAnalystOverlay .ai-analyst-body::before,
+#aiAnalystOverlay .ux-chat-mode-note { display: none !important; }
+#aiAnalystOverlay .ai-chat-msg.role-model .ai-chat-bubble {
+  background: transparent !important; border: none !important; box-shadow: none !important;
+  color: #F5F5F7 !important; padding: 10px 2px !important; max-width: 100% !important;
+  font-size: 15px !important; line-height: 1.7 !important;
+}
+#aiAnalystOverlay .ai-chat-msg.role-user .ai-chat-bubble {
+  background: #212124 !important; color: #FFFFFF !important;
+  border-radius: 20px 20px 4px 20px !important; border: none !important; box-shadow: none !important;
+  padding: 10px 16px !important; font-size: 15px !important;
+}
+#aiAnalystOverlay .ai-chat-actions { display: flex !important; gap: 12px !important; margin-top: 4px !important; padding: 0 4px !important; }
+#aiAnalystOverlay .ai-chat-actions button { background: transparent !important; border: none !important; box-shadow: none !important; color: #8E8E93 !important; opacity: 0.7 !important; padding: 2px !important; font-size: 14px !important; cursor: pointer !important; }
+#aiAnalystOverlay .ai-chat-input-row { background: #18181B !important; border: 1px solid #27272A !important; border-radius: 9999px !important; padding: 4px 6px 4px 14px !important; align-items: center !important; margin-top: 10px !important; }
+#aiAnalystOverlay #aiChatInput { background: transparent !important; border: none !important; color: #F5F5F7 !important; outline: none !important; font-size: 16px !important; }
+#aiAnalystOverlay #aiChatSendBtn { width: 36px !important; height: 36px !important; min-width: 36px !important; border-radius: 50% !important; background: #F5F5F7 !important; color: #0A0A0C !important; font-size: 0 !important; padding: 0 !important; display: grid !important; place-items: center !important; }
+#aiAnalystOverlay #aiChatSendBtn::after { content: "↑" !important; font-size: 18px !important; font-weight: 800 !important; }
+#aiAnalystOverlay #aiChatSendBtn.stop-btn { background: #FF453A !important; }
+#aiAnalystOverlay #aiChatSendBtn.stop-btn::after { content: "■" !important; font-size: 14px !important; color: #FFF !important; }
 </style>
 </head>
 <body>
