@@ -3628,6 +3628,15 @@ const AI_ERROR_MESSAGES = {
   network_error: "เชื่อมต่อไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต",
   aborted: "ยกเลิกแล้ว"
 };
+// ข้อความ error ที่เป็นมิตร — เคส HTTP 429 อธิบายละเอียดกว่าเดิม เพราะเป็นได้ทั้ง 2 แบบ:
+// (1) โควต้าฟรีต่อนาทีเต็มชั่วคราว — ระบบ retry อัตโนมัติไปแล้วแต่ยังไม่ผ่าน รอไม่นานก็หาย
+// (2) โควต้าฟรีต่อวันเต็ม (ใช้ถี่ทั้งวัน) — retry ไม่ช่วย ต้องรอข้ามวันหรือเช็ค Google AI Studio
+function aiErrorLabel(result){
+  if(result && result.status === 429){
+    return "Gemini แจ้งว่าเรียกถี่/บ่อยเกินไป (โควต้าฟรีเต็มชั่วคราว) — ระบบลองซ้ำอัตโนมัติให้แล้วแต่ยังไม่ผ่าน ลองรอสัก 1-2 นาทีแล้วกดใหม่ ถ้ารอนานแล้วยังไม่หาย อาจเป็นโควต้ารายวันเต็ม (ต้องรอข้ามวัน หรือเช็คโควต้า Key ที่ aistudio.google.com)";
+  }
+  return (result && AI_ERROR_MESSAGES[result.error]) || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+}
 
 // ===== AI Layer (Milestone 2 → อัปเกรดเป็นแชทถาวร): Financial Advisor sheet =====
 // บันทึกคำถาม+คำตอบลงประวัติแชทถาวร (ไม่ใช่ popup ครั้งเดียวทิ้งเหมือนเดิม) แล้วเปิดหน้าต่างแชท
@@ -3807,7 +3816,7 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
 
   if(!result.ok){
     if(result.error === "aborted") return; // ผู้ใช้กดยกเลิกเอง — ข้อความที่พิมพ์ไว้ยังอยู่ในประวัติ กดส่งใหม่ได้เลย ไม่ต้องโชว์ error แดง
-    const label = AI_ERROR_MESSAGES[result.error] || "เรียก AI ไม่สำเร็จ";
+    const label = aiErrorLabel(result);
     const codeLine = result.error ? ` (โค้ด: ${result.error}${result.status ? " HTTP " + result.status : ""})` : "";
     errBox.textContent = label + codeLine + " — ข้อความที่พิมพ์ไว้ยังอยู่ ลองกดส่งใหม่ได้เลย";
     errBox.style.display = "block";
@@ -3857,7 +3866,7 @@ async function regenerateLastReply(priorHistory, userText){
 
   if(!result.ok){
     if(result.error === "aborted") return;
-    const label = AI_ERROR_MESSAGES[result.error] || "เรียก AI ไม่สำเร็จ";
+    const label = aiErrorLabel(result);
     errBox.textContent = label + " — ลองกด 🔄 ตอบใหม่อีกครั้ง";
     errBox.style.display = "block";
     return;
@@ -3889,7 +3898,7 @@ document.getElementById("aiProcessBtn").addEventListener("click", async () => {
   if(!intentResult.ok){
     btn.disabled = false;
     btn.textContent = originalLabel;
-    errBox.textContent = AI_ERROR_MESSAGES[intentResult.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    errBox.textContent = aiErrorLabel(intentResult);
     errBox.style.display = "block";
     return;
   }
@@ -3904,7 +3913,7 @@ document.getElementById("aiProcessBtn").addEventListener("click", async () => {
     btn.textContent = originalLabel;
 
     if(!analysisResult.ok){
-      errBox.textContent = AI_ERROR_MESSAGES[analysisResult.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+      errBox.textContent = aiErrorLabel(analysisResult);
       errBox.style.display = "block";
       return;
     }
@@ -3922,7 +3931,7 @@ document.getElementById("aiProcessBtn").addEventListener("click", async () => {
   btn.textContent = originalLabel;
 
   if(!result.ok){
-    errBox.textContent = AI_ERROR_MESSAGES[result.error] || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    errBox.textContent = aiErrorLabel(result);
     errBox.style.display = "block";
     return;
   }
