@@ -1335,6 +1335,30 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
   .ux-brand-name,.ux-brand-page{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 }
 </style>
+
+<style id="finance-tools-ai-customization">
+/* Financial tools: make the important controls easy to find */
+.management-tools-header{display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px;padding:0 2px;}
+.management-tools-title{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:.01em;}
+.management-tools-sub{font-size:11px;color:var(--faint);margin-top:2px;}
+.management-tools-badge{font-size:11px;font-weight:800;color:#061108;background:#1DB954;border-radius:999px;padding:5px 9px;}
+.management-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-top:0!important;}
+.management-grid .manage-accounts-btn{min-height:58px!important;font-size:13px!important;font-weight:750!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.11)!important;color:#F5F5F7!important;padding:10px!important;}
+.management-grid .manage-accounts-btn:active{transform:scale(.985);background:rgba(29,185,84,.13)!important;border-color:rgba(29,185,84,.45)!important;}
+#openForecastBtn{grid-column:1/-1!important;}
+
+/* AI advisor personalization */
+.ai-advisor-settings-panel{display:none;margin:8px 0 10px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#111114;}
+.ai-advisor-settings-panel.is-open{display:block;}
+.ai-advisor-settings-title{font-weight:800;font-size:14px;margin-bottom:4px;color:#F5F5F7;}
+.ai-advisor-settings-help{font-size:12px;line-height:1.5;color:#8E8E93;margin-bottom:10px;}
+#aiAdvisorInstruction{width:100%;min-height:82px;resize:vertical;box-sizing:border-box;background:#18181B;border:1px solid #2B2B30;border-radius:12px;color:#F5F5F7;padding:10px 12px;font:inherit;font-size:16px!important;line-height:1.5;outline:none;}
+.ai-advisor-settings-actions{display:flex;gap:8px;margin-top:9px;}
+.ai-advisor-settings-actions button{flex:1;border-radius:10px;padding:9px 10px;font-weight:700;}
+.ai-advisor-settings-status{font-size:11px;color:#8E8E93;margin-top:8px;min-height:14px;}
+.ai-chat-latency{font-size:11px;color:#777;margin:4px 2px 0;text-align:right;}
+</style>
+
 </head>
 <body>
 <div class="page">
@@ -1366,6 +1390,10 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
       <div class="networth-sub"><span>คนอื่นติดเงิน</span><span class="mono" id="receivablesNum">฿0</span></div>
       <div class="networth-sub"><span>หนี้สินรวม</span><span class="mono" id="totalDebtsNum" style="color:var(--expense)">฿0</span></div>
       <div id="accountsList"></div>
+      <div class="management-tools-header">
+        <div><div class="management-tools-title">🧰 เครื่องมือจัดการการเงิน</div><div class="management-tools-sub">บัญชี • งบ • หนี้ • เงินสำรอง • คาดการณ์</div></div>
+        <span class="management-tools-badge">สำคัญ</span>
+      </div>
       <div class="management-grid">
         <button class="manage-accounts-btn" id="manageAccountsBtn">จัดการบัญชี</button>
         <button class="manage-accounts-btn" id="manageReservedBtn">เงินกันไว้</button>
@@ -1789,10 +1817,18 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
     <div class="modal-header">
       <span class="modal-title">ที่ปรึกษาการเงิน AI</span>
       <div style="display:flex; align-items:center; gap:6px;">
+        <button class="icon-btn" id="aiAdvisorSettingsBtn" type="button" title="ปรับบุคลิกและรูปแบบคำตอบ AI">⚙️</button>
         <button class="icon-btn" id="aiChatHistoryBtn" type="button" title="แชททั้งหมด">📜</button>
         <button class="icon-btn" id="clearAiChatBtn" type="button" title="ล้างข้อความในแชทนี้">🗑️</button>
         <button class="close-btn" id="closeAiAnalystBtn">✕</button>
       </div>
+    </div>
+    <div class="ai-advisor-settings-panel" id="aiAdvisorSettingsPanel">
+      <div class="ai-advisor-settings-title">ปรับแต่งที่ปรึกษาการเงิน AI</div>
+      <div class="ai-advisor-settings-help">กำหนดบุคลิก น้ำเสียง ความยาว และรูปแบบคำตอบ เช่น “ตอบสั้น กระชับ ใช้หัวข้อย่อย เน้นตัวเลขสำคัญ ไม่เอาน้ำ”</div>
+      <textarea id="aiAdvisorInstruction" class="ai-textarea" placeholder="ตัวอย่าง: เป็นที่ปรึกษาการเงินที่ตรงไปตรงมา ตอบสั้น ใช้ bullet เมื่อมีหลายประเด็น เน้นเนื้อหา ไม่เอาน้ำ..."></textarea>
+      <div class="ai-advisor-settings-actions"><button type="button" id="saveAiAdvisorInstructionBtn">บันทึกคำสั่ง</button><button type="button" id="resetAiAdvisorInstructionBtn">รีเซ็ต</button></div>
+      <div class="ai-advisor-settings-status" id="aiAdvisorInstructionStatus"></div>
     </div>
     <div class="ai-analyst-body" id="aiAnalystBody"></div>
     <div class="ai-chat-input-row">
@@ -2132,6 +2168,7 @@ const AI_PROFILE_KEY = "finance_tracker_ai_profile_v1";
 const AI_CHAT_KEY = "finance_tracker_ai_chat_v1"; // ประวัติแชทแบบเก่า (เดี่ยว) — เก็บไว้เผื่อ migrate เป็น AI_CHATS_KEY
 const AI_CHATS_KEY = "finance_tracker_ai_chats_v1"; // ระบบแชทหลายรายการ (เหมือน ChatGPT/Gemini) — {chats:[{id,title,messages,createdAt,updatedAt}], activeId}
 const AI_MEMORY_KEY = "finance_tracker_ai_memory_v1"; // ความจำระยะยาวของ AI ที่ปรึกษาการเงิน — [{id,text,createdAt}]
+const AI_ADVISOR_INSTRUCTION_KEY = "finance_tracker_ai_advisor_instruction_v1"; // คำสั่งปรับบุคลิก/รูปแบบคำตอบของที่ปรึกษา AI
 // Milestone 4: แคชผลวิเคราะห์ Proactive Insight — เก็บแยกจากทุกคีย์ข้างบน ห้ามรวมเข้า exportBtn backup
 const AI_PROACTIVE_KEY = "finance_tracker_ai_proactive_v1";
 // Milestone 5: หนี้สิน (เช่น กยศ.) — เก็บรวมกับ exportBtn backup ได้ตามปกติ (ไม่ใช่ secret เฉพาะเครื่อง)
@@ -4420,7 +4457,7 @@ function buildFinancialAnalystSystemPrompt(snapshot, profile){
   );
 
   // ===== Memory ระยะยาว — ข้อมูลสำคัญที่ผู้ใช้เคยขอให้จำไว้ข้ามการสนทนา =====
-  const memory = loadAIMemory().slice(-60); // จำกัดจำนวนกันพรอมป์บวมเกินไป
+  const memory = loadAIMemory().slice(-20); // จำกัดบริบทเพื่อลด latency แต่ยังเก็บข้อมูลสำคัญล่าสุด
   lines.push(
     "",
     "ความจำระยะยาว (Memory) — ข้อมูลสำคัญที่ผู้ใช้เคยขอให้จำไว้ใช้ข้ามการสนทนา แต่ละอันมี id กำกับ:",
@@ -4699,6 +4736,9 @@ function setAiChatSendBtnState(isBusy){
   }
 }
 
+function loadAIAdvisorInstruction(){ return (localStorage.getItem(AI_ADVISOR_INSTRUCTION_KEY) || "").trim().slice(0,2000); }
+function saveAIAdvisorInstruction(value){ localStorage.setItem(AI_ADVISOR_INSTRUCTION_KEY, String(value || "").trim().slice(0,2000)); }
+
 // ระบบพรอมป์เดียวกับ buildFinancialAnalystSystemPrompt แต่เปิดกว้างขึ้นสำหรับการคุยแบบต่อเนื่อง/พูดคุยทั่วไป ไม่ใช่แค่ถามตัวเลข
 function buildAIChatSystemPrompt(snapshot, profile){
   const base = buildFinancialAnalystSystemPrompt(snapshot, profile);
@@ -4708,7 +4748,8 @@ function buildAIChatSystemPrompt(snapshot, profile){
       "- นี่คือการสนทนาต่อเนื่องหลายข้อความ ให้จำบริบทจากข้อความก่อนหน้าในบทสนทนาด้วยเสมอ",
       "- ถ้าผู้ใช้พิมพ์มาแบบทั่วไป ไม่ใช่คำถามเชิงตัวเลข (เช่น บ่น/ระบาย/ทักทาย) ให้ตอบรับแบบเป็นมิตรในฐานะที่ปรึกษาการเงินส่วนตัวได้ตามปกติ โดยยังโยงกลับมาที่สถานะการเงินจริงของผู้ใช้เมื่อเหมาะสม แต่ไม่ต้องยัดตัวเลขเข้าไปทุกครั้งถ้าไม่เกี่ยวข้อง",
       "- ยังคงห้ามสร้างตัวเลขที่ไม่มีอยู่ใน Financial Snapshot ขึ้นมาเองเด็ดขาด",
-    ].join("\n");
+      loadAIAdvisorInstruction() ? "คำสั่งปรับแต่งจากผู้ใช้ (ต้องทำตามตราบเท่าที่ไม่ขัดกับกติกาความถูกต้องของข้อมูล):\n" + loadAIAdvisorInstruction() : ""
+    ].filter(Boolean).join("\n");
 }
 
 // ส่งข้อความต่อเนื่อง (พร้อมประวัติแชท) ให้ Gemini ตอบ คืน { ok:true, text } หรือ { ok:false, error }
@@ -4718,7 +4759,9 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
   if(!userText || !userText.trim()) return { ok:false, error:"empty_input" };
 
   const systemPrompt = buildAIChatSystemPrompt(snapshot, profile);
-  const contents = priorHistory
+  // ส่งเฉพาะบริบทล่าสุด ลดขนาด request และ Time-to-First-Token ในแชทยาว
+  const recentHistory = priorHistory.slice(-16);
+  const contents = recentHistory
     .map(m => ({ role: m.role === "user" ? "user" : "model", parts:[{ text: m.text }] }))
     .concat([{ role:"user", parts:[{ text: userText.trim() }] }]);
 
@@ -4731,7 +4774,8 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: systemPrompt }] } }),
         signal
-      }
+      },
+      0 // แชทต้องตอบไว: ถ้า 429 ให้สลับคีย์สำรองทันที ไม่รอ 1.5s/3s
     );
   }catch(e){
     if(e && e.name === "AbortError") return { ok:false, error:"aborted" };
@@ -5266,6 +5310,25 @@ document.getElementById("aiAnalystBody").addEventListener("click", (e) => {
   }
 });
 
+const aiAdvisorSettingsBtn = document.getElementById("aiAdvisorSettingsBtn");
+const aiAdvisorSettingsPanel = document.getElementById("aiAdvisorSettingsPanel");
+const aiAdvisorInstructionEl = document.getElementById("aiAdvisorInstruction");
+const aiAdvisorInstructionStatus = document.getElementById("aiAdvisorInstructionStatus");
+if(aiAdvisorInstructionEl) aiAdvisorInstructionEl.value = loadAIAdvisorInstruction();
+aiAdvisorSettingsBtn?.addEventListener("click", () => {
+  aiAdvisorSettingsPanel?.classList.toggle("is-open");
+  if(aiAdvisorSettingsPanel?.classList.contains("is-open")) aiAdvisorInstructionEl?.focus();
+});
+document.getElementById("saveAiAdvisorInstructionBtn")?.addEventListener("click", () => {
+  saveAIAdvisorInstruction(aiAdvisorInstructionEl?.value || "");
+  if(aiAdvisorInstructionStatus) aiAdvisorInstructionStatus.textContent = "บันทึกแล้ว — จะใช้กับข้อความถัดไปทันที";
+});
+document.getElementById("resetAiAdvisorInstructionBtn")?.addEventListener("click", () => {
+  if(aiAdvisorInstructionEl) aiAdvisorInstructionEl.value = "";
+  saveAIAdvisorInstruction("");
+  if(aiAdvisorInstructionStatus) aiAdvisorInstructionStatus.textContent = "รีเซ็ตเป็นรูปแบบมาตรฐานแล้ว";
+});
+
 // ส่งข้อความต่อเนื่องในหน้าต่างแชท (ไม่ผ่านการคัดกรองแบบหน้าพิมพ์รายการ — คุยได้อิสระเต็มที่)
 document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
   // ถ้ากำลังรอ AI ตอบอยู่ ปุ่มนี้ทำหน้าที่เป็นปุ่ม "หยุด" แทน
@@ -5305,7 +5368,9 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
   const snapshot = buildFinancialSnapshot();
   const profile = loadAIProfile();
   aiChatAbortController = new AbortController();
+  const aiRequestStartedAt = performance.now();
   const result = await generateChatReply(priorHistory, text, snapshot, profile, aiChatAbortController.signal);
+  const aiElapsedMs = Math.round(performance.now() - aiRequestStartedAt);
   aiChatAbortController = null;
 
   hideAiChatTyping();
@@ -5326,6 +5391,10 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
   const historyWithReply = historyWithUserMsg.concat([{ role:"model", text: processAiReplyForMemory(result.text) }]);
   saveAIChatHistory(historyWithReply);
   renderAiChatBubbles();
+  const latencyEl = document.createElement("div");
+  latencyEl.className = "ai-chat-latency";
+  latencyEl.textContent = `ตอบใน ${(aiElapsedMs/1000).toFixed(1)} วินาที`;
+  document.getElementById("aiAnalystBody")?.appendChild(latencyEl);
 
   // ถ้าผู้ใช้ปิดหน้าต่างแชทไปดูอย่างอื่นในแอประหว่างรอ (ยังไม่ได้ออกจากแอป) ให้แจ้งเตือนว่าคำตอบพร้อมแล้ว
   if(!document.getElementById("aiAnalystOverlay").classList.contains("open")){
