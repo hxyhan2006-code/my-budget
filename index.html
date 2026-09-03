@@ -1359,6 +1359,16 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
 .ai-chat-latency{font-size:11px;color:#777;margin:4px 2px 0;text-align:right;}
 </style>
 
+
+<style id="management-quick-access">
+.management-tools-quick{display:flex!important;flex-wrap:wrap;gap:7px!important;margin-top:8px!important}
+.management-quick-link{appearance:none;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:inherit;border-radius:999px;padding:7px 10px;font:inherit;font-size:12px!important;line-height:1.1;cursor:pointer;white-space:nowrap}
+.management-quick-link:active{transform:scale(.97);opacity:.8}
+</style>
+<script id="management-quick-access-script">
+document.addEventListener('click',function(e){const b=e.target.closest('.management-quick-link');if(!b)return;const id=b.dataset.target;let target=document.getElementById(id);if(!target&&id==='manageEmergencyBtn')target=document.getElementById('manageEmergencyFundBtn')||document.getElementById('openEmergencyBtn')||document.querySelector('[data-tool="emergency"]');if(target)target.click();else{const emergency=document.getElementById('emergencyCard')||document.getElementById('emergencyFundCard');if(id==='manageEmergencyBtn'&&emergency){emergency.scrollIntoView({behavior:'smooth',block:'start'});}}
+});
+</script>
 </head>
 <body>
 <div class="page">
@@ -1391,7 +1401,13 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
       <div class="networth-sub"><span>หนี้สินรวม</span><span class="mono" id="totalDebtsNum" style="color:var(--expense)">฿0</span></div>
       <div id="accountsList"></div>
       <div class="management-tools-header">
-        <div><div class="management-tools-title">🧰 เครื่องมือจัดการการเงิน</div><div class="management-tools-sub">บัญชี • งบ • หนี้ • เงินสำรอง • คาดการณ์</div></div>
+        <div><div class="management-tools-title">🧰 เครื่องมือจัดการการเงิน</div><div class="management-tools-sub management-tools-quick" aria-label="เมนูลัดเครื่องมือจัดการการเงิน">
+<button type="button" class="management-quick-link" data-target="manageAccountsBtn">🏦 บัญชี</button>
+<button type="button" class="management-quick-link" data-target="manageBudgetsBtn">📊 งบ</button>
+<button type="button" class="management-quick-link" data-target="manageDebtsBtn">💳 หนี้</button>
+<button type="button" class="management-quick-link" data-target="manageEmergencyBtn">🛡️ เงินสำรอง</button>
+<button type="button" class="management-quick-link" data-target="openForecastBtn">📈 คาดการณ์</button>
+</div></div>
         <span class="management-tools-badge">สำคัญ</span>
       </div>
       <div class="management-grid">
