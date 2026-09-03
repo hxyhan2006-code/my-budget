@@ -1198,6 +1198,126 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
 #aiAnalystOverlay #aiChatSendBtn.stop-btn { background: #FF453A !important; }
 #aiAnalystOverlay #aiChatSendBtn.stop-btn::after { content: "■" !important; font-size: 14px !important; color: #FFF !important; }
 </style>
+<style id="chatgpt-gemini-pure-chat">
+/* 1. ลบกล่องครอบและการ์ดทั้งหมด ให้แชทไหลเต็มหน้าจอเนียนไปกับพื้นหลัง */
+.ux-chat-panel,
+#aiAnalystOverlay .sheet-modal {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom)) !important;
+  height: calc(100vh - 130px) !important;
+  max-width: 100% !important;
+  border-radius: 0 !important;
+}
+
+/* เอาขีดดึงด้านบนออก */
+.sheet-modal::before,
+.ux-chat-panel::before {
+  display: none !important;
+}
+
+/* 2. ซ่อนกล่องข้อความโหมด "💬 โหมดนี้สำหรับคุย..." */
+.ux-chat-mode-note,
+.ai-analyst-body::before {
+  display: none !important;
+}
+
+/* 3. พื้นที่ข้อความแชท ไร้กรอบ ไร้พื้นหลังทึบ */
+.ai-analyst-body,
+#aiAnalystBody {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 0 !important;
+  flex: 1 !important;
+}
+
+/* ข้อความฝั่ง AI: ไร้กรอบ วางเป็นข้อความลอยแบบ Gemini/ChatGPT */
+.ai-chat-msg.role-model .ai-chat-bubble {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px 0 !important;
+  color: #F5F5F7 !important;
+  font-size: 15.5px !important;
+  line-height: 1.7 !important;
+  max-width: 100% !important;
+}
+
+/* ข้อความฝั่งคนพิมพ์: บับเบิลโค้งมนสีเทาเข้ม ไร้ขอบ */
+.ai-chat-msg.role-user .ai-chat-bubble {
+  background: #212124 !important;
+  color: #FFFFFF !important;
+  border-radius: 20px !important;
+  border-bottom-right-radius: 4px !important;
+  padding: 10px 16px !important;
+  font-size: 15px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 4. ช่อง Input ทรงแคปซูลเดี่ยว ฝังปุ่มลูกศร ↑ ไว้ด้านใน */
+.ai-chat-input-row,
+.ux-chat-panel .ai-chat-input-row {
+  display: flex !important;
+  align-items: center !important;
+  background: #18181B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 9999px !important;
+  padding: 4px 6px 4px 16px !important;
+  margin-top: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.ai-chat-input-row input,
+#aiChatInput {
+  flex: 1 !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #F5F5F7 !important;
+  font-size: 16px !important;
+  padding: 8px 4px !important;
+}
+
+/* ปุ่มส่งทรงกลมสีขาว */
+.ai-chat-input-row button,
+#aiChatSendBtn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 50% !important;
+  background: #F5F5F7 !important;
+  color: #0A0A0C !important;
+  border: none !important;
+  font-size: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+}
+
+.ai-chat-input-row button::after,
+#aiChatSendBtn::after {
+  content: "↑" !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+/* ปุ่มขณะกำลังประมวลผล (ปุ่มหยุด) */
+.ai-chat-input-row button.stop-btn,
+#aiChatSendBtn.stop-btn {
+  background: #FF453A !important;
+}
+.ai-chat-input-row button.stop-btn::after,
+#aiChatSendBtn.stop-btn::after {
+  content: "■" !important;
+  font-size: 13px !important;
+  color: #FFF !important;
+}
+</style>
 </head>
 <body>
 <div class="page">
