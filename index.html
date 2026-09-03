@@ -327,6 +327,11 @@
     display:flex; align-items:center; justify-content:center; cursor:pointer;
     box-shadow:0 8px 20px rgba(0,0,0,0.4); font-size:20px; color:var(--accent1); z-index:5;
   }
+  /* จุดแดงแจ้งเตือน — โผล่ตอนคำตอบ AI พร้อมแล้วระหว่างที่ผู้ใช้ปิดหน้าต่างแชทไปดูอย่างอื่นในแอป */
+  .fab-ai.has-unread::after{
+    content:""; position:absolute; top:2px; right:2px; width:12px; height:12px; border-radius:50%;
+    background:var(--expense); border:2px solid var(--paper);
+  }
   .ai-status-row{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin-bottom:16px;
@@ -1107,6 +1112,16 @@ function showToast(msg){
   showToast._timer = setTimeout(() => t.classList.remove("show"), 2200);
 }
 
+// แจ้งเตือนคำตอบ AI พร้อมแล้ว — ใช้ตอนผู้ใช้ปิดหน้าต่างแชท (หรือกด "หน้าหลัก" ไปดูอย่างอื่นในแอป) ระหว่างรอ AI ตอบ
+// หมายเหตุ: ทำงานได้เฉพาะตอนที่ยังเปิดแท็บ/แอปนี้ค้างอยู่เท่านั้น (การเรียก fetch ยังทำงานต่อในพื้นหลังของหน้านี้ได้ปกติแม้ปิดชีทแชท)
+// ถ้าผู้ใช้ปิดแท็บ/ออกจากแอปไปจริงๆ คำขอจะถูกตัดตามข้อจำกัดของเบราว์เซอร์ ต้องมีฝั่งเซิร์ฟเวอร์ + push notification ถึงจะแจ้งเตือนได้แม้ปิดแอป
+function markAiChatUnread(){
+  document.getElementById("aiFabBtn").classList.add("has-unread");
+}
+function clearAiChatUnread(){
+  document.getElementById("aiFabBtn").classList.remove("has-unread");
+}
+
 function loadEntries(){
   try{
     const raw = localStorage.getItem(ENTRIES_KEY);
@@ -1555,9 +1570,16 @@ function computePeriodAnalysisForRange(start, end, accountFilter){
   }
   const days = Math.max(1, daysBetweenInclusive(effStart, effEnd));
 
+  // ค่าเฉลี่ย/วัน: ถ้าช่วงที่เลือกมีวันในอนาคตรวมอยู่ด้วย (เช่น "เดือนนี้"/"ปีนี้" ที่ยังไม่จบเดือน/ปี)
+  // ให้หารด้วยจำนวนวันที่ผ่านไปจริงถึงวันนี้เท่านั้น (เช่น วันนี้ที่ 5 ก็หาร 5) ไม่หารด้วยความยาวเต็มช่วง (30/31 วัน)
+  // ส่วนช่วงที่จบไปแล้วทั้งหมด (เดือนที่แล้ว, ช่วงกำหนดเองในอดีต) ยังคงหารด้วยความยาวเต็มช่วงตามเดิม
+  const todayStr = today0();
+  const avgDivisorEnd = effEnd > todayStr ? todayStr : effEnd;
+  const avgDays = avgDivisorEnd < effStart ? days : Math.max(1, daysBetweenInclusive(effStart, avgDivisorEnd));
+
   const expenseEntries = rangeEntries.filter(e => e.type==="expense");
-  const avgIncomePerDay = income / days;
-  const avgExpensePerDay = expense / days;
+  const avgIncomePerDay = income / avgDays;
+  const avgExpensePerDay = expense / avgDays;
   const avgExpensePerTxn = expenseEntries.length ? expense / expenseEntries.length : 0;
 
   const catMap = {};
@@ -3334,6 +3356,7 @@ function openAiAnalystSheet(query, analysisText){
   saveAIChatHistory(history);
   renderAiChatBubbles();
   document.getElementById("aiAnalystOverlay").classList.add("open");
+  clearAiChatUnread();
 }
 function closeAiAnalystSheet(){
   document.getElementById("aiAnalystOverlay").classList.remove("open");
@@ -3355,6 +3378,7 @@ document.getElementById("openChatDirectBtn").addEventListener("click", () => {
   closeAiInputSheet();
   renderAiChatBubbles();
   document.getElementById("aiAnalystOverlay").classList.add("open");
+  clearAiChatUnread();
 });
 
 // คลิกปุ่ม แก้ไข/คัดลอก/ตอบใหม่ บนแต่ละข้อความ (event delegation — ปุ่มถูกสร้างใหม่ทุกครั้งที่ render)
@@ -3450,6 +3474,12 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
   const historyWithReply = historyWithUserMsg.concat([{ role:"model", text: result.text }]);
   saveAIChatHistory(historyWithReply);
   renderAiChatBubbles();
+
+  // ถ้าผู้ใช้ปิดหน้าต่างแชทไปดูอย่างอื่นในแอประหว่างรอ (ยังไม่ได้ออกจากแอป) ให้แจ้งเตือนว่าคำตอบพร้อมแล้ว
+  if(!document.getElementById("aiAnalystOverlay").classList.contains("open")){
+    markAiChatUnread();
+    showToast("💬 ที่ปรึกษาการเงิน AI ตอบแล้ว");
+  }
 });
 document.getElementById("aiChatInput").addEventListener("keydown", (e) => {
   if(e.key === "Enter"){
@@ -3492,6 +3522,11 @@ async function regenerateLastReply(priorHistory, userText){
 
   saveAIChatHistory(priorHistory.concat([{ role:"user", text: userText }, { role:"model", text: result.text }]));
   renderAiChatBubbles();
+
+  if(!document.getElementById("aiAnalystOverlay").classList.contains("open")){
+    markAiChatUnread();
+    showToast("💬 ที่ปรึกษาการเงิน AI ตอบแล้ว");
+  }
 }
 
 document.getElementById("aiProcessBtn").addEventListener("click", async () => {
