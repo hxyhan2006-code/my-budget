@@ -6137,3 +6137,28 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
 </script>
 </body>
 </html>
+<style id="vaultet-round10-spacing">
+/* Round 10 — Home card breathing room */
+#ux-home > .hero-cards { margin-bottom: 14px !important; }
+#ux-home > #upcomingCard,
+#ux-home > #aiProactiveCard {
+  margin-top: 14px !important;
+}
+#ux-home > #upcomingCard + #aiProactiveCard { margin-top: 12px !important; }
+
+/* Keep the first balance card and upcoming-payments card visually distinct */
+#ux-home > .hero-cards > .networth-card:first-child {
+  margin-bottom: 0 !important;
+}
+#ux-home > #upcomingCard {
+  margin-left: 16px !important;
+  margin-right: 16px !important;
+  border-radius: 20px !important;
+}
+
+@media (max-width:600px){
+  #ux-home > .hero-cards { margin-bottom: 18px !important; }
+  #ux-home > #upcomingCard,
+  #ux-home > #aiProactiveCard { margin-top: 18px !important; }
+}
+</style>
