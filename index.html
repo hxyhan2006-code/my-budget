@@ -3024,7 +3024,7 @@ async function generateProactiveInsight(evalResult, snapshot, profile){
   if(!res.ok){
     let detail = "";
     try{ detail = (await res.text()).slice(0,300); }catch(e){}
-    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
   }
 
   let data;
@@ -3044,7 +3044,7 @@ const PROACTIVE_SEVERITY_META = {
 };
 let proactiveCardBusy = false;
 
-function renderProactiveCard(severity, text, state){
+function renderProactiveCard(severity, text, state, errorInfo){
   const card = document.getElementById("aiProactiveCard");
   if(!card) return;
   const meta = PROACTIVE_SEVERITY_META[severity] || PROACTIVE_SEVERITY_META.positive;
@@ -3058,7 +3058,10 @@ function renderProactiveCard(severity, text, state){
   }else if(state === "needsApiKey"){
     bodyEl.innerHTML = `<span style="color:var(--faint)">ตั้งค่า API Key (⚙️) เพื่อเปิดใช้งานการวิเคราะห์อัตโนมัติ</span>`;
   }else if(state === "error" && !text){
-    bodyEl.innerHTML = `<span style="color:var(--faint)">เรียก AI ไม่สำเร็จ — กด 🔄 เพื่อลองใหม่</span>`;
+    const label = (errorInfo && AI_ERROR_MESSAGES[errorInfo.error]) || "เรียก AI ไม่สำเร็จ";
+    const codeLine = errorInfo && errorInfo.error ? `<br><span style="font-size:11px;opacity:0.65;">โค้ด: ${escapeHtml(errorInfo.error)}${errorInfo.status ? " (HTTP " + errorInfo.status + ")" : ""}</span>` : "";
+    const detailLine = errorInfo && errorInfo.detail ? `<br><span style="font-size:11px;opacity:0.65;">${escapeHtml(errorInfo.detail)}</span>` : "";
+    bodyEl.innerHTML = `<span style="color:var(--faint)">${label} — กด 🔄 เพื่อลองใหม่${codeLine}${detailLine}</span>`;
   }else if(text){
     bodyEl.innerHTML = simpleMarkdownToHtml(text);
   }else{
@@ -3100,7 +3103,7 @@ async function refreshProactiveCard(force){
 
   if(!result.ok){
     // เรียก AI ไม่สำเร็จ — ถ้ามีแคชเก่าอยู่ (แม้ fingerprint จะเปลี่ยนไปแล้ว) ให้โชว์ไว้ก่อนดีกว่าไม่มีอะไรเลย
-    renderProactiveCard(evalResult.severity, cache ? cache.text : null, "error");
+    renderProactiveCard(evalResult.severity, cache ? cache.text : null, "error", { error: result.error, detail: result.detail, status: result.status });
     return;
   }
 
