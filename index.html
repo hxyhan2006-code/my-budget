@@ -620,7 +620,7 @@ body{background:var(--bg);}
 .ux-swipe-hint{margin:4px 20px 14px;text-align:center;color:var(--faint);font-size:10px}
 /* Keep legacy header's balance content, but let the new shell own navigation. */
 .page>header{margin-top:0}.page>header .header-top #monthSelect{display:none}
-@media(max-width:600px){.ux-month{max-width:105px}.ux-view-title{font-size:21px}.ux-bottom-nav{position:fixed;display:flex;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:70;height:62px;background:color-mix(in srgb,var(--surface) 94%,transparent);border:1px solid var(--line);border-radius:19px;backdrop-filter:blur(18px);box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px}.ux-bottom-item{flex:1;border:0;background:transparent;color:var(--faint);border-radius:14px;font-size:9.5px}.ux-bottom-item .ico{display:block;font-size:18px;line-height:23px}.ux-bottom-item.active{color:var(--ink);background:var(--ux-accent-soft);font-weight:800}.page{padding-bottom:88px}}
+@media(max-width:600px){.ux-month{max-width:152px;min-width:152px;width:152px}.ux-view-title{font-size:21px}.ux-bottom-nav{position:fixed;display:flex;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:70;height:62px;background:color-mix(in srgb,var(--surface) 94%,transparent);border:1px solid var(--line);border-radius:19px;backdrop-filter:blur(18px);box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px}.ux-bottom-item{flex:1;border:0;background:transparent;color:var(--faint);border-radius:14px;font-size:9.5px}.ux-bottom-item .ico{display:block;font-size:18px;line-height:23px}.ux-bottom-item.active{color:var(--ink);background:var(--ux-accent-soft);font-weight:800}.page{padding-bottom:88px}}
 @media(min-width:601px){.ux-drawer{width:310px}.ux-management-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
@@ -1316,6 +1316,23 @@ input, textarea, select, #aiChatInput, .ai-textarea { font-size: 16px !important
   content: "■" !important;
   font-size: 13px !important;
   color: #FFF !important;
+}
+</style>
+
+<style id="thai-year-and-fast-nl-fix">
+/* Fix Thai Buddhist Era month label being visually clipped on mobile. */
+.ux-month{
+  min-width: 152px !important;
+  max-width: 180px !important;
+  width: 152px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+@media(max-width:600px){
+  .ux-topbar{grid-template-columns:48px minmax(0,1fr) 152px 48px !important;}
+  .ux-brand{min-width:0 !important;}
+  .ux-brand-name,.ux-brand-page{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 }
 </style>
 </head>
@@ -2187,8 +2204,10 @@ function todayISO(){
 function monthKey(d){ return d.slice(0,7); }
 function fmt(n){ return new Intl.NumberFormat("th-TH",{maximumFractionDigits:2}).format(n); }
 function monthLabel(mk){
-  const [y,m] = mk.split("-").map(Number);
-  return `${THAI_MONTHS_FULL[m-1]} ${y+543}`;
+  const [rawY,m] = String(mk).split("-").map(Number);
+  // เก็บ key ภายในเป็น ค.ศ.; ถ้าเจอ พ.ศ. จากข้อมูลเก่าให้ไม่บวก 543 ซ้ำ
+  const y = rawY > 2400 ? rawY : rawY + 543;
+  return `${THAI_MONTHS_FULL[m-1]||""} ${y}`;
 }
 function dayLabel(iso){
   const [y,m,d] = iso.split("-").map(Number);
@@ -4002,9 +4021,22 @@ function buildAISystemPrompt(context){
     "- lend บังคับต้องมี accountId เสมอ (เงินให้ยืมต้องตัดออกจากบัญชีจริง) ถ้าเดาบัญชีไม่ได้เลย ให้ใช้ lastUsedAccountId และเพิ่ม \"accountId\" เข้า ambiguousFields",
     "- confidence: \"high\" ถ้าทุกฟิลด์ที่จำเป็นระบุชัดเจนในข้อความหรือเดาได้อย่างมั่นใจ, \"needs_confirmation\" ถ้ามีฟิลด์ใดๆ ใน ambiguousFields",
     "- ambiguousFields: array ของชื่อฟิลด์ (string) ที่เป็นการเดา/fallback ไม่ใช่สิ่งที่ผู้ใช้ระบุตรงๆ ถ้าไม่มีให้เป็น array ว่าง",
-    "- note: สรุปสั้นๆ จากข้อความต้นฉบับ (ถ้ามีรายละเอียดเพิ่มเติมนอกเหนือจากฟิลด์อื่น)"
+    "- note: สรุปสั้นๆ จากข้อความต้นฉบับ (ถ้ามีรายละเอียดเพิ่มเติมนอกเหนือจากฟิลด์อื่น)",
+    "",
+    "ตัวอย่างภาษาพูดที่ต้องเข้าใจ:",
+    '- "กินข้าว เมื่อวาน 43" => expense, amount 43, date = เมื่อวานจาก today, note = "กินข้าว", category = หมวดที่ใกล้เคียง เช่น "กิน"',
+    '- "กาแฟ 60" => expense, amount 60, date = null, note = "กาแฟ"',
+    '- "ได้เงินเดือนวันนี้ 25000" => income, amount 25000, date = วันนี้, note = "ได้เงินเดือน"',
+    '- "โอนให้แม่ 500" => transfer หรือ expense ตามความหมายที่ระบุและ context; ถ้าระบุบัญชีไม่พอให้ใส่ ambiguousFields',
+    "ผู้ใช้ไม่จำเป็นต้องพิมพ์คำว่า บันทึก/จ่าย เสมอไป: ชื่อสิ่งที่ซื้อ + จำนวนเงิน + เวลา เช่น กินข้าว เมื่อวาน 43 คือธุรกรรมรายจ่าย"
   ].join("\n");
 }
+
+// ===== AI model routing =====
+// ใช้โมเดล Flash ตัวเดียวกับ AI ที่ปรึกษา เพื่อให้พฤติกรรมสอดคล้องกัน
+// แต่ flow พิมพ์รายการมี local fast-path ก่อน เพื่อไม่ต้องรอ API สำหรับประโยคสั้นชัดเจน
+const AI_TRANSACTION_MODEL = "gemini-3.6-flash";
+const AI_ADVISOR_MODEL = AI_TRANSACTION_MODEL;
 
 // ===== AI Layer (Milestone 1): Gemini call =====
 const AI_RESPONSE_SCHEMA = {
@@ -4049,8 +4081,58 @@ async function fetchGeminiWithRetry(buildUrl, options, maxRetriesPerKey = 2){
   return res; // ทุกคีย์โดน 429 หมด (หรือไม่มีคีย์เลย) — คืนตัวสุดท้ายให้ caller จัดการ error ตามปกติ
 }
 
+// Local fast-path สำหรับภาษาพูดสั้น ๆ ที่ชัดเจน เช่น "กินข้าว เมื่อวาน 43"
+// ลด latency โดยไม่ต้องเรียก AI 2 รอบ และ fallback ไป Gemini Flash เมื่อกำกวม
+function thaiDigitsToArabic(value){
+  return String(value||'').replace(/[๐-๙]/g, ch => String('๐๑๒๓๔๕๖๗๘๙'.indexOf(ch)));
+}
+function isoDaysFromToday(delta){
+  const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+delta);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function parseSpokenTransactionFast(text){
+  const raw=String(text||'').trim();
+  if(!raw) return null;
+  const normalized=thaiDigitsToArabic(raw).replace(/,/g,'');
+  const nums=[...normalized.matchAll(/(?:^|\s)(\d+(?:\.\d+)?)(?=\s|$)/g)].map(m=>Number(m[1]));
+  if(!nums.length) return null;
+  const amount=nums[nums.length-1];
+  if(!Number.isFinite(amount)||amount<=0) return null;
+  let date=null;
+  if(/เมื่อวาน/.test(normalized)) date=isoDaysFromToday(-1);
+  else if(/วันนี้/.test(normalized)) date=todayISO();
+  else if(/พรุ่งนี้/.test(normalized)) date=isoDaysFromToday(1);
+  const expenseWords=/กิน|ข้าว|กาแฟ|อาหาร|ขนม|รถ|แท็กซี่|ค่าเดินทาง|เติมน้ำมัน|ซื้อ|จ่าย|เซเว่น|7-?11|ร้าน/;
+  const incomeWords=/เงินเดือน|ได้เงิน|รายได้|โบนัส|ขายของ/;
+  const savingWords=/ออม|ลงทุน|กองทุน/;
+  let action='';
+  if(savingWords.test(normalized)) action='saving';
+  else if(incomeWords.test(normalized)) action='income';
+  else if(expenseWords.test(normalized)) action='expense';
+  else return null;
+  let category=null;
+  const cats=CATS_BY_TYPE[action]||[];
+  if(action==='expense'){
+    category=cats.find(c=>/กิน|อาหาร/.test(c))||cats.find(c=>/อาหาร|กิน/.test(c))||null;
+  }
+  const note=normalized
+    .replace(/(?:^|\s)\d+(?:\.\d+)?(?=\s|$)/g,' ')
+    .replace(/เมื่อวาน|วันนี้|พรุ่งนี้/g,' ')
+    .replace(/\s+/g,' ').trim();
+  const ambiguousFields=[];
+  if(action!=='transfer' && !category) ambiguousFields.push('category');
+  if(!lastUsedAccountId) ambiguousFields.push('accountId');
+  return {
+    action, amount, date, note:note||raw, category,
+    accountId:lastUsedAccountId||null, fromAccountId:null, toAccountId:null, person:null, dueDate:null,
+    confidence:ambiguousFields.length?'needs_confirmation':'high', ambiguousFields
+  };
+}
+
 // รับข้อความภาษาคน คืน { ok:true, payload } ตาม schema ในข้อ 2 ของแผน หรือ { ok:false, error }
 async function parseNaturalLanguageEntry(text){
+  const fastPayload=parseSpokenTransactionFast(text);
+  if(fastPayload) return { ok:true, payload:fastPayload, fast:true };
   if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!text || !text.trim()) return { ok:false, error:"empty_input" };
 
@@ -4060,7 +4142,7 @@ async function parseNaturalLanguageEntry(text){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_TRANSACTION_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4108,13 +4190,15 @@ const INTENT_RESPONSE_SCHEMA = {
 // ตรวจว่าข้อความของผู้ใช้เป็น "transaction" (ต้องการบันทึกรายการ) หรือ "query" (คำถาม/ขอวิเคราะห์)
 // ด่านแรกก่อนเข้า flow ใดๆ — คืน { ok:true, intent } หรือ { ok:false, error } รูปแบบเดียวกับ parseNaturalLanguageEntry
 async function classifyIntent(text){
-  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!text || !text.trim()) return { ok:false, error:"empty_input" };
+  // ประโยคสั้นที่ local parser เข้าใจได้ ให้เป็น transaction ทันที — เร็วกว่าเรียก AI และแก้เคส "กินข้าว เมื่อวาน 43"
+  if(parseSpokenTransactionFast(text)) return { ok:true, intent:"transaction", fast:true };
+  if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
 
   const systemPrompt = [
     "คุณคือตัวจัดประเภทข้อความสำหรับแอปการเงินส่วนตัว Vaultet",
     "หน้าที่ของคุณคือดูข้อความที่ผู้ใช้พิมพ์ แล้วตัดสินว่าเป็นประเภทไหนใน 2 แบบนี้เท่านั้น:",
-    '- "transaction": ข้อความที่มีเจตนา "บันทึก" ธุรกรรมการเงินใหม่ มีกริยาบันทึก เช่น จ่าย/ได้เงิน/โอน/ให้ยืม/ออมเงิน และ/หรือมีจำนวนเงินที่ต้องการบันทึกเป็นรายการใหม่ชัดเจน',
+    '- "transaction": ข้อความที่มีเจตนา "บันทึก" ธุรกรรมการเงินใหม่ รวมถึงภาษาพูดที่ไม่มีกริยาบันทึก เช่น "กินข้าว เมื่อวาน 43", "กาแฟ 60", "รถไฟฟ้า 45" หากมีชื่อสิ่งที่ซื้อ/กิจกรรม + จำนวนเงิน ให้ถือเป็น transaction',
     '- "query": ข้อความที่เป็นคำถาม ขอให้วิเคราะห์ หรือสงสัยเกี่ยวกับสถานะการเงิน เช่น ถามยอดเงินคงเหลือ ถามว่าเดือนนี้ใช้จ่ายไปเท่าไหร่ เทียบเดือนที่แล้วเป็นยังไง จะมีเงินพอจ่ายไหม ไม่ใช่การขอให้บันทึกรายการใหม่',
     "ถ้าข้อความกำกวมมีทั้งสองอย่างปนกัน ให้เลือกตามเจตนาหลักที่เด่นที่สุดของข้อความ",
     "ตอบกลับเป็น JSON ล้วนตาม schema ที่กำหนดเท่านั้น ห้ามมีข้อความอื่นนอก JSON"
@@ -4123,7 +4207,7 @@ async function classifyIntent(text){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_TRANSACTION_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4363,7 +4447,7 @@ async function analyzeFinancialQuery(query, snapshot){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_TRANSACTION_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4641,7 +4725,7 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_ADVISOR_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4812,7 +4896,7 @@ async function generateProactiveInsight(evalResult, snapshot, profile){
   let res;
   try{
     res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_TRANSACTION_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
