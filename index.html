@@ -1392,7 +1392,8 @@ document.addEventListener('click',function(e){const b=e.target.closest('.managem
 <button type="button" class="management-quick-link" data-target="manageBudgetsBtn">📊 งบ</button>
 <button type="button" class="management-quick-link" data-target="manageDebtsBtn">💳 หนี้</button>
 <button type="button" class="management-quick-link" data-target="manageEmergencyBtn">🛡️ เงินสำรอง</button>
-<button type="button" class="management-quick-link" data-target="openForecastBtn">📈 คาดการณ์</button>
+<button type="button" class="management-quick-link" data-target="manageRecurringBtn">🔁 ค่าใช้จ่ายประจำ</button>
+<button type="button" class="management-quick-link" data-target="manageLoansBtn">🤝 เงินให้ยืม</button>
 </div></div>
         <span class="management-tools-badge">สำคัญ</span>
       </div>
@@ -5070,6 +5071,8 @@ function initVaultetNotifications(){
   document.getElementById("clearNotificationsBtn")?.addEventListener("click",()=>{saveVaultetNotifications([]);renderVaultetNotifications();showToast("ล้างประวัติการแจ้งเตือนแล้ว")});
   document.getElementById("requestNotificationBtn")?.addEventListener("click",async()=>{if(!("Notification"in window)){showToast("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน");return}try{const p=await Notification.requestPermission();document.getElementById("notificationPermissionBox").textContent=p==="granted"?"เปิดการแจ้งเตือนบนเครื่องแล้ว":"ยังไม่ได้อนุญาตการแจ้งเตือนบนเครื่อง"}catch(e){showToast("เปิดการแจ้งเตือนไม่สำเร็จ")}});
 
+  window.addEventListener('storage',e=>{if(e.key===VAULTET_NOTIF_SETTINGS_KEY){syncVaultetNotifControls();renderVaultetNotifications();}});
+
   renderVaultetNotifications();
   setTimeout(checkVaultetNotifications,300);
   setInterval(checkVaultetNotifications,300000);
@@ -6784,6 +6787,9 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
   function go(id){
     if(!views[id]) id='home';
     Object.entries(views).forEach(([k,v])=>v.classList.toggle('active',k===id));
+    document.body.classList.toggle('ux-home-active',id==='home');
+    document.body.classList.toggle('ux-chat-active',id==='chat');
+    document.body.classList.toggle('ux-nonhome',id!=='home');
     const pageName=document.getElementById('uxPageName');
     if(pageName) pageName.textContent=names[id]||'';
     document.querySelectorAll('.ux-bottom-item[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
@@ -6977,6 +6983,59 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
 }
 
 </style>
+<style id="vaultet-final-visual-fixes">
+/* Final pass: clean page chrome, compact cards, and no artificial bottom void. */
+.management-tools-quick{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important;width:100%!important;}
+.management-quick-link{width:100%!important;min-width:0!important;min-height:44px!important;padding:8px 5px!important;border-radius:12px!important;font-size:11px!important;line-height:1.2!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;}
+
+/* Transaction rows: consistent card geometry and breathing room. */
+#ux-home .list-section{padding:18px 14px 0!important;}
+#ux-home ul.list{gap:10px!important;}
+#ux-home .list-item{width:100%!important;box-sizing:border-box!important;min-height:64px!important;padding:11px 12px!important;border-radius:14px!important;border:1px solid #27272A!important;background:#141416!important;gap:10px!important;}
+#ux-home .list-item-left{gap:10px!important;min-width:0!important;flex:1 1 auto!important;}
+#ux-home .list-item-left>div{min-width:0!important;}
+#ux-home .list-cat{font-size:13.5px!important;line-height:1.3!important;}
+#ux-home .list-note{font-size:10.5px!important;line-height:1.35!important;}
+#ux-home .list-item-right{gap:1px!important;flex:0 0 auto!important;}
+#ux-home .list-item-right .mono{font-size:12px!important;white-space:nowrap!important;}
+#ux-home .list-icon{width:34px!important;height:34px!important;font-size:14px!important;}
+
+/* The shell belongs only to Overview. Other pages are intentionally chrome-free. */
+body.ux-nonhome .ux-shell{display:none!important;}
+body.ux-nonhome .page{padding-top:0!important;}
+body.ux-nonhome .ux-view-title,body.ux-nonhome .ux-view-sub{display:none!important;}
+
+/* Remove the forced blank tail. Overview keeps only a small reading buffer. */
+.page{padding-bottom:0!important;}
+body.ux-home-active .page{padding-bottom:92px!important;}
+body.ux-chat-active .page{padding-bottom:0!important;}
+
+/* AI advisor is a true full-screen page: no bottom nav and no floating actions. */
+body.ux-chat-active .ux-bottom-nav,body.ux-chat-active .page-anchor{display:none!important;}
+body.ux-chat-active #ux-chat{min-height:100dvh!important;padding:0!important;margin:0!important;display:block!important;}
+body.ux-chat-active .ux-chat-panel{margin:0!important;width:100%!important;max-width:none!important;height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:12px 14px calc(10px + env(safe-area-inset-bottom))!important;}
+body.ux-chat-active .ux-chat-panel .modal-header{padding-top:0!important;}
+body.ux-chat-active .ux-chat-panel .ai-analyst-body{min-height:0!important;}
+
+/* Notification settings: every state is obvious and the whole card is tappable. */
+#notificationOverlay .notification-setting{cursor:pointer!important;transition:border-color .15s,background .15s!important;}
+#notificationOverlay .notification-setting label{min-height:30px!important;cursor:pointer!important;}
+#notificationOverlay .notification-setting input[type="checkbox"]{appearance:none!important;-webkit-appearance:none!important;width:24px!important;height:24px!important;min-width:24px!important;margin:0!important;border-radius:7px!important;border:1.5px solid #55565C!important;background:#111114!important;display:grid!important;place-items:center!important;cursor:pointer!important;}
+#notificationOverlay .notification-setting input[type="checkbox"]::after{content:"";width:10px;height:6px;border-left:2px solid #061108;border-bottom:2px solid #061108;transform:rotate(-45deg) scale(0);transition:transform .12s ease;}
+#notificationOverlay .notification-setting input[type="checkbox"]:checked{background:#1DB954!important;border-color:#1DB954!important;}
+#notificationOverlay .notification-setting input[type="checkbox"]:checked::after{transform:rotate(-45deg) scale(1);}
+#notificationOverlay .notification-setting:has(input[type="checkbox"]:checked){border-color:rgba(29,185,84,.45)!important;background:rgba(29,185,84,.08)!important;}
+#notificationOverlay .notification-setting label>span::after{content:"ปิด";margin-left:7px;padding:2px 6px;border-radius:999px;font-size:8px;font-weight:700;color:#8E8E93;background:#202024;vertical-align:1px;}
+#notificationOverlay .notification-setting label:has(input[type="checkbox"]:checked)>span::after{content:"เปิด";color:#061108;background:#1DB954;}
+
+@media(max-width:600px){
+  .management-quick-link{min-height:46px!important;font-size:10.5px!important;}
+  #ux-home .list-section{padding-left:14px!important;padding-right:14px!important;}
+  body.ux-home-active .page{padding-bottom:86px!important;}
+  body.ux-chat-active .ux-chat-panel{padding-left:12px!important;padding-right:12px!important;}
+}
+</style>
+
 </body>
 </html>
 <style id="vaultet-round10-spacing">
