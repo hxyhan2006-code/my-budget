@@ -2113,10 +2113,83 @@ async function ensureGDriveToken(){
   return await requestGDriveToken("");
 }
 
-// รวม payload เดียวกับที่ exportBtn ใช้ ให้ทั้งดาวน์โหลดไฟล์และอัป Drive ตรงกันเป๊ะ ไม่มี API Key/secret ปนอยู่แน่นอน
-function buildBackupPayload(){
-  return { entries, categories: CATS_BY_TYPE, accounts, reservedItems, loans, recurringExpenses, debts, budgets, emergencyFundConfig, exportedAt: todayISO() };
+// ===== Vaultet Backup Engine (A+) =====
+// ศูนย์กลาง Backup/Restore ของแอป: เก็บข้อมูลที่จำเป็นต่อการกู้ Vaultet
+// พร้อมจับ localStorage namespace ใหม่ๆ โดยอัตโนมัติ เพื่อไม่ต้องแก้ buildBackupPayload() ทุกครั้งที่เพิ่มฟีเจอร์
+const VAULTET_BACKUP_SCHEMA_VERSION = 2;
+const VAULTET_BACKUP_EXCLUDED_KEYS = new Set([
+  AI_APIKEY_KEY, AI_APIKEYS_KEY,
+  GDRIVE_CLIENT_ID_KEY, GDRIVE_FILE_ID_KEY, GDRIVE_LAST_SYNC_KEY, GDRIVE_AUTOSYNC_KEY,
+  BACKUP_KEY
+]);
+const VAULTET_BACKUP_ALLOWED_PREFIXES = ["finance_tracker_", "vaultet_"];
+const VAULTET_BACKUP_EXCLUDED_PREFIXES = [
+  "gdrive_access_token", "oauth_", "session_", "cache_", "tmp_"
+];
+
+function shouldBackupLocalStorageKey(key){
+  if(!key || VAULTET_BACKUP_EXCLUDED_KEYS.has(key)) return false;
+  if(!VAULTET_BACKUP_ALLOWED_PREFIXES.some(prefix => key.startsWith(prefix))) return false;
+  return !VAULTET_BACKUP_EXCLUDED_PREFIXES.some(prefix => key.startsWith(prefix));
 }
+
+function collectVaultetLocalStorage(){
+  const out = {};
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key = localStorage.key(i);
+      if(!shouldBackupLocalStorageKey(key)) continue;
+      const value = localStorage.getItem(key);
+      if(value !== null) out[key] = value;
+    }
+  }catch(e){}
+  return out;
+}
+
+function getVaultetAppVersion(){
+  return document.querySelector('meta[name=\"apple-mobile-web-app-title\"]')?.content || 'Vaultet';
+}
+
+// Backup envelope มีทั้งข้อมูลแบบเดิม (เพื่อ backward compatibility) และ localStorage snapshot
+// จึงรองรับข้อมูลฟีเจอร์ใหม่ที่ถูก persist ใน localStorage โดยไม่ต้องแก้รายการทุกครั้ง
+function buildBackupPayload(){
+  return {
+    backupSchemaVersion: VAULTET_BACKUP_SCHEMA_VERSION,
+    app: "Vaultet",
+    appVersion: getVaultetAppVersion(),
+    exportedAt: new Date().toISOString(),
+    entries,
+    categories: CATS_BY_TYPE,
+    accounts,
+    reservedItems,
+    loans,
+    recurringExpenses,
+    debts,
+    budgets,
+    emergencyFundConfig,
+    appState: { localStorage: collectVaultetLocalStorage() }
+  };
+}
+
+// ถ้ามีฟีเจอร์ใหม่เขียน localStorage ในอนาคต มันจะเข้าคิว auto-sync เองเมื่อเปิดไว้
+(function installBackupStorageWatcher(){
+  if(window.__vaultetBackupStorageWatcherInstalled) return;
+  window.__vaultetBackupStorageWatcherInstalled = true;
+  try{
+    const originalSetItem = localStorage.setItem.bind(localStorage);
+    const originalRemoveItem = localStorage.removeItem.bind(localStorage);
+    localStorage.setItem = function(key,value){
+      const result = originalSetItem(key,value);
+      if(shouldBackupLocalStorageKey(String(key)) && typeof scheduleGDriveAutoSync === 'function') scheduleGDriveAutoSync();
+      return result;
+    };
+    localStorage.removeItem = function(key){
+      const result = originalRemoveItem(key);
+      if(shouldBackupLocalStorageKey(String(key)) && typeof scheduleGDriveAutoSync === 'function') scheduleGDriveAutoSync();
+      return result;
+    };
+  }catch(e){}
+})();
 
 // สร้าง/อัปเดตไฟล์ backup เดิมบน Drive (multipart upload ตาม Drive API v3) — คืน Drive file object เมื่อสำเร็จ
 async function gdriveUploadBackup(){
@@ -3668,54 +3741,67 @@ document.getElementById("importBtn").addEventListener("click", () => {
 // รวมข้อมูลจาก backup object (data) เข้ากับข้อมูลปัจจุบัน แบบ merge-by-id (ไม่ทับของเดิม แค่เติมของที่ยังไม่มี)
 // ใช้ร่วมกันทั้งกู้คืนจากไฟล์ (importFile) และกู้คืนจาก Google Drive — คืน true ถ้าสำเร็จ, false ถ้าข้อมูลไม่ถูกต้อง
 function applyImportedBackup(data){
-  if(!data || !Array.isArray(data.entries)) return false;
+  if(!data || typeof data !== 'object') return false;
+  // รองรับทั้ง Backup แบบใหม่ (envelope) และ Backup รุ่นเก่าที่มี fields อยู่ top-level
+  const source = data.data && typeof data.data === 'object' ? data.data : data;
+  if(!Array.isArray(source.entries)) return false;
+  // Restore persisted app state ก่อน แล้วค่อย merge ข้อมูลการเงินแบบเดิม
+  // Secret/API key และ state ของ OAuth/Drive จะไม่ถูกนำกลับมาโดยเด็ดขาด
+  const storedState = data.appState?.localStorage || source.appState?.localStorage;
+  if(storedState && typeof storedState === 'object'){
+    try{
+      Object.entries(storedState).forEach(([key,value]) => {
+        if(shouldBackupLocalStorageKey(key) && typeof value === 'string') localStorage.setItem(key,value);
+      });
+    }catch(e){}
+  }
   const existingIds = new Set(entries.map(en => en.id));
   const merged = [...entries];
-  data.entries.forEach(en => { if(!existingIds.has(en.id)) merged.push(en); });
+  source.entries.forEach(en => { if(!existingIds.has(en.id)) merged.push(en); });
   entries = merged;
-  if(data.categories){
+  if(source.categories){
     ["income","expense","saving"].forEach(t => {
-      if(Array.isArray(data.categories[t])){
-        const set = new Set([...CATS_BY_TYPE[t], ...data.categories[t]]);
+      if(Array.isArray(source.categories[t])){
+        const set = new Set([...CATS_BY_TYPE[t], ...source.categories[t]]);
         CATS_BY_TYPE[t] = Array.from(set);
       }
     });
     saveCategories();
   }
-  if(Array.isArray(data.accounts)){
+  if(Array.isArray(source.accounts)){
     const existingAccIds = new Set(accounts.map(a => a.id));
-    data.accounts.forEach(a => { if(a && a.id && !existingAccIds.has(a.id)) accounts.push(a); });
+    source.accounts.forEach(a => { if(a && a.id && !existingAccIds.has(a.id)) accounts.push(a); });
     saveAccounts();
   }
-  if(Array.isArray(data.reservedItems)){
+  if(Array.isArray(source.reservedItems)){
     const existingResIds = new Set(reservedItems.map(r => r.id));
-    data.reservedItems.forEach(r => { if(r && r.id && !existingResIds.has(r.id)) reservedItems.push(r); });
+    source.reservedItems.forEach(r => { if(r && r.id && !existingResIds.has(r.id)) reservedItems.push(r); });
     saveReserved();
   }
-  if(Array.isArray(data.loans)){
+  if(Array.isArray(source.loans)){
     const existingLoanIds = new Set(loans.map(l => l.id));
-    data.loans.forEach(l => { if(l && l.id && !existingLoanIds.has(l.id)){ if(!Array.isArray(l.repayments)) l.repayments=[]; loans.push(l); } });
+    source.loans.forEach(l => { if(l && l.id && !existingLoanIds.has(l.id)){ if(!Array.isArray(l.repayments)) l.repayments=[]; loans.push(l); } });
     saveLoans();
   }
   // Backup เก่าที่ไม่มี recurringExpenses เลย ให้ถือเป็น [] (ค่าเริ่มต้น) โดยไม่ทำให้ restore พัง
-  if(Array.isArray(data.recurringExpenses)){
+  if(Array.isArray(source.recurringExpenses)){
     const existingRecIds = new Set(recurringExpenses.map(r => r.id));
-    data.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
+    source.recurringExpenses.forEach(r => { if(r && r.id && !existingRecIds.has(r.id)) recurringExpenses.push(r); });
     saveRecurring();
   }
   // Backup เก่าที่ไม่มี debts เลย (ก่อน Milestone 5) ให้ถือเป็น [] โดยไม่ทำให้ restore พัง
-  if(Array.isArray(data.debts)){
+  if(Array.isArray(source.debts)){
     const existingDebtIds = new Set(debts.map(d => d.id));
-    data.debts.forEach(d => { if(d && d.id && !existingDebtIds.has(d.id)){ if(!Array.isArray(d.history)) d.history=[]; debts.push(d); } });
+    source.debts.forEach(d => { if(d && d.id && !existingDebtIds.has(d.id)){ if(!Array.isArray(d.history)) d.history=[]; debts.push(d); } });
     saveDebts();
   }
-  if(Array.isArray(data.budgets)){
+  if(Array.isArray(source.budgets)){
     const existingBudgetIds = new Set(budgets.map(b => b.id));
-    data.budgets.map(normalizeBudget).filter(Boolean).forEach(b => { if(!existingBudgetIds.has(b.id)) budgets.push(b); });
+    source.budgets.map(normalizeBudget).filter(Boolean).forEach(b => { if(!existingBudgetIds.has(b.id)) budgets.push(b); });
     const map=new Map(); budgets.forEach(b=>{ const k=b.month+"|"+b.category; const old=map.get(k); if(!old || String(b.updatedAt)>String(old.updatedAt)) map.set(k,b); });
     budgets=Array.from(map.values()); saveBudgets();
   }
-  if(data.emergencyFundConfig && typeof data.emergencyFundConfig === "object"){ emergencyFundConfig=normalizeEmergencyConfig(data.emergencyFundConfig); saveEmergencyFundConfig(); }
+  if(source.emergencyFundConfig && typeof source.emergencyFundConfig === "object"){ emergencyFundConfig=normalizeEmergencyConfig(source.emergencyFundConfig); saveEmergencyFundConfig(); }
   saveEntries();
   render();
   return true;
