@@ -5085,6 +5085,15 @@ function hideAiChatTyping(){
   if(el) el.remove();
 }
 // สลับปุ่มส่ง/ยกเลิกตามสถานะกำลังเรียก AI — เปลี่ยนเฉพาะ presentation ไม่แตะ request behavior
+function syncAiChatSendBtnVisibility(){
+  const btn = document.getElementById("aiChatSendBtn");
+  const input = document.getElementById("aiChatInput");
+  if(!btn) return;
+  const hasText = !!input && input.value.trim().length > 0;
+  const show = !!aiChatBusy || hasText;
+  btn.classList.toggle("is-composer-empty", !show);
+}
+
 function setAiChatSendBtnState(isBusy){
   const btn = document.getElementById("aiChatSendBtn");
   if(!btn) return;
@@ -5099,6 +5108,7 @@ function setAiChatSendBtnState(isBusy){
     btn.title = "ส่งข้อความ";
     btn.setAttribute("aria-label","ส่งข้อความ");
   }
+  syncAiChatSendBtnVisibility();
 }
 
 function loadAIAdvisorInstruction(){ return (localStorage.getItem(AI_ADVISOR_INSTRUCTION_KEY) || "").trim().slice(0,2000); }
@@ -5822,12 +5832,16 @@ document.getElementById("aiChatSendBtn").addEventListener("click", async () => {
     showAiCompletionNotification(requestChatId);
   }
 });
+document.getElementById("aiChatInput").addEventListener("input", () => {
+  syncAiChatSendBtnVisibility();
+});
 document.getElementById("aiChatInput").addEventListener("keydown", (e) => {
   if(e.key === "Enter"){
     e.preventDefault();
     document.getElementById("aiChatSendBtn").click();
   }
 });
+syncAiChatSendBtnVisibility();
 
 // ใช้ตอนกด "🔄 ตอบใหม่" — ตัดคำตอบ AI อันเดิมทิ้ง แล้วยิงคำถามเดิมซ้ำ
 async function regenerateLastReply(priorHistory, userText){
@@ -8319,11 +8333,17 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
 <!-- ===== User-requested AI chat UX fixes (final, scoped only to AI advisor) ===== -->
 <style id="vaultet-ai-user-requested-fixes">
   /* The dedicated AI page uses the app top bar as its only header. */
-  .ux-chat-top-actions{display:none!important;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;flex:0 0 auto;}
-  body.ux-chat-active .ux-chat-top-actions{display:flex!important;}
-  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn{width:36px!important;height:36px!important;min-width:36px!important;border-radius:11px!important;background:transparent!important;border:0!important;color:#92929A!important;}
+  .ux-chat-top-actions{display:none!important;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;flex:0 0 auto;min-width:0;}
+  body.ux-chat-active .ux-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;}
+  body.ux-chat-active .ux-brand{flex:1 1 auto!important;min-width:0!important;}
+  body.ux-chat-active .ux-brand-page{display:none!important;}
+  body.ux-chat-active .ux-chat-top-actions{display:flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:200!important;}
+  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn{width:36px!important;height:36px!important;min-width:36px!important;border-radius:11px!important;background:transparent!important;border:0!important;color:#92929A!important;display:grid!important;place-items:center!important;}
   body.ux-chat-active .ux-chat-top-actions .ai-icon-btn:active{background:rgba(255,255,255,.07)!important;transform:scale(.96);}
   body.ux-chat-active .ux-chat-panel>.modal-header{display:none!important;}
+
+  /* Empty composer stays visually clean; the send/stop control appears only when useful. */
+  body.ux-chat-active #aiChatSendBtn.is-composer-empty{display:none!important;}
 
   /* Keep the composer close to the fixed bottom navigation without covering it. */
   @media(max-width:600px){
@@ -8370,6 +8390,12 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
     }
     const source=aiPanel.querySelector('.modal-header > div');
     if(source && !host.contains(source)) host.appendChild(source);
+    if(!host.querySelector('#aiAdvisorSettingsBtn,#aiChatHistoryBtn,#clearAiChatBtn')){
+      ['aiAdvisorSettingsBtn','aiChatHistoryBtn','clearAiChatBtn'].forEach(id=>{
+        const btn=aiPanel.querySelector('#'+id);
+        if(btn && !host.contains(btn)) host.appendChild(btn);
+      });
+    }
     return !!host.querySelector('#aiAdvisorSettingsBtn,#aiChatHistoryBtn,#clearAiChatBtn');
   }
 
