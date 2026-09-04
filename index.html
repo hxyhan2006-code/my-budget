@@ -6794,6 +6794,7 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
     document.body.classList.toggle('ux-home-active',id==='home');
     document.body.classList.toggle('ux-chat-active',id==='chat');
     document.body.classList.toggle('ux-nonhome',id!=='home');
+    document.body.classList.toggle('ux-more-active',id==='more');
     const pageName=document.getElementById('uxPageName');
     if(pageName) pageName.textContent=names[id]||'';
     document.querySelectorAll('.ux-bottom-item[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
@@ -7272,5 +7273,93 @@ body.ux-home-active .ux-profile-trigger{display:none!important}.ux-profile-trigg
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+<style id="vaultet-profile-shell-final-fix">
+/* Profile is an Other-page feature; other pages only show lightweight user context. */
+body.ux-home-active .ux-profile-trigger,
+body:not(.ux-nonhome) .ux-profile-trigger{display:none!important;}
+body.ux-nonhome:not(.ux-more-active) .ux-profile-trigger{display:none!important;}
+body.ux-more-active .ux-profile-trigger{display:none!important;}
+
+/* Non-home topbar returns as app chrome: page title only, no month/bell. */
+body.ux-nonhome .ux-shell{display:block!important;}
+body.ux-nonhome .ux-month,
+body.ux-nonhome .ux-bell{display:none!important;}
+body.ux-nonhome .ux-topbar{grid-template-columns:minmax(0,1fr)!important;}
+body.ux-nonhome .ux-brand{min-width:0!important;}
+body.ux-nonhome .ux-brand-page{display:block!important;}
+
+/* Lightweight identity context — visible without opening Profile. */
+.ux-user-context{margin:10px 20px 14px;padding:11px 13px;display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;box-sizing:border-box;}
+.ux-user-context-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;background:var(--accent1);color:#fff;font-size:16px;}
+.ux-user-context-main{min-width:0;flex:1;}
+.ux-user-context-name{font-size:12.5px;font-weight:850;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ux-user-context-meta{margin-top:2px;color:var(--faint);font-size:9.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ux-user-context-goal{margin-top:2px;color:var(--ink);font-size:9px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.82;}
+.ux-user-context-edit{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--faint);border-radius:10px;padding:6px 8px;font:inherit;font-size:9px;cursor:pointer;}
+.ux-user-context-edit:active{transform:scale(.98)}
+
+/* Profile sheet is a true overlay: app navigation disappears behind it. */
+body:has(.profile-overlay.open) .ux-bottom-nav,
+body:has(.profile-overlay.open) .ux-shell,
+body:has(.profile-overlay.open) .page-anchor{display:none!important;}
+body:has(.profile-overlay.open){overflow:hidden!important;}
+.profile-overlay{z-index:1200!important;}
+
+/* Bottom navigation is part of the shell, not a floating card. */
+@media(max-width:600px){
+  .ux-bottom-nav{left:0!important;right:0!important;bottom:0!important;border-radius:0!important;border-left:0!important;border-right:0!important;border-bottom:0!important;box-shadow:0 -1px 0 var(--line)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;}
+  .ux-bottom-item{border-radius:0!important;}
+  .ux-bottom-item.active{border-radius:0!important;background:rgba(29,185,84,.09)!important;}
+}
+
+/* Plan and the other normal pages must remain vertically scrollable. */
+body:not(.ux-chat-active){overflow-x:hidden!important;overflow-y:auto!important;}
+body:not(.ux-chat-active) .page{overflow:visible!important;height:auto!important;min-height:100vh!important;}
+body:not(.ux-chat-active) .ux-view.active{overflow:visible!important;min-height:0!important;}
+</style>
+<script id="vaultet-profile-shell-final-logic">
+(function(){
+  const profileKey='vaultet_user_profile_v1';
+  const statusLabels={student:'นักเรียน',university:'นักศึกษา',work:'ทำงาน',freelance:'ฟรีแลนซ์',business:'ทำธุรกิจ'};
+  function readProfile(){try{return JSON.parse(localStorage.getItem(profileKey)||'{}')||{};}catch(e){return {};}}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function profileSummary(p){
+    const name=p.nickname||[p.firstName,p.lastName].filter(Boolean).join(' ')||'โปรไฟล์ของฉัน';
+    const statuses=(p.statuses||[]).map(x=>statusLabels[x]||x).filter(Boolean);
+    if(p.occupation && !statuses.includes(p.occupation)) statuses.push(p.occupation);
+    const meta=statuses.slice(0,2).join(' · ')||'เพิ่มข้อมูลเกี่ยวกับตัวคุณได้ในโปรไฟล์';
+    const goal=(p.financialGoals||[]).find(x=>x&&x.name);
+    return {name,meta,goal:goal?`เป้าหมาย: ${goal.name}`:''};
+  }
+  function ensureContext(viewId){
+    if(!['plan','brain','more'].includes(viewId)) return;
+    const view=document.getElementById('ux-'+viewId); if(!view||view.querySelector('.ux-user-context')) return;
+    const card=document.createElement('div'); card.className='ux-user-context';
+    card.innerHTML='<div class="ux-user-context-avatar">👤</div><div class="ux-user-context-main"><div class="ux-user-context-name"></div><div class="ux-user-context-meta"></div><div class="ux-user-context-goal"></div></div><button type="button" class="ux-user-context-edit">โปรไฟล์</button>';
+    const title=view.querySelector('.ux-view-title');
+    if(title) title.after(card); else view.prepend(card);
+    card.querySelector('.ux-user-context-edit').addEventListener('click',()=>document.getElementById('uxProfileTrigger')?.click());
+  }
+  function refreshContexts(){
+    const p=readProfile(), s=profileSummary(p);
+    document.querySelectorAll('.ux-user-context').forEach(card=>{
+      const n=card.querySelector('.ux-user-context-name'),m=card.querySelector('.ux-user-context-meta'),g=card.querySelector('.ux-user-context-goal');
+      if(n)n.textContent=s.name;if(m)m.textContent=s.meta;if(g){g.textContent=s.goal;g.style.display=s.goal?'block':'none';}
+    });
+  }
+  function setup(){
+    ['plan','brain','more'].forEach(ensureContext); refreshContexts();
+    const originalGo=window.go;
+    /* Navigation function is local in the shell script, so observe body state instead. */
+    const observer=new MutationObserver(()=>{refreshContexts();});
+    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+    document.getElementById('uxProfileTrigger')?.addEventListener('click',()=>setTimeout(refreshContexts,50));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
+
+
+
 </body>
 </html>
