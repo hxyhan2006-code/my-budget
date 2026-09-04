@@ -6940,7 +6940,7 @@ const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderB
     if(!anchor) return;
     const active=document.querySelector('.ux-view.active');
     const pageId=active ? active.id.replace(/^ux-/,'') : 'home';
-    anchor.classList.toggle('fab-hidden', !['home','transactions'].includes(pageId));
+    anchor.classList.toggle('fab-hidden', pageId !== 'home');
   }
 
   if(nav) nav.addEventListener('click',()=>setTimeout(syncFabVisibility,0),true);
@@ -7332,6 +7332,10 @@ body:has(.profile-overlay.open){overflow:hidden!important;}
 body:not(.ux-chat-active){overflow-x:hidden!important;overflow-y:auto!important;}
 body:not(.ux-chat-active) .page{overflow:visible!important;height:auto!important;min-height:100vh!important;}
 body:not(.ux-chat-active) .ux-view.active{overflow:visible!important;min-height:0!important;}
+
+/* FABs are Overview-only. This CSS guard prevents a refresh/hash race from briefly showing them elsewhere. */
+body.ux-nonhome .page-anchor{display:none!important;}
+body.ux-home-active .page-anchor{display:block!important;}
 </style>
 <script id="vaultet-profile-shell-final-logic">
 (function(){
@@ -7365,12 +7369,20 @@ body:not(.ux-chat-active) .ux-view.active{overflow:visible!important;min-height:
   function setup(){
     ['plan','brain','more'].forEach(ensureContext);
     const more=document.getElementById('ux-more');
-    if(more && !more.querySelector('.ux-profile-manage-entry')){
-      const b=document.createElement('button');
-      b.type='button'; b.className='ux-profile-manage-entry';
-      b.innerHTML='<span class="ux-profile-manage-icon">👤</span><span><strong>โปรไฟล์ของฉัน</strong><small>จัดการข้อมูลส่วนตัวและบริบทสำหรับ AI</small></span><span class="ux-profile-manage-arrow">›</span>';
-      b.onclick=()=>document.getElementById('vaultetProfileOverlay')?.classList.add('open');
-      more.appendChild(b);
+    if(more){
+      // Keep exactly one profile/context card on Other. It is also the entry point to the full editor.
+      more.querySelectorAll('.ux-profile-manage-entry').forEach(el=>el.remove());
+      const contexts=more.querySelectorAll('.ux-user-context');
+      contexts.forEach((el,i)=>{ if(i>0) el.remove(); });
+      const card=more.querySelector('.ux-user-context');
+      if(card){
+        card.setAttribute('role','button');
+        card.setAttribute('tabindex','0');
+        card.setAttribute('aria-label','เปิดโปรไฟล์ของฉัน');
+        const openProfile=()=>document.getElementById('vaultetProfileOverlay')?.classList.add('open');
+        card.onclick=openProfile;
+        card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfile();}};
+      }
     }
     refreshContexts();
     const originalGo=window.go;
