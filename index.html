@@ -5120,60 +5120,97 @@ function buildAIChatSystemPrompt(snapshot, profile){
   return base + "\n\n" +
     [
       "หมายเหตุเพิ่มเติมสำหรับโหมดแชทต่อเนื่องนี้:",
-      "- นี่คือการสนทนาต่อเนื่องหลายข้อความ ให้จำบริบทจากข้อความก่อนหน้าในบทสนทนาด้วยเสมอ",
+      "- นี่คือการสนทนาต่อเนื่องหลายข้อความ ให้ใช้บริบทก่อนหน้าเมื่อเกี่ยวข้อง แต่คำถามล่าสุดของผู้ใช้มีความสำคัญสูงสุดเสมอ",
+      "- ตอบผู้ใช้เป็นคำตอบที่สมบูรณ์ อ่านรู้เรื่อง และจบประโยคก่อนส่งทุกครั้ง ห้ามส่งเศษข้อความ ค่าบางส่วน หรือข้อความที่คัดลอกมาจากข้อมูลดิบ",
+      "- ห้ามเปิดเผยชื่อฟิลด์ภายใน โค้ด ตัวแปร หรือคีย์จาก Financial Snapshot เช่น minReserveTarget, maxOutputTokens หรือชื่อ property ใด ๆ ให้แปลข้อมูลเป็นภาษามนุษย์แทน",
+      "- หากผู้ใช้ถามว่าควรจัดการอะไรก่อน ให้สรุปลำดับความสำคัญจากสถานะการเงินจริงปัจจุบันอย่างชัดเจน พร้อมเหตุผลสั้น ๆ และขั้นตอนถัดไป",
       "- ถ้าผู้ใช้พิมพ์มาแบบทั่วไป ไม่ใช่คำถามเชิงตัวเลข (เช่น บ่น/ระบาย/ทักทาย) ให้ตอบรับแบบเป็นมิตรในฐานะที่ปรึกษาการเงินส่วนตัวได้ตามปกติ โดยยังโยงกลับมาที่สถานะการเงินจริงของผู้ใช้เมื่อเหมาะสม แต่ไม่ต้องยัดตัวเลขเข้าไปทุกครั้งถ้าไม่เกี่ยวข้อง",
       "- ยังคงห้ามสร้างตัวเลขที่ไม่มีอยู่ใน Financial Snapshot ขึ้นมาเองเด็ดขาด",
-      loadAIAdvisorInstruction() ? "คำสั่งปรับแต่งจากผู้ใช้ (ต้องทำตามตราบเท่าที่ไม่ขัดกับกติกาความถูกต้องของข้อมูล):\n" + loadAIAdvisorInstruction() : ""
+      "- คำสั่งปรับแต่งจากผู้ใช้ใช้ปรับรูปแบบและน้ำเสียงได้ แต่ห้ามทำให้คำตอบไม่สมบูรณ์ ขัดกับคำถามล่าสุด หรือขัดกับข้อมูลจริง",
+      loadAIAdvisorInstruction() ? "คำสั่งปรับแต่งจากผู้ใช้:\n" + loadAIAdvisorInstruction() : ""
     ].filter(Boolean).join("\n");
 }
 
 // ส่งข้อความต่อเนื่อง (พร้อมประวัติแชท) ให้ Gemini ตอบ คืน { ok:true, text } หรือ { ok:false, error }
 // signal (AbortSignal) เป็น optional — ใช้สำหรับให้ผู้ใช้กดยกเลิกระหว่างรอคำตอบได้
+function collectGeminiText(data){
+  const parts=data?.candidates?.[0]?.content?.parts;
+  if(!Array.isArray(parts)) return "";
+  return parts.map(p=>typeof p?.text==="string"?p.text:"").filter(Boolean).join("\n").trim();
+}
+
+function isUsableAiChatReply(text, data){
+  const t=String(text||"").trim();
+  if(t.length<24) return false;
+  if(/\b(?:minReserveTarget|maxOutputTokens|monthlyEssentialExpense|reserveCoverageMonths)\b/.test(t)) return false;
+  if(data?.candidates?.[0]?.finishReason==="MAX_TOKENS") return false;
+  if(/[\(\[]\s*$/.test(t) || /(?:\*\*|[-:])\s*$/.test(t)) return false;
+  const opens=(t.match(/\(/g)||[]).length, closes=(t.match(/\)/g)||[]).length;
+  if(opens!==closes && /[\dA-Za-zก-๙]\s*$/.test(t)) return false;
+  return true;
+}
+
+function isSafeHistoryMessage(m){
+  if(!m || !m.text || !String(m.text).trim()) return false;
+  return m.role!=="model" || isUsableAiChatReply(m.text, null);
+}
+
+// ส่งข้อความต่อเนื่อง (พร้อมประวัติแชท) ให้ Gemini ตอบ และตรวจคำตอบที่ถูกตัด/เป็นข้อมูลดิบก่อนบันทึก
 async function generateChatReply(priorHistory, userText, snapshot, profile, signal){
   if(getApiKeys().length === 0) return { ok:false, error:"missing_api_key" };
   if(!userText || !userText.trim()) return { ok:false, error:"empty_input" };
 
-  const systemPrompt = buildAIChatSystemPrompt(snapshot, profile);
-  // ส่งเฉพาะบริบทล่าสุด ลดขนาด request และ Time-to-First-Token ในแชทยาว
-  const recentHistory = priorHistory.slice(-16);
+  const baseSystemPrompt = buildAIChatSystemPrompt(snapshot, profile);
+  // ไม่ส่งคำตอบ AI เก่าที่เป็นเศษข้อความกลับเข้าไปเป็นบริบท เพราะจะทำให้ความเพี้ยนสะสม
+  const recentHistory = priorHistory.filter(isSafeHistoryMessage).slice(-16);
   const contents = recentHistory
-    .map(m => ({ role: m.role === "user" ? "user" : "model", parts:[{ text: m.text }] }))
+    .map(m => ({ role: m.role === "user" ? "user" : "model", parts:[{ text: String(m.text).trim() }] }))
     .concat([{ role:"user", parts:[{ text: userText.trim() }] }]);
 
-  let res;
-  try{
-    res = await fetchGeminiWithRetry(
-      (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_ADVISOR_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: { temperature: 0.35, maxOutputTokens: 360 }
-        }),
-        signal
-      },
-      0 // แชทต้องตอบไว: ถ้า 429 ให้สลับคีย์สำรองทันที ไม่รอ 1.5s/3s
-    );
-  }catch(e){
-    if(e && e.name === "AbortError") return { ok:false, error:"aborted" };
-    return { ok:false, error:"network_error" };
+  async function requestReply(extraInstruction){
+    let res;
+    try{
+      res = await fetchGeminiWithRetry(
+        (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${AI_ADVISOR_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: { parts: [{ text: baseSystemPrompt + (extraInstruction ? "\n\n" + extraInstruction : "") }] },
+            generationConfig: { temperature: 0.25, maxOutputTokens: 700 }
+          }),
+          signal
+        },
+        0
+      );
+    }catch(e){
+      if(e && e.name === "AbortError") return { ok:false, error:"aborted" };
+      return { ok:false, error:"network_error" };
+    }
+
+    if(!res.ok){
+      let detail = "";
+      try{ detail = (await res.text()).slice(0,300); }catch(e){}
+      return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
+    }
+
+    let data;
+    try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
+    const text = collectGeminiText(data);
+    if(!text) return { ok:false, error:"empty_response" };
+    return { ok:true, text, data };
   }
 
-  if(!res.ok){
-    let detail = "";
-    try{ detail = (await res.text()).slice(0,300); }catch(e){}
-    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
-  }
+  let result=await requestReply("");
+  if(!result.ok) return result;
+  if(isUsableAiChatReply(result.text,result.data)) return { ok:true, text:result.text };
 
-  let data;
-  try{ data = await res.json(); }catch(e){ return { ok:false, error:"invalid_json" }; }
-
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if(!text) return { ok:false, error:"empty_response" };
-
-  return { ok:true, text };
+  // ถ้ารอบแรกถูกตัดหรือคืนเศษข้อมูล ให้ลองใหม่ครั้งเดียวด้วยกติกาที่เข้มขึ้น แทนการบันทึกคำตอบเสียลงประวัติ
+  result=await requestReply("คำตอบรอบก่อนมีความเสี่ยงเป็นเศษข้อความหรือถูกตัด ให้ตอบคำถามล่าสุดใหม่ทั้งหมดเป็นภาษาไทยแบบสมบูรณ์ ห้ามอ้างชื่อฟิลด์ภายใน และต้องจบคำตอบอย่างเป็นธรรมชาติ.");
+  if(!result.ok) return result;
+  if(!isUsableAiChatReply(result.text,result.data)) return { ok:false, error:"invalid_ai_response" };
+  return { ok:true, text:result.text };
 }
 
 // แปลง Markdown พื้นฐาน (**ตัวหนา** และขึ้นบรรทัดใหม่) เป็น HTML อย่างปลอดภัย — escapeHtml() ก่อนเสมอ กัน XSS จากคำตอบ AI
@@ -8352,7 +8389,7 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
     flex:1 1 auto!important;
     min-width:0!important;
   }
-  body.ux-chat-active .ux-brand-page{display:none!important;}
+  body.ux-chat-active .ux-brand-page{display:block!important;}
   /* Month selector + notification are not part of the AI chat header. */
   body.ux-chat-active .ux-month,
   body.ux-chat-active .ux-bell{display:none!important;}
@@ -8555,7 +8592,9 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
   }
   body.ux-chat-active .ux-topbar{display:flex!important;align-items:center!important;}
   body.ux-chat-active .ux-brand{min-width:0!important;flex:1 1 auto!important;}
-  body.ux-chat-active .ux-brand-page{display:none!important;}
+  body.ux-chat-active .ux-brand-page{display:block!important;}
+/* Final header contract: AI must show the current page name just like every other page. */
+body.ux-chat-active .ux-brand-page{display:block!important;visibility:visible!important;opacity:1!important;}
 </style>
 <script id="vaultet-ai-final-two-fixes-runtime">
 (function(){
