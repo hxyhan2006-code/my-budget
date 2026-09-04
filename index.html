@@ -8332,28 +8332,61 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
 
 <!-- ===== User-requested AI chat UX fixes (final, scoped only to AI advisor) ===== -->
 <style id="vaultet-ai-user-requested-fixes">
-  /* The dedicated AI page uses the app top bar as its only header. */
-  .ux-chat-top-actions{display:none!important;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;flex:0 0 auto;min-width:0;}
-  body.ux-chat-active .ux-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;}
-  body.ux-chat-active .ux-brand{flex:1 1 auto!important;min-width:0!important;}
+  /* Dedicated AI page: Vaultet + the three AI controls share the same top bar. */
+  .ux-chat-top-actions{
+    display:none!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:3px!important;
+    margin-left:auto!important;
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+  body.ux-chat-active .ux-topbar{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:6px!important;
+  }
+  body.ux-chat-active .ux-brand{
+    flex:1 1 auto!important;
+    min-width:0!important;
+  }
   body.ux-chat-active .ux-brand-page{display:none!important;}
-  body.ux-chat-active .ux-chat-top-actions{display:flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:200!important;}
-  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn{width:36px!important;height:36px!important;min-width:36px!important;border-radius:11px!important;background:transparent!important;border:0!important;color:#92929A!important;display:grid!important;place-items:center!important;}
-  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn:active{background:rgba(255,255,255,.07)!important;transform:scale(.96);}
+  /* Month selector + notification are not part of the AI chat header. */
+  body.ux-chat-active .ux-month,
+  body.ux-chat-active .ux-bell{display:none!important;}
+  body.ux-chat-active .ux-chat-top-actions{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:300!important;
+    flex:0 0 auto!important;
+  }
+  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn{
+    width:36px!important;height:36px!important;min-width:36px!important;
+    border-radius:11px!important;background:transparent!important;border:0!important;
+    color:#92929A!important;display:grid!important;place-items:center!important;
+    padding:0!important;
+  }
+  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn svg{
+    width:18px!important;height:18px!important;display:block!important;
+    fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;
+    stroke-linecap:round!important;stroke-linejoin:round!important;
+  }
+  body.ux-chat-active .ux-chat-top-actions .ai-icon-btn:active{
+    background:rgba(255,255,255,.07)!important;transform:scale(.96);
+  }
   body.ux-chat-active .ux-chat-panel>.modal-header{display:none!important;}
 
-  /* Empty composer stays visually clean; the send/stop control appears only when useful. */
+  /* Empty composer stays clean; once text exists the send control appears. */
   body.ux-chat-active #aiChatSendBtn.is-composer-empty{display:none!important;}
 
-  /* Keep the composer close to the fixed bottom navigation without covering it. */
   @media(max-width:600px){
     body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel{
       padding-bottom:calc(68px + env(safe-area-inset-bottom))!important;
     }
-  }
-
-  /* Gemini-like composer buttons: obvious send arrow, calm stop button, no pseudo-glyphs. */
-  @media(max-width:600px){
     body.ux-chat-active .ai-chat-input-row{
       min-height:48px!important;
       padding:4px 6px 4px 14px!important;
@@ -8362,13 +8395,18 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
     }
     body.ux-chat-active #aiChatSendBtn,
     body.ux-chat-active .ai-chat-input-row button{
-      width:40px!important;height:40px!important;min-width:40px!important;flex:0 0 40px!important;
-      border-radius:50%!important;display:grid!important;place-items:center!important;
-      border:none!important;padding:0!important;font-size:0!important;line-height:0!important;
+      width:40px!important;height:40px!important;min-width:40px!important;
+      flex:0 0 40px!important;border-radius:50%!important;
+      display:grid!important;place-items:center!important;border:none!important;
+      padding:0!important;font-size:0!important;line-height:0!important;
     }
     body.ux-chat-active #aiChatSendBtn{background:#1A73E8!important;color:#fff!important;}
     body.ux-chat-active #aiChatSendBtn.stop-btn{background:#303134!important;color:#fff!important;}
-    body.ux-chat-active #aiChatSendBtn svg{width:19px!important;height:19px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:2.2!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
+    body.ux-chat-active #aiChatSendBtn svg{
+      width:19px!important;height:19px!important;display:block!important;
+      fill:none!important;stroke:currentColor!important;stroke-width:2.2!important;
+      stroke-linecap:round!important;stroke-linejoin:round!important;
+    }
     body.ux-chat-active #aiChatSendBtn.stop-btn svg rect{fill:currentColor!important;stroke:none!important;}
     body.ux-chat-active #aiChatSendBtn::after,
     body.ux-chat-active .ai-chat-input-row button::after{content:none!important;display:none!important;}
@@ -8380,6 +8418,7 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
     const topbar=document.querySelector('.ux-topbar');
     const aiPanel=document.querySelector('#aiAnalystOverlay .sheet-modal');
     if(!topbar || !aiPanel) return false;
+
     let host=document.getElementById('uxChatTopActions');
     if(!host){
       host=document.createElement('div');
@@ -8388,15 +8427,18 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
       host.setAttribute('aria-label','เครื่องมือแชท AI');
       topbar.appendChild(host);
     }
-    const source=aiPanel.querySelector('.modal-header > div');
-    if(source && !host.contains(source)) host.appendChild(source);
-    if(!host.querySelector('#aiAdvisorSettingsBtn,#aiChatHistoryBtn,#clearAiChatBtn')){
-      ['aiAdvisorSettingsBtn','aiChatHistoryBtn','clearAiChatBtn'].forEach(id=>{
-        const btn=aiPanel.querySelector('#'+id);
-        if(btn && !host.contains(btn)) host.appendChild(btn);
-      });
-    }
-    return !!host.querySelector('#aiAdvisorSettingsBtn,#aiChatHistoryBtn,#clearAiChatBtn');
+
+    /* Move the actual existing buttons (not clones), so their original listeners/IDs remain valid. */
+    ['aiAdvisorSettingsBtn','aiChatHistoryBtn','clearAiChatBtn'].forEach(id=>{
+      const btn=document.getElementById(id);
+      if(btn && !host.contains(btn)) host.appendChild(btn);
+    });
+
+    /* Remove the old title/actions wrapper after its real buttons have been relocated. */
+    const oldHeader=aiPanel.querySelector('.modal-header');
+    if(oldHeader && !oldHeader.contains(host)) oldHeader.remove();
+
+    return ['aiAdvisorSettingsBtn','aiChatHistoryBtn','clearAiChatBtn'].every(id=>!!document.getElementById(id)?.closest('#uxChatTopActions'));
   }
 
   function prepareFreshChatForSession(){
@@ -8406,16 +8448,14 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
       if(typeof loadAllChats!=='function' || typeof createNewChat!=='function') return;
       const data=loadAllChats();
       const active=data?.chats?.find(c=>c.id===data.activeId);
-      /* Reuse the empty draft; after a real conversation, start the next app visit in a fresh chat. */
-      if(active && Array.isArray(active.messages) && active.messages.length){
-        createNewChat();
-      }
-    }catch(e){ /* presentation-only guard; never break app startup */ }
+      if(active && Array.isArray(active.messages) && active.messages.length) createNewChat();
+    }catch(e){}
   }
 
   function refreshChatPage(){
     moveAiHeaderActions();
     if(typeof renderAiChatBubbles==='function') renderAiChatBubbles();
+    if(typeof syncAiChatSendBtnVisibility==='function') syncAiChatSendBtnVisibility();
     if(typeof aiRequestState!=='undefined' && aiRequestState?.status==='pending' && typeof setAiChatSendBtnState==='function') setAiChatSendBtnState(true);
   }
 
@@ -8424,7 +8464,6 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
       const original=window.bancheeOpenChatPage;
       window.bancheeOpenChatPage=function(){
         prepareFreshChatForSession();
-        moveAiHeaderActions();
         const result=original.apply(this,arguments);
         moveAiHeaderActions();
         return result;
@@ -8449,6 +8488,135 @@ body.ux-chat-active .ux-chat-panel .ai-chat-input-row{flex:0 0 auto!important;po
     document.addEventListener('click',()=>{moveAiHeaderActions();patchChatEntry();},{capture:true,passive:true});
   }
 
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+
+<!-- Final tiny fix: the first typed message must get the real arrow immediately. -->
+<script id="vaultet-ai-send-arrow-first-message-fix">
+(function(){
+  function ensureSendArrow(){
+    const btn=document.getElementById('aiChatSendBtn');
+    const input=document.getElementById('aiChatInput');
+    if(!btn || !input || typeof aiChatBusy!=='boolean') return;
+    if(!aiChatBusy && input.value.trim()){
+      if(!btn.querySelector('svg')){
+        btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+      }
+      btn.classList.remove('stop-btn');
+      btn.classList.remove('is-composer-empty');
+      btn.setAttribute('aria-label','ส่งข้อความ');
+      btn.title='ส่งข้อความ';
+    }
+  }
+  const input=document.getElementById('aiChatInput');
+  if(input) input.addEventListener('input',ensureSendArrow,{capture:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureSendArrow); else ensureSendArrow();
+})();
+</script>
+
+
+<!-- Final patch: restore AI top actions + guarantee first-message arrow -->
+<style id="vaultet-ai-final-two-fixes">
+  body.ux-chat-active #uxChatTopActions{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:4px!important;
+    margin-left:auto!important;
+    flex:0 0 auto!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:999!important;
+  }
+  body.ux-chat-active #uxChatTopActions .ai-icon-btn{
+    display:grid!important;
+    place-items:center!important;
+    width:38px!important;
+    height:38px!important;
+    min-width:38px!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    background:transparent!important;
+    color:#92929A!important;
+    border-radius:11px!important;
+  }
+  body.ux-chat-active #uxChatTopActions .ai-icon-btn svg{
+    display:block!important;
+    width:19px!important;
+    height:19px!important;
+    fill:none!important;
+    stroke:currentColor!important;
+    stroke-width:1.8!important;
+    stroke-linecap:round!important;
+    stroke-linejoin:round!important;
+  }
+  body.ux-chat-active .ux-topbar{display:flex!important;align-items:center!important;}
+  body.ux-chat-active .ux-brand{min-width:0!important;flex:1 1 auto!important;}
+  body.ux-chat-active .ux-brand-page{display:none!important;}
+</style>
+<script id="vaultet-ai-final-two-fixes-runtime">
+(function(){
+  function moveAiHeaderActionsFinal(){
+    const topbar=document.querySelector('body.ux-chat-active .ux-topbar, .ux-topbar');
+    const panel=document.querySelector('.ux-chat-panel, #ux-chat .sheet-modal, #aiAnalystOverlay .sheet-modal');
+    if(!topbar || !panel) return false;
+
+    let host=document.getElementById('uxChatTopActions');
+    if(!host){
+      host=document.createElement('div');
+      host.id='uxChatTopActions';
+      host.className='ux-chat-top-actions';
+      host.setAttribute('aria-label','เครื่องมือแชท AI');
+      topbar.appendChild(host);
+    }else if(host.parentElement!==topbar){
+      topbar.appendChild(host);
+    }
+
+    ['aiAdvisorSettingsBtn','aiChatHistoryBtn','clearAiChatBtn'].forEach(function(id){
+      const btn=document.getElementById(id);
+      if(btn && btn.parentElement!==host) host.appendChild(btn);
+    });
+
+    const oldHeader=panel.querySelector('.modal-header');
+    if(oldHeader) oldHeader.remove();
+    return true;
+  }
+
+  function ensureFirstTypedMessageArrow(){
+    const btn=document.getElementById('aiChatSendBtn');
+    const input=document.getElementById('aiChatInput');
+    if(!btn || !input) return;
+    const hasText=input.value.trim().length>0;
+    if(hasText && !(typeof aiChatBusy!=='undefined' && aiChatBusy)){
+      if(typeof setAiChatSendBtnState==='function') setAiChatSendBtnState(false);
+      btn.classList.remove('is-composer-empty');
+    }
+  }
+
+  function syncFinal(){
+    moveAiHeaderActionsFinal();
+    ensureFirstTypedMessageArrow();
+  }
+
+  function init(){
+    syncFinal();
+    const input=document.getElementById('aiChatInput');
+    if(input) input.addEventListener('input',function(){
+      moveAiHeaderActionsFinal();
+      ensureFirstTypedMessageArrow();
+    },{capture:true});
+    window.addEventListener('hashchange',syncFinal,{passive:true});
+    const observer=new MutationObserver(function(){
+      if(document.body.classList.contains('ux-chat-active')) moveAiHeaderActionsFinal();
+    });
+    observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+    setInterval(function(){
+      if(document.body.classList.contains('ux-chat-active')) syncFinal();
+    },300);
+  }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
