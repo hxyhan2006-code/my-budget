@@ -1641,18 +1641,9 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
     <div id="tplRow" class="quick-amount-row" style="flex-wrap:wrap;margin-bottom:10px"></div>
     <label class="field-label">จำนวนเงิน (บาท)</label>
     <input id="amount" type="number" inputmode="decimal" step="any" min="0" placeholder="0" autocomplete="off" />
-    <div class="quick-amount-row" id="quickAmountRow">
-      <button type="button" class="quick-amount-btn" data-add="20">+20</button>
-      <button type="button" class="quick-amount-btn" data-add="50">+50</button>
-      <button type="button" class="quick-amount-btn" data-add="100">+100</button>
-      <button type="button" class="quick-amount-btn" data-add="500">+500</button>
+    <div class="quick-amount-row" id="quickAmountRow" style="flex-wrap:wrap">
+      <span id="qaChips" style="display:contents"></span>
       <button type="button" class="quick-amount-btn clear" id="quickAmountClear">ล้าง</button>
-    </div>
-    <div class="quick-amount-row" id="quickAmountRowMinus">
-      <button type="button" class="quick-amount-btn" data-add="-20">−20</button>
-      <button type="button" class="quick-amount-btn" data-add="-50">−50</button>
-      <button type="button" class="quick-amount-btn" data-add="-100">−100</button>
-      <button type="button" class="quick-amount-btn" data-add="-500">−500</button>
     </div>
     <div id="categoryFieldGroup">
       <label class="field-label">หมวด</label>
@@ -7355,11 +7346,11 @@ const rows=[
 {k:'bud',l:'งบประมาณ',v:s.budgetSummary.budgetCount?`${s.budgetSummary.overCount} เกินงบ · ${s.budgetSummary.watchCount} ใกล้เต็ม`:'ยังไม่ได้ตั้ง',t:s.budgetSummary.budgetCount?(s.budgetSummary.overCount?3:s.budgetSummary.watchCount?2:1):0,d:'ตั้งงบรายหมวดได้ในหน้า "แผน"',a:''}];
 let hid=[];try{hid=JSON.parse(localStorage.getItem('vaultet_brain_hidden')||'[]')}catch(e){}
 const ic=['⚪','🟢','🟡','🔴'],co=['var(--faint)','#52b788','#e9c46a','#ef5350'];
-const shown=rows.filter(r=>!hid.includes(r.k));
-document.getElementById("brainFactors").style.gridTemplateColumns='1fr';
-document.getElementById("brainFactors").innerHTML=shown.map(r=>`<div class="brain-factor"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="brain-factor-label">${ic[r.t]} ${escapeHtml(r.l)}</div><button type="button" data-hide="${r.k}" aria-label="ซ่อน" style="background:none;border:0;color:var(--faint);font-size:16px">✕</button></div><div class="brain-factor-value" style="color:${co[r.t]}">${escapeHtml(String(r.v))}</div><div style="font-size:11px;color:var(--faint);margin-top:2px">${escapeHtml(r.d)}${r.a?' · '+escapeHtml(r.a):''}</div></div>`).join('')+(hid.length?`<button type="button" id="brainShowAll" class="manage-accounts-btn" style="width:100%">แสดงข้อที่ซ่อน (${hid.length})</button>`:'');
-document.querySelectorAll('#brainFactors [data-hide]').forEach(x=>x.onclick=()=>{hid.push(x.dataset.hide);localStorage.setItem('vaultet_brain_hidden',JSON.stringify(hid));renderFinancialBrainCard()});
-const sa=document.getElementById('brainShowAll');if(sa)sa.onclick=()=>{localStorage.removeItem('vaultet_brain_hidden');renderFinancialBrainCard()};
+const shown=rows.filter(r=>!hid.includes(r.k));const edit=!!window.__brainEdit;const list=edit?rows:shown;
+const fe=document.getElementById("brainFactors");fe.style.gridTemplateColumns='1fr';
+fe.innerHTML=list.map(r=>{const off=hid.includes(r.k);return `<div class="brain-factor" style="${off?'opacity:.45':''}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="brain-factor-label">${ic[r.t]} ${escapeHtml(r.l)}</div>${edit?`<button type="button" data-tog="${r.k}" class="quick-amount-btn" style="padding:4px 12px">${off?'แสดง':'ซ่อน'}</button>`:''}</div><div class="brain-factor-value" style="color:${co[r.t]}">${escapeHtml(String(r.v))}</div><div style="font-size:11px;color:var(--faint);margin-top:2px">${escapeHtml(r.d)}${r.a?' · '+escapeHtml(r.a):''}</div></div>`}).join('')+`<button type="button" id="brainEditBtn" class="manage-accounts-btn" style="width:100%">${edit?'✓ เสร็จ':'⚙ เลือกข้อที่แสดง'}</button>`;
+fe.querySelectorAll('[data-tog]').forEach(x=>x.onclick=()=>{const k=x.dataset.tog;hid=hid.includes(k)?hid.filter(y=>y!==k):[...hid,k];localStorage.setItem('vaultet_brain_hidden',JSON.stringify(hid));renderFinancialBrainCard()});
+document.getElementById('brainEditBtn').onclick=()=>{window.__brainEdit=!window.__brainEdit;renderFinancialBrainCard()};
 const bad=shown.filter(r=>r.t===3).map(r=>r.l);
 document.getElementById("brainInsight").innerHTML=empty?'🟢 ดี · 🟡 พอใช้ · 🔴 ควรแก้ · ⚪ ยังไม่มีข้อมูล':bad.length?`สิ่งที่ควรแก้ก่อน: ${escapeHtml(bad.join(', '))}`:'ตอนนี้ไม่มีข้อที่อยู่ในโซนแดง 👍';try{renderTrendCard()}catch(e){console.error(e)}}
 const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();};renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();
@@ -8842,13 +8833,14 @@ function renderTrendCard(){
   const TH=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
   const now=new Date(),keys=[];
   for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);keys.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"));}
-  const rows=keys.map(k=>{const r={k,inc:0,exp:0,sav:0,rep:0};
+  const fm=entries.reduce((m,e)=>e.date&&(!m||e.date.slice(0,7)<m)?e.date.slice(0,7):m,"");
+  const rows=keys.filter(k=>!fm||k>=fm).map(k=>{const r={k,inc:0,exp:0,sav:0,rep:0};
     entries.forEach(e=>{if(!e.date||e.date.slice(0,7)!==k)return;const a=Number(e.amount)||0;
       if(e.type==="income"){if(e.source==="loan_repayment")r.rep+=a;else if(e.category!==WITHDRAW_CAT)r.inc+=a;}
       else if(e.type==="expense")r.exp+=a;else if(e.type==="saving")r.sav+=a;});
     return r;});
   const mx=Math.max(1,...rows.flatMap(r=>[r.inc,r.exp,r.sav]));
-  const W=340,base=135,top=10,gw=W/6,bw=14;
+  const W=340,base=135,top=10,gw=W/Math.max(rows.length,4),bw=14;
   const bar=(v,x,c)=>{const h=Math.round((v/mx)*(base-top));return `<rect x="${x}" y="${base-h}" width="${bw}" height="${h}" rx="3" fill="${c}"/>`;};
   const svg=`<svg viewBox="0 0 ${W} 155" style="width:100%;height:auto">`+rows.map((r,i)=>{const x=i*gw+(gw-bw*3-4)/2;const m=Number(r.k.slice(5))-1;
     return bar(r.inc,x,"#52b788")+bar(r.exp,x+bw+2,"#ef5350")+bar(r.sav,x+2*(bw+2),"#7aa2f7")+`<text x="${i*gw+gw/2}" y="150" text-anchor="middle" font-size="11" fill="#8a8a93">${TH[m]}</text>`;}).join("")+`<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="#2a2a2e"/></svg>`;
@@ -8856,10 +8848,10 @@ function renderTrendCard(){
   const cur=rows[rows.length-1];
   const list=rows.slice().reverse().map(r=>{const m=Number(r.k.slice(5))-1;return `<div style="display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:6px;font-size:12px;padding:4px 0;border-top:1px solid #1d1d21"><span style="color:#8a8a93">${TH[m]}</span><span style="color:#52b788">${f(r.inc)}</span><span style="color:#ef5350">${f(r.exp)}</span><span style="color:#7aa2f7">${f(r.sav)}</span></div>`;}).join("");
   const repTotal=rows.reduce((a,r)=>a+r.rep,0);
-  box.innerHTML=`<div style="font-weight:700;margin-bottom:2px">📈 แนวโน้ม 6 เดือน</div>
+  box.innerHTML=`<div style="font-weight:700;margin-bottom:2px">📈 แนวโน้มรายเดือน (สูงสุด 6 เดือน)</div>
   <div style="font-size:12px;color:var(--faint);margin-bottom:6px"><span style="color:#52b788">■</span> รายรับจริง <span style="color:#ef5350">■</span> รายจ่าย <span style="color:#7aa2f7">■</span> ออม</div>${svg}
   <div style="display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:6px;font-size:11px;color:#8a8a93;margin-top:6px"><span></span><span>รับจริง</span><span>จ่าย</span><span>ออม</span></div>${list}
-  <div style="font-size:12px;color:var(--faint);margin-top:8px">รายรับจริง = ไม่รวมเงินที่ได้คืนจากการยืม (รวม 6 เดือน ${f(repTotal)}) และเงินที่ถอนจากเงินออม</div>`;
+  <div style="font-size:12px;color:var(--faint);margin-top:8px">รายรับจริง = ไม่รวมเงินที่คนอื่นคืนค่ายืม (รวม ${f(repTotal)} ตามรายการ "เงินคืนจากการยืม" ซึ่งเป็นเงินเดิมที่ให้ยืมไป ไม่ใช่รายได้ใหม่) และเงินที่ถอนจากเงินออม</div>`;
 }
 </script>
 <script>
@@ -8925,6 +8917,23 @@ function renderGoalsBox(){
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">🎯 เป้าหมายเก็บเงิน</div><button type="button" id="goalAdd" class="quick-amount-btn">+ เพิ่ม</button></div>${items||'<div style="font-size:12px;color:var(--faint);margin-top:8px">ยังไม่มีเป้าหมาย กด + เพิ่ม ได้เลย</div>'}<div style="font-size:11px;color:var(--faint);margin-top:8px">ยอดในเป้าหมายจดเองด้วยปุ่ม ＋เงิน ไม่ได้ผูกกับยอดบัญชี</div>`;
 }
 const _rt=renderTrendCard;renderTrendCard=function(){_rt();renderGoalsBox();};
+})();
+</script>
+<script>
+(function(){
+const QK="vaultet_quick_amounts_v1";
+const get=()=>{const r=localStorage.getItem(QK);if(r===null)return [20,50,100,500];try{const a=JSON.parse(r);return Array.isArray(a)?a:[20,50,100,500]}catch(e){return [20,50,100,500]}};
+const put=a=>{try{localStorage.setItem(QK,JSON.stringify(a))}catch(e){}};
+function render(){const el=document.getElementById("qaChips");if(!el)return;
+  el.innerHTML=get().map((n,i)=>`<span class="cat-chip-wrap"><button type="button" class="cat-chip-label" data-qa="${n}">+${n}</button><button type="button" class="cat-chip-del" data-qd="${i}" aria-label="ลบ +${n}">×</button></span>`).join("")+`<button type="button" class="cat-chip add-chip" id="qaAdd">+ เพิ่มตัวเลข</button>`;}
+document.addEventListener("click",e=>{
+  if(!e.target.closest)return;const box=e.target.closest("#qaChips");if(!box)return;
+  const use=e.target.closest("[data-qa]"),del=e.target.closest("[data-qd]");
+  if(use){const inp=document.getElementById("amount");inp.value=(toCents(parseFloat(inp.value)||0)+toCents(parseFloat(use.dataset.qa)))/100;inp.dispatchEvent(new Event("input"));}
+  else if(del){const a=get();a.splice(+del.dataset.qd,1);put(a);render();}
+  else if(e.target.closest("#qaAdd")){const v=parseFloat(prompt("เพิ่มตัวเลขปุ่มลัด (บาท) เช่น 40:"));if(!v||v<=0)return;const a=get();if(!a.includes(v)){a.push(v);a.sort((x,y)=>x-y);put(a);}render();}
+});
+render();
 })();
 </script>
 </body>
