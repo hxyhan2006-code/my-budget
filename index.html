@@ -1436,6 +1436,8 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
       </div>
       <div class="networth-sub"><span>กันไว้</span><span class="mono" id="reservedNum">฿0</span></div>
       <div class="networth-sub"><span>ใช้ได้จริง</span><span class="mono real" id="availableNum">฿0</span></div>
+      <div class="networth-sub"><span>เงินสำรองฉุกเฉิน (ออมไว้)</span><span class="mono" id="emergencySavedNum">฿0</span></div>
+      <div class="networth-sub" id="otherSavedRow"><span>ออม/ลงทุนอื่นๆ</span><span class="mono" id="otherSavedNum">฿0</span></div>
       <div class="networth-sub"><span>คนอื่นติดเงิน</span><span class="mono" id="receivablesNum">฿0</span></div>
       <div class="networth-sub"><span>หนี้สินรวม</span><span class="mono" id="totalDebtsNum" style="color:var(--expense)">฿0</span></div>
       <div id="accountsList"></div>
@@ -1474,7 +1476,7 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
     </div>
 
     <div class="emergency-dashboard-card" id="emergencyDashboardCard" style="display:none;">
-      <div class="emergency-top"><div><div class="emergency-title">🛟 เงินสำรองฉุกเฉิน</div><div class="emergency-sub" id="emergencyDashboardSub">ยังไม่ได้ตั้งค่าเป้าหมาย</div></div><div class="emergency-number mono" id="emergencyDashboardAmount">฿0</div></div>
+      <div class="emergency-top"><div><div class="emergency-title">🛟 เงินสำรองฉุกเฉิน</div><div class="emergency-sub" id="emergencyDashboardSub">ยังไม่ได้ตั้งค่าเป้าหมาย</div><div class="emergency-sub" id="emergencyDashboardSplit"></div></div><div class="emergency-number mono" id="emergencyDashboardAmount">฿0</div></div>
       <div class="emergency-track"><div class="emergency-fill" id="emergencyDashboardFill" style="width:0%"></div></div>
       <div id="emergencyDashboardStatus"></div>
       <div class="emergency-stats">
@@ -2055,6 +2057,7 @@ const DEFAULT_CATS = {
   saving: ["เงินออม", "ลงทุนหุ้น", "อื่นๆ"],
 };
 
+const WITHDRAW_CAT = "ถอนเงินออม"; // รายรับหมวดนี้ = ดึงเงินออมกลับมาใช้ (ไม่นับเป็นรายได้จริง)
 const ENTRIES_KEY = "finance_tracker_entries_v1";
 const CATS_KEY = "finance_tracker_categories_v1";
 const LAST_CAT_KEY = "finance_tracker_last_cat_v1";
@@ -2345,6 +2348,7 @@ let formType = "expense";
 let selectedCategory = "";
 let orphanCategory = null; // category from an existing entry that no longer exists in CATS_BY_TYPE; kept visible so editing doesn't silently reassign it
 let editingId = null;
+let searchAllMonths = false;
 let expandedBreakdown = { income:false, expense:false, saving:false }; // แต่ละบล็อก breakdown พับ/กางแยกกัน
 // ===== Phase 5: Cash Flow Forecast state =====
 let forecastRangePreset = "30"; // "7" | "30" | "60" | "90" | "custom"
@@ -2432,6 +2436,7 @@ function loadCategories(){
       };
     }
   }catch(e){ /* keep defaults */ }
+  try{ if(!localStorage.getItem("vaultet_wd_cat_v1")){ if(!CATS_BY_TYPE.income.includes(WITHDRAW_CAT)){ CATS_BY_TYPE.income.push(WITHDRAW_CAT); saveCategories(); } localStorage.setItem("vaultet_wd_cat_v1","1"); } }catch(e){}
 }
 function saveCategories(){
   try{ localStorage.setItem(CATS_KEY, JSON.stringify(CATS_BY_TYPE)); }catch(e){}
@@ -2533,7 +2538,9 @@ function computeEmergencyFund(){
   const currentMonth=monthKey(todayISO());
   const months=[];
   for(let i=1;i<=3;i++){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); months.push(monthKey(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-01`)); }
-  const completed=months.map(m=>computeEssentialExpenseForMonth(m,cats)).filter(v=>isFinite(v));
+  const firstDate=[...entries.map(e=>e.date),...loans.map(l=>l.date)].filter(Boolean).sort()[0];
+  const firstMonth=firstDate?monthKey(firstDate):currentMonth;
+  const completed=months.filter(m=>m>=firstMonth).map(m=>computeEssentialExpenseForMonth(m,cats)).filter(v=>isFinite(v)); // ไม่เอาเดือนก่อนเริ่มใช้งานมาหาร
   const currentEssential=computeEssentialExpenseForMonth(currentMonth,cats);
   const avgBase=completed.length && completed.some(v=>v>0) ? completed.reduce((a,b)=>a+b,0)/completed.length : currentEssential;
   const essentialMonthly=Math.max(0,avgBase||0);
@@ -2546,7 +2553,7 @@ function computeEmergencyFund(){
   if(recommended<=0) status=currentAvailable>0?"HEALTHY":"WATCH";
   else if(currentAvailable>=recommended) status="HEALTHY";
   else if(currentAvailable>=recommended*0.5) status="WATCH";
-  return { targetMonths, essentialCategories:cats, monthlyEssentialExpense:essentialMonthly, recommendedEmergencyFund:recommended, currentAvailableReserve:currentAvailable, reserveCoverageMonths:coverage, reserveProgressPercent:progress, reserveShortfall:Math.max(0,recommended-currentAvailable), status, historicalEssentialExpenses:completed, currentMonthEssentialExpense:currentEssential };
+  return { emergencySaved:getEmergencySaved(), cashAvailable:Math.max(0,getTotalMoneyAllAccounts()-getTotalReserved()), targetMonths, essentialCategories:cats, monthlyEssentialExpense:essentialMonthly, recommendedEmergencyFund:recommended, currentAvailableReserve:currentAvailable, reserveCoverageMonths:coverage, reserveProgressPercent:progress, reserveShortfall:Math.max(0,recommended-currentAvailable), status, historicalEssentialExpenses:completed, currentMonthEssentialExpense:currentEssential };
 }
 
 // ===== Round 1: Budget Engine storage + deterministic calculations =====
@@ -2936,7 +2943,8 @@ function computePeriodAnalysisForRange(start, end, accountFilter){
   const sumOf = t => rangeEntries.filter(e => e.type===t).reduce((s,e) => s + toCents(e.amount), 0) / 100;
   const income = sumOf("income"), expense = sumOf("expense"), saving = sumOf("saving");
   const loanRepaymentIncome = rangeEntries.filter(e => e.type === "income" && e.source === "loan_repayment").reduce((s,e) => s + toCents(e.amount), 0) / 100;
-  const nonLoanIncome = income - loanRepaymentIncome;
+  const withdrawIncome = rangeEntries.filter(e => e.type === "income" && e.category === WITHDRAW_CAT).reduce((s,e) => s + toCents(e.amount), 0) / 100;
+  const nonLoanIncome = income - loanRepaymentIncome - withdrawIncome;
   const netCashFlow = income - expense - saving;
 
   let effStart = start, effEnd = end;
@@ -3303,7 +3311,12 @@ function getTotalMoneyAllAccounts(beforeDate){
 // เงินออม/ลงทุนสะสม (ออกจากบัญชีแล้วแต่ยังเป็นสินทรัพย์ของเรา) แยกตามหมวด
 function getSavedByCategory(){
   const m = {};
-  entries.forEach(e => { if(e.type === "saving"){ const c = e.category || "อื่นๆ"; m[c] = (m[c] || 0) + toCents(e.amount); } });
+  let w = 0; // ยอดถอนเงินออมสะสม (หักจากหมวดสำรองก่อน แล้วค่อยหมวดอื่น)
+  entries.forEach(e => {
+    if(e.type === "saving"){ const c = e.category || "อื่นๆ"; m[c] = (m[c] || 0) + toCents(e.amount); }
+    else if(e.type === "income" && e.category === WITHDRAW_CAT) w += toCents(e.amount);
+  });
+  Object.keys(m).sort((a,b) => (b.includes("สำรอง")?1:0) - (a.includes("สำรอง")?1:0)).forEach(k => { const d = Math.min(m[k], w); m[k] -= d; w -= d; });
   Object.keys(m).forEach(k => m[k] /= 100);
   return m;
 }
@@ -3363,6 +3376,10 @@ function renderAccountsSummary(){
   document.getElementById("totalMoneyNum").textContent = "฿" + fmt(total);
   document.getElementById("reservedNum").textContent = "฿" + fmt(reserved);
   document.getElementById("availableNum").textContent = "฿" + fmt(total - reserved);
+  const emSaved = getEmergencySaved(), otherSaved = getTotalSaved() - emSaved;
+  document.getElementById("emergencySavedNum").textContent = "฿" + fmt(emSaved);
+  document.getElementById("otherSavedNum").textContent = "฿" + fmt(otherSaved);
+  document.getElementById("otherSavedRow").style.display = otherSaved > 0 ? "" : "none";
   document.getElementById("receivablesNum").textContent = "฿" + fmt(getTotalReceivablesOutstanding());
   document.getElementById("totalDebtsNum").textContent = "฿" + fmt(getTotalDebts());
   const listEl = document.getElementById("accountsList");
@@ -3392,7 +3409,7 @@ function render(){
   const loanOut = loans.filter(l => l.date && monthKey(l.date) === selectedMonth).reduce((a,l) => a + toCents(l.amount), 0) / 100;
   document.getElementById("balanceNum").textContent = (heroBal<0?"-":"") + "฿" + fmt(Math.abs(heroBal));
   document.getElementById("balanceNum").style.color = heroBal<0 ? "var(--expense)" : "var(--ink)";
-  document.getElementById("carryNum").textContent = beforeStart ? "ยังไม่ได้เริ่มใช้งานในเดือนนี้" : "ยกมาจากเดือนก่อน " + (carry<0?"-":"") + "฿" + fmt(Math.abs(carry)) + (loanOut>0 ? " · ให้ยืมไป ฿" + fmt(loanOut) : "");
+  document.getElementById("carryNum").textContent = beforeStart ? "ยังไม่ได้เริ่มใช้งานในเดือนนี้" : (monthKey(firstDate) === selectedMonth ? "ยอดตั้งต้นบัญชี " : "ยกมาจากเดือนก่อน ") + (carry<0?"-":"") + "฿" + fmt(Math.abs(carry)) + (loanOut>0 ? " · ให้ยืมไป ฿" + fmt(loanOut) : "");
   // มูลค่าสุทธิที่แท้จริง = เงินรวมทุกบัญชี (นับรวมเงินออม/เงินลงทุนที่อยู่ในบัญชีอยู่แล้ว) + เงินที่คนอื่นติดค้างเรา − หนี้สินรวม (Milestone 5)
   // ไม่ใช่รายรับลบรายจ่ายของเดือนนี้ ซึ่งเป็นคนละความหมายกัน (นั่นคือกระแสเงินสดของเดือน ไม่ใช่มูลค่าสุทธิสะสม)
   const netWorth = getTotalMoneyAllAccounts() + getTotalSaved() + getTotalReceivablesOutstanding() - getTotalDebts();
@@ -3445,10 +3462,12 @@ function render(){
     .sort((a,b) => b.date.localeCompare(a.date));
   document.getElementById("countLabel").textContent = me.length + " รายการ";
   const ss = document.getElementById("searchSummary"), sumG = {};
-  me.forEach(e => { if(e.type==="transfer") return; const g = sumG[e.type] = sumG[e.type] || {n:0,c:0}; g.n++; g.c += toCents(e.amount); });
+  const sumSrc = searchAllMonths ? entries.filter(e => (typeFilter==="all" || e.type===typeFilter) && ((e.category||"").toLowerCase().includes(q) || (e.note||"").toLowerCase().includes(q))) : me;
+  sumSrc.forEach(e => { if(e.type==="transfer") return; const g = sumG[e.type] = sumG[e.type] || {n:0,c:0}; g.n++; g.c += toCents(e.amount); });
   const sumNames = {income:"รายรับ", expense:"รายจ่าย", saving:"ออม"};
-  if(q && Object.keys(sumG).length){ ss.innerHTML = "สรุป “" + escapeHtml(searchQuery.trim()) + "” เดือนนี้<br>" + Object.keys(sumG).map(k => `${sumNames[k]} <b>${sumG[k].n}</b> ครั้ง · <b class="mono">฿${fmt(sumG[k].c/100)}</b>`).join("<br>"); ss.style.display = "block"; }
+  if(q && Object.keys(sumG).length){ ss.innerHTML = "สรุป “" + escapeHtml(searchQuery.trim()) + "” " + (searchAllMonths ? "ทุกเดือน" : "เดือนนี้") + ` · <button id="sumToggle" style="background:none;border:none;color:var(--saving);font:inherit;padding:0;cursor:pointer">${searchAllMonths ? "ดูเฉพาะเดือนนี้" : "ดูทุกเดือน"}</button><br>` + Object.keys(sumG).map(k => `${sumNames[k]} <b>${sumG[k].n}</b> ครั้ง · <b class="mono">฿${fmt(sumG[k].c/100)}</b>`).join("<br>"); ss.style.display = "block"; }
   else ss.style.display = "none";
+  ss.onclick = ev => { if(ev.target.id === "sumToggle"){ searchAllMonths = !searchAllMonths; render(); } };
   const listContainer = document.getElementById("listContainer");
   if(me.length===0){
     listContainer.innerHTML = `<div class="empty-state">ยังไม่มีรายการในเดือนนี้ — กดปุ่ม + เพื่อเริ่มจด</div>`;
@@ -4414,7 +4433,7 @@ async function parseNaturalLanguageEntry(text){
   if(!res.ok){
     let detail = "";
     try{ detail = (await res.text()).slice(0,300); }catch(e){}
-    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
   }
 
   let data;
@@ -4479,7 +4498,7 @@ async function classifyIntent(text){
   if(!res.ok){
     let detail = "";
     try{ detail = (await res.text()).slice(0,300); }catch(e){}
-    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
   }
 
   let data;
@@ -4656,9 +4675,10 @@ function buildAdvisorFindings(snapshot,profile){
     out.push(advisorFinding('LIQUIDITY_FORECAST','critical',4,4,0.98,[`forecastAvailable=${fc.forecastAvailable}`,`upcoming=${fc.upcoming}`],'ชะลอรายจ่ายที่ไม่จำเป็นและตรวจสอบภาระที่กำลังจะถึงก่อนรายรับครั้งถัดไป','liquidity|forecast-negative','new'));
   }
   const minReserve=Number(profile?.minReserveTarget||0);
-  if(minReserve>0 && available<minReserve){
+  const reserveHeld=available+Number(snapshot.netWorth?.emergencySaved||0); // เงินสดที่ใช้ได้ + เงินสำรองที่ออมไว้
+  if(minReserve>0 && reserveHeld<minReserve){
     const ratio=minReserve>0?available/minReserve:1;
-    out.push(advisorFinding('MIN_BUFFER','critical',4,3,0.95,[`available=${available}`,`minReserveTarget=${minReserve}`],'รักษาเงินกันชนขั้นต่ำและเลื่อนรายจ่ายที่ไม่จำเป็นหากทำได้','liquidity|min-buffer','new',{data:{available,target:minReserve,shortfall:minReserve-available}}));
+    out.push(advisorFinding('MIN_BUFFER','critical',4,3,0.95,[`available=${reserveHeld}`,`minReserveTarget=${minReserve}`],'รักษาเงินกันชนขั้นต่ำและเลื่อนรายจ่ายที่ไม่จำเป็นหากทำได้','liquidity|min-buffer','new',{data:{available:reserveHeld,target:minReserve,shortfall:minReserve-reserveHeld}}));
   }
   // Upcoming obligations: use the existing recurring engine and only surface material shortfall.
   const upcomingOccurrences=typeof getUpcomingOccurrences==='function' ? getUpcomingOccurrences('7d') : [];
@@ -4885,7 +4905,7 @@ async function analyzeFinancialQuery(query, snapshot){
   if(!res.ok){
     let detail = "";
     try{ detail = (await res.text()).slice(0,300); }catch(e){}
-    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail };
+    return { ok:false, error: res.status === 400 ? "invalid_api_key" : "api_error", detail, status: res.status };
   }
 
   let data;
@@ -5675,7 +5695,9 @@ function aiErrorLabel(result){
   if(result && result.status === 429){
     return "Gemini แจ้งว่าเรียกถี่/บ่อยเกินไป (โควต้าฟรีเต็มชั่วคราว) — ระบบลองซ้ำอัตโนมัติให้แล้วแต่ยังไม่ผ่าน ลองรอสัก 1-2 นาทีแล้วกดใหม่ ถ้ารอนานแล้วยังไม่หาย อาจเป็นโควต้ารายวันเต็ม (ต้องรอข้ามวัน หรือเช็คโควต้า Key ที่ aistudio.google.com)";
   }
-  return (result && AI_ERROR_MESSAGES[result.error]) || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+  if(result && result.status === 503) return "เซิร์ฟเวอร์ Gemini ยุ่งอยู่ (503) ระบบลองซ้ำให้แล้วแต่ยังไม่ผ่าน รอสักครู่แล้วกดใหม่";
+  const base = (result && AI_ERROR_MESSAGES[result.error]) || "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+  return base + (result && result.status ? ` (รหัส ${result.status})` : "");
 }
 
 // ===== AI Layer (Milestone 2 → อัปเกรดเป็นแชทถาวร): Financial Advisor sheet =====
@@ -7255,6 +7277,7 @@ function renderEmergencyDashboard(){
   const card=document.getElementById("emergencyDashboardCard"); if(!card)return; const e=computeEmergencyFund();
   card.style.display="block";
   const meta=emergencyStatusMeta(e.status);
+  document.getElementById("emergencyDashboardSplit").textContent=`ออมไว้ ฿${fmt(e.emergencySaved)} + เงินสดใช้ได้ ฿${fmt(e.cashAvailable)}`;
   document.getElementById("emergencyDashboardAmount").textContent="฿"+fmt(e.currentAvailableReserve);
   document.getElementById("emergencyDashboardTarget").textContent="฿"+fmt(e.recommendedEmergencyFund);
   document.getElementById("emergencyDashboardCoverage").textContent=e.monthlyEssentialExpense>0?fmt(e.reserveCoverageMonths)+" เดือน":"ยังประเมินไม่ได้";
@@ -7937,6 +7960,7 @@ body.ux-profile-trigger-never{display:none!important}.ux-profile-trigger{display
       </div><button class="profile-save" id="vpSave">บันทึกโปรไฟล์</button><button class="profile-danger" id="vpClear">ล้างข้อมูลโปรไฟล์ของฉัน</button></div>`;document.body.append(ov);
     ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open')});document.getElementById('vpClose').onclick=()=>ov.classList.remove('open');document.getElementById('vpSave').onclick=save;document.getElementById('vpClear').onclick=()=>{if(confirm('ล้างข้อมูลโปรไฟล์ทั้งหมดใช่ไหม?')){localStorage.removeItem(KEY);if(typeof localStorage!=='undefined')localStorage.removeItem(AI_PROFILE_KEY);refreshTrigger();ov.classList.remove('open');if(typeof showToast==='function')showToast('ล้างโปรไฟล์แล้ว')}};document.getElementById('vpAddGoal').onclick=()=>{const n=document.getElementById('vpGoalName').value.trim(),a=parseFloat(document.getElementById('vpGoalAmount').value);if(!n||!Number.isFinite(a)||a<=0){if(typeof showToast==='function')showToast('กรอกชื่อและยอดเป้าหมายให้ถูกต้อง');return;}const x=profile();x.financialGoals=x.financialGoals||[];x.financialGoals.push({id:(typeof makeId==='function'?makeId():Date.now().toString(36)),name:n,targetAmount:a,deadline:null});if(!write(x)){if(typeof showToast==='function')showToast('บันทึกเป้าหมายไม่สำเร็จ — พื้นที่จัดเก็บอาจเต็ม');return;}document.getElementById('vpGoalName').value='';document.getElementById('vpGoalAmount').value='';renderGoals();if(typeof showToast==='function')showToast('เพิ่มเป้าหมายแล้ว');};
   }
+  window.vaultetOpenProfile=open;
   function init(){build();const top=document.querySelector('.ux-topbar');if(top){const b=document.createElement('button');b.className='ux-profile-trigger';b.id='uxProfileTrigger';b.innerHTML='<div class="ux-profile-avatar">👤</div><div class="ux-profile-mini"><strong>โปรไฟล์ของฉัน</strong><span>ตั้งค่าข้อมูลส่วนตัว</span></div>';b.onclick=open;top.insertBefore(b,top.querySelector('.ux-month')||null);refreshTrigger();}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -8028,7 +8052,7 @@ body.ux-home-active .page-anchor{display:block!important;}
         card.setAttribute('role','button');
         card.setAttribute('tabindex','0');
         card.setAttribute('aria-label','เปิดโปรไฟล์ของฉัน');
-        const openProfile=()=>document.getElementById('vaultetProfileOverlay')?.classList.add('open');
+        const openProfile=()=>{ if(window.vaultetOpenProfile) window.vaultetOpenProfile(); else document.getElementById('vaultetProfileOverlay')?.classList.add('open'); };
         card.onclick=openProfile;
         card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfile();}};
       }
