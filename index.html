@@ -1418,6 +1418,7 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
     <div class="balance-row">
       <span class="balance-label">คงเหลือเดือนนี้ (เงินสดใช้ได้จริง)</span>
       <span class="balance-num mono" id="balanceNum">฿0</span>
+      <span class="mono" id="carryNum" style="font-size:12px;color:var(--faint)"></span>
       <span class="mono" id="netWorthNum" style="font-size:12px;color:var(--faint)"></span>
     </div>
     <div class="pill-row">
@@ -1596,6 +1597,7 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
     <div class="search-row">
       <input id="searchInput" type="text" placeholder="ค้นหาหมวดหรือโน้ต..." autocomplete="off" />
     </div>
+    <div id="searchSummary" style="display:none;margin:8px 0;padding:10px 12px;border:1px solid var(--line,#333);border-radius:12px;font-size:13px;line-height:1.6"></div>
     <div id="listContainer"></div>
   </div>
 </div>
@@ -2537,7 +2539,7 @@ function computeEmergencyFund(){
   const essentialMonthly=Math.max(0,avgBase||0);
   const targetMonths=Math.max(1,Number(emergencyFundConfig.targetMonths)||3);
   const recommended=Math.max(0,essentialMonthly*targetMonths);
-  const currentAvailable=Math.max(0,getTotalMoneyAllAccounts()-getTotalReserved());
+  const currentAvailable=Math.max(0,getTotalMoneyAllAccounts()-getTotalReserved())+getEmergencySaved();
   const coverage=essentialMonthly>0 ? currentAvailable/essentialMonthly : 0;
   const progress=recommended>0 ? Math.min(100,currentAvailable/recommended*100) : (currentAvailable>0?100:0);
   let status="CRITICAL";
@@ -3271,9 +3273,10 @@ document.getElementById("compareBStartInput").addEventListener("change", (e) => 
 document.getElementById("compareBEndInput").addEventListener("change", (e) => { compareBEnd = e.target.value; renderCompareSection(); });
 
 // ยอดคงเหลือของบัญชี = ยอดเริ่มต้น + รายรับ - รายจ่าย - ออม/ลงทุน + โอนเข้า - โอนออก (คำนวณจากรายการทั้งหมดตลอดเวลา ไม่ใช่แค่เดือนที่เลือก)
-function computeAccountBalance(accountId){
+function computeAccountBalance(accountId, beforeDate){
   let cents = toCents(accounts.find(a => a.id===accountId)?.initialBalance || 0);
   entries.forEach(e => {
+    if(beforeDate && e.date >= beforeDate) return;
     const acc = e.accountId || UNASSIGNED_ACCOUNT_ID;
     if(e.type === "transfer"){
       if(e.fromAccountId === accountId) cents -= toCents(e.amount);
@@ -3284,6 +3287,7 @@ function computeAccountBalance(accountId){
     }
   });
   loans.forEach(l => {
+    if(beforeDate && l.date && l.date >= beforeDate) return;
     if(l.accountId === accountId) cents -= toCents(l.amount); // เงินต้นออกจากบัญชี
     // Repayment cash is represented by a canonical income entry (source=loan_repayment).
     // Do NOT add repayments here again, otherwise the same cash inflow would be double-counted.
@@ -3293,9 +3297,18 @@ function computeAccountBalance(accountId){
   });
   return cents / 100;
 }
-function getTotalMoneyAllAccounts(){
-  return accounts.reduce((s,a) => s + toCents(computeAccountBalance(a.id)), 0) / 100;
+function getTotalMoneyAllAccounts(beforeDate){
+  return accounts.reduce((s,a) => s + toCents(computeAccountBalance(a.id, beforeDate)), 0) / 100;
 }
+// เงินออม/ลงทุนสะสม (ออกจากบัญชีแล้วแต่ยังเป็นสินทรัพย์ของเรา) แยกตามหมวด
+function getSavedByCategory(){
+  const m = {};
+  entries.forEach(e => { if(e.type === "saving"){ const c = e.category || "อื่นๆ"; m[c] = (m[c] || 0) + toCents(e.amount); } });
+  Object.keys(m).forEach(k => m[k] /= 100);
+  return m;
+}
+function getTotalSaved(){ return Object.values(getSavedByCategory()).reduce((s,v) => s + toCents(v), 0) / 100; }
+function getEmergencySaved(){ return Object.entries(getSavedByCategory()).filter(([c]) => c.includes("สำรอง")).reduce((s,[,v]) => s + toCents(v), 0) / 100; }
 function getLastBackup(){
   try{ return localStorage.getItem(BACKUP_KEY) || ""; }catch(e){ return ""; }
 }
@@ -3369,11 +3382,14 @@ function render(){
   monthSelect.innerHTML = months.map(m => `<option value="${m}" ${m===selectedMonth?"selected":""}>${monthLabel(m)}</option>`).join("");
 
   const totals = getTotals();
-  document.getElementById("balanceNum").textContent = (totals.balance<0?"-":"") + "฿" + fmt(Math.abs(totals.balance));
-  document.getElementById("balanceNum").style.color = totals.balance<0 ? "var(--expense)" : "var(--ink)";
+  const carry = getTotalMoneyAllAccounts(selectedMonth + "-01"); // ยอดยกมาจากเดือนก่อน
+  const heroBal = carry + totals.balance;
+  document.getElementById("balanceNum").textContent = (heroBal<0?"-":"") + "฿" + fmt(Math.abs(heroBal));
+  document.getElementById("balanceNum").style.color = heroBal<0 ? "var(--expense)" : "var(--ink)";
+  document.getElementById("carryNum").textContent = "ยกมาจากเดือนก่อน " + (carry<0?"-":"") + "฿" + fmt(Math.abs(carry));
   // มูลค่าสุทธิที่แท้จริง = เงินรวมทุกบัญชี (นับรวมเงินออม/เงินลงทุนที่อยู่ในบัญชีอยู่แล้ว) + เงินที่คนอื่นติดค้างเรา − หนี้สินรวม (Milestone 5)
   // ไม่ใช่รายรับลบรายจ่ายของเดือนนี้ ซึ่งเป็นคนละความหมายกัน (นั่นคือกระแสเงินสดของเดือน ไม่ใช่มูลค่าสุทธิสะสม)
-  const netWorth = getTotalMoneyAllAccounts() + getTotalReceivablesOutstanding() - getTotalDebts();
+  const netWorth = getTotalMoneyAllAccounts() + getTotalSaved() + getTotalReceivablesOutstanding() - getTotalDebts();
   document.getElementById("netWorthNum").textContent =
     "มูลค่าสุทธิรวม (ทุกบัญชี + เงินให้ยืม − หนี้สิน): " + (netWorth<0?"-":"") + "฿" + fmt(Math.abs(netWorth));
   document.getElementById("pillIncome").textContent = "฿"+fmt(totals.income);
@@ -3422,6 +3438,11 @@ function render(){
     .filter(e => !q || (e.category || "").toLowerCase().includes(q) || (e.note || "").toLowerCase().includes(q))
     .sort((a,b) => b.date.localeCompare(a.date));
   document.getElementById("countLabel").textContent = me.length + " รายการ";
+  const ss = document.getElementById("searchSummary"), sumG = {};
+  me.forEach(e => { if(e.type==="transfer") return; const g = sumG[e.type] = sumG[e.type] || {n:0,c:0}; g.n++; g.c += toCents(e.amount); });
+  const sumNames = {income:"รายรับ", expense:"รายจ่าย", saving:"ออม"};
+  if(q && Object.keys(sumG).length){ ss.innerHTML = "สรุป “" + escapeHtml(searchQuery.trim()) + "” เดือนนี้<br>" + Object.keys(sumG).map(k => `${sumNames[k]} <b>${sumG[k].n}</b> ครั้ง · <b class="mono">฿${fmt(sumG[k].c/100)}</b>`).join("<br>"); ss.style.display = "block"; }
+  else ss.style.display = "none";
   const listContainer = document.getElementById("listContainer");
   if(me.length===0){
     listContainer.innerHTML = `<div class="empty-state">ยังไม่มีรายการในเดือนนี้ — กดปุ่ม + เพื่อเริ่มจด</div>`;
@@ -4295,11 +4316,11 @@ async function fetchGeminiWithRetry(buildUrl, options, maxRetriesPerKey = 2){
     let attempt = 0;
     while(true){
       res = await fetch(url, options);
-      if(res.status !== 429 || attempt >= maxRetriesPerKey) break;
+      if((res.status !== 429 && res.status !== 503) || attempt >= maxRetriesPerKey) break;
       attempt++;
       await new Promise(r => setTimeout(r, 1500 * attempt)); // หน่วงเพิ่มขึ้นทีละรอบ: 1.5s, 3s
     }
-    if(res.status !== 429) return res; // สำเร็จ หรือ error อื่นที่ไม่ใช่โควต้าเต็ม → ไม่ต้องลองคีย์ถัดไป
+    if(res.status !== 429 && res.status !== 503) return res; // สำเร็จ หรือ error อื่นที่ไม่ใช่โควต้าเต็ม → ไม่ต้องลองคีย์ถัดไป
     // คีย์นี้โควต้าเต็มแม้ retry แล้ว → ลองคีย์สำรองถัดไปทันที ไม่ต้องหน่วงเพิ่ม
   }
   return res; // ทุกคีย์โดน 429 หมด (หรือไม่มีคีย์เลย) — คืนตัวสุดท้ายให้ caller จัดการ error ตามปกติ
@@ -4505,6 +4526,8 @@ function buildFinancialSnapshot(){
       reserved: reserved,
       available: totalMoney - reserved,
       receivablesOutstanding: receivables,
+      savedTotal: getTotalSaved(),
+      emergencySaved: getEmergencySaved(),
       liabilities: getTotalDebts(),
     },
     cash: { total:totalMoney, available:totalMoney-reserved, byAccount:cashByAccount },
@@ -4844,7 +4867,8 @@ async function analyzeFinancialQuery(query, snapshot){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: query.trim() }] }],
-          systemInstruction: { parts: [{ text: systemPrompt }] }
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { maxOutputTokens: 4096 }
         })
       }
     );
@@ -5192,11 +5216,11 @@ async function generateChatReply(priorHistory, userText, snapshot, profile, sign
           body: JSON.stringify({
             contents,
             systemInstruction: { parts: [{ text: baseSystemPrompt + (extraInstruction ? "\n\n" + extraInstruction : "") }] },
-            generationConfig: { temperature: 0.25, maxOutputTokens: 1536 }
+            generationConfig: { temperature: 0.25, maxOutputTokens: 4096 }
           }),
           signal
         },
-        0
+        1
       );
     }catch(e){
       if(e && e.name === "AbortError") return { ok:false, error:"aborted" };
@@ -5332,7 +5356,8 @@ async function generateProactiveInsight(evalResult, snapshot, profile){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: "สร้างข้อความสำหรับการ์ด Insight ตาม system prompt ด้านบน" }] }],
-          systemInstruction: { parts: [{ text: systemPrompt }] }
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { maxOutputTokens: 4096 }
         })
       }
     );
@@ -7271,7 +7296,7 @@ document.getElementById("closeBudgetBtn")?.addEventListener("click",()=>document
 document.getElementById("budgetOverlay")?.addEventListener("click",()=>document.getElementById("budgetOverlay").classList.remove("open"));
 document.getElementById("budgetMonthInput")?.addEventListener("change",()=>{budgetEditingId=null;document.getElementById("budgetAmountInput").value="";document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ";renderBudgetManager();});
 document.getElementById("saveBudgetBtn")?.addEventListener("click",()=>{const month=document.getElementById("budgetMonthInput").value||monthKey(todayISO()),category=document.getElementById("budgetCategoryInput").value,amount=Number(document.getElementById("budgetAmountInput").value);if(!/^\d{4}-\d{2}$/.test(month)){showToast("เลือกเดือนให้ถูกต้อง");return;}if(!category){showToast("เลือกหมวดรายจ่ายก่อน");return;}if(!isFinite(amount)||amount<0){showToast("กรอกงบประมาณให้ถูกต้อง");return;}const now=new Date().toISOString();if(budgetEditingId){const b=budgets.find(x=>x.id===budgetEditingId);if(b){b.month=month;b.category=category;b.amount=Math.round(amount*100)/100;b.updatedAt=now;b.enabled=true;}}else{const existing=budgets.find(x=>x.month===month&&x.category===category&&x.enabled!==false);if(existing){existing.amount=Math.round(amount*100)/100;existing.updatedAt=now;}else budgets.push({id:makeId(),category,amount:Math.round(amount*100)/100,period:"monthly",month,enabled:true,createdAt:now,updatedAt:now});}saveBudgets();budgetEditingId=null;document.getElementById("budgetAmountInput").value="";document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ";renderBudgetManager();render();showToast("บันทึกงบประมาณแล้ว ✓");});
-function renderFinancialBrainCard(){const card=document.getElementById("financialBrainCard");if(!card)return;const s=buildFinancialSnapshot(),h=s.financialBrain,b=s.behaviorSummary;card.style.display="block";document.getElementById("brainScore").textContent=h.score;document.getElementById("brainFill").style.width=h.score+"%";const m=h.status==='CRITICAL'?{l:'ต้องจัดการเร่งด่วน',c:'critical'}:h.status==='WATCH'?{l:'ควรเฝ้าดู',c:'watch'}:{l:'สุขภาพดี ✓',c:'healthy'};const st=document.getElementById("brainStatus");st.className='brain-status '+m.c;st.textContent=m.l;document.getElementById("brainSub").textContent='ประเมินจากกระแสเงินสด งบ เงินสำรอง การออม และพฤติกรรมการใช้จ่าย';const pct=x=>x==null?'—':fmt(x)+'%';const rows=[['กระแสเงินสด',s.thisMonth.netCashFlow<0?'ติดลบ':'เป็นบวก'],['อัตราออม',pct(b.savingsRate)],['จำเป็น / รายรับ',pct(h.benchmark.essentialPct)],['ไม่จำเป็น / รายรับ',pct(h.benchmark.discretionaryPct)],['เงินสำรอง',s.emergencyFund.monthlyEssentialExpense>0?fmt(s.emergencyFund.reserveCoverageMonths)+' เดือน':'—'],['งบประมาณ',s.budgetSummary.budgetCount?`${s.budgetSummary.overCount} เกิน · ${s.budgetSummary.watchCount} เฝ้าดู`:'ยังไม่ได้ตั้ง']];document.getElementById("brainFactors").innerHTML=rows.map(r=>`<div class="brain-factor"><div class="brain-factor-label">${escapeHtml(r[0])}</div><div class="brain-factor-value">${escapeHtml(String(r[1]))}</div></div>`).join('');const top=b.topCategories?.[0];const msg=h.status==='HEALTHY'?`ภาพรวมแข็งแรง${top?' · หมวดใช้มากสุดตอนนี้คือ '+escapeHtml(top.category):''}`:h.status==='CRITICAL'?`มี ${h.negativeFactorCount} ปัจจัยที่ควรจัดการก่อน · ${escapeHtml(h.risks[0]||'กระแสเงินสด')}`:`มีบางจุดที่ควรเฝ้าดู · ${escapeHtml(h.risks[0]||'การควบคุมรายจ่าย')}`;document.getElementById("brainInsight").innerHTML=msg;}
+function renderFinancialBrainCard(){const card=document.getElementById("financialBrainCard");if(!card)return;const s=buildFinancialSnapshot(),h=s.financialBrain,b=s.behaviorSummary;card.style.display="block";document.getElementById("brainScore").textContent=h.score;document.getElementById("brainFill").style.width=h.score+"%";const m=h.status==='CRITICAL'?{l:'ต้องจัดการเร่งด่วน',c:'critical'}:h.status==='WATCH'?{l:'ควรเฝ้าดู',c:'watch'}:{l:'สุขภาพดี ✓',c:'healthy'};const st=document.getElementById("brainStatus");st.className='brain-status '+m.c;st.textContent=m.l;document.getElementById("brainSub").textContent='ประเมินจากกระแสเงินสด งบ เงินสำรอง การออม และพฤติกรรมการใช้จ่าย';const pct=x=>x==null?'—':fmt(x)+'%';const rows=[['กระแสเงินสด',s.thisMonth.income===0&&s.thisMonth.expense===0?'—':s.thisMonth.netCashFlow<0?'ติดลบ':'เป็นบวก'],['อัตราออม',pct(b.savingsRate)],['จำเป็น / รายรับ',pct(h.benchmark.essentialPct)],['ไม่จำเป็น / รายรับ',pct(h.benchmark.discretionaryPct)],['เงินสำรอง',s.emergencyFund.monthlyEssentialExpense>0?fmt(s.emergencyFund.reserveCoverageMonths)+' เดือน':'—'],['งบประมาณ',s.budgetSummary.budgetCount?`${s.budgetSummary.overCount} เกิน · ${s.budgetSummary.watchCount} เฝ้าดู`:'ยังไม่ได้ตั้ง']];document.getElementById("brainFactors").innerHTML=rows.map(r=>`<div class="brain-factor"><div class="brain-factor-label">${escapeHtml(r[0])}</div><div class="brain-factor-value">${escapeHtml(String(r[1]))}</div></div>`).join('');const top=b.topCategories?.[0];const msg=h.status==='HEALTHY'?`ภาพรวมแข็งแรง${top?' · หมวดใช้มากสุดตอนนี้คือ '+escapeHtml(top.category):''}`:h.status==='CRITICAL'?`มี ${h.negativeFactorCount} ปัจจัยที่ควรจัดการก่อน · ${escapeHtml(h.risks[0]||'กระแสเงินสด')}`:`มีบางจุดที่ควรเฝ้าดู · ${escapeHtml(h.risks[0]||'การควบคุมรายจ่าย')}`;document.getElementById("brainInsight").innerHTML=msg;}
 const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();};renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();
 </script>
 
