@@ -3385,11 +3385,14 @@ function render(){
   const carry = getTotalMoneyAllAccounts(selectedMonth + "-01"); // ยอดยกมาจากเดือนก่อน
   const nm = new Date(Number(selectedMonth.slice(0,4)), Number(selectedMonth.slice(5,7)), 1);
   const nextMonthStart = `${nm.getFullYear()}-${String(nm.getMonth()+1).padStart(2,"0")}-01`;
-  const heroBal = getTotalMoneyAllAccounts(nextMonthStart); // เงินจริง ณ สิ้นเดือนที่เลือก (รวมเงินให้ยืมที่ออกไปด้วย)
+  // เดือนก่อนเริ่มใช้งานจริง (ก่อนรายการแรก) ไม่ต้องโชว์ยอดเริ่มต้นบัญชี
+  const firstDate = [...entries.map(e => e.date), ...loans.map(l => l.date)].filter(Boolean).sort()[0];
+  const beforeStart = !firstDate || nextMonthStart <= firstDate;
+  const heroBal = beforeStart ? 0 : getTotalMoneyAllAccounts(nextMonthStart); // เงินจริง ณ สิ้นเดือนที่เลือก (รวมเงินให้ยืมที่ออกไปด้วย)
   const loanOut = loans.filter(l => l.date && monthKey(l.date) === selectedMonth).reduce((a,l) => a + toCents(l.amount), 0) / 100;
   document.getElementById("balanceNum").textContent = (heroBal<0?"-":"") + "฿" + fmt(Math.abs(heroBal));
   document.getElementById("balanceNum").style.color = heroBal<0 ? "var(--expense)" : "var(--ink)";
-  document.getElementById("carryNum").textContent = "ยกมาจากเดือนก่อน " + (carry<0?"-":"") + "฿" + fmt(Math.abs(carry)) + (loanOut>0 ? " · ให้ยืมไป ฿" + fmt(loanOut) : "");
+  document.getElementById("carryNum").textContent = beforeStart ? "ยังไม่ได้เริ่มใช้งานในเดือนนี้" : "ยกมาจากเดือนก่อน " + (carry<0?"-":"") + "฿" + fmt(Math.abs(carry)) + (loanOut>0 ? " · ให้ยืมไป ฿" + fmt(loanOut) : "");
   // มูลค่าสุทธิที่แท้จริง = เงินรวมทุกบัญชี (นับรวมเงินออม/เงินลงทุนที่อยู่ในบัญชีอยู่แล้ว) + เงินที่คนอื่นติดค้างเรา − หนี้สินรวม (Milestone 5)
   // ไม่ใช่รายรับลบรายจ่ายของเดือนนี้ ซึ่งเป็นคนละความหมายกัน (นั่นคือกระแสเงินสดของเดือน ไม่ใช่มูลค่าสุทธิสะสม)
   const netWorth = getTotalMoneyAllAccounts() + getTotalSaved() + getTotalReceivablesOutstanding() - getTotalDebts();
