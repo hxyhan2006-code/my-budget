@@ -1414,6 +1414,13 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
   try{ if('serviceWorker' in navigator) window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }catch(e){}
 })();
 </script>
+<style>
+.ai-chat-msg [data-aiact]{pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:3}
+#aiAnalystBody{padding-bottom:28px!important}
+#budgetDashboardRows{max-height:none!important;overflow:visible!important}
+#budgetManageList{padding-bottom:24px}
+#budgetOverlay .sheet-modal{padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+</style>
 </head>
 <body>
 <div class="page">
@@ -1793,7 +1800,8 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
   <div class="sheet-modal" onclick="event.stopPropagation()">
     <div class="modal-header"><span class="modal-title">งบประมาณ</span><button class="close-btn" id="closeBudgetBtn">✕</button></div>
     <div class="settings-card" style="margin-bottom:12px;">
-      <div class="settings-card-title">🎯 งบประมาณรายจ่ายรายหมวด</div>
+      <div class="settings-card-title">🎯 งบประมาณ (รายจ่าย / รายออม)</div>
+      <div id="budgetKindToggle" style="display:flex;gap:8px;margin:8px 0 4px;"><button type="button" data-bk="expense" class="quick-amount-btn" style="flex:1;padding:9px 0;">💸 งบรายจ่าย</button><button type="button" data-bk="saving" class="quick-amount-btn" style="flex:1;padding:9px 0;">🌱 งบรายออม</button></div>
       <p class="ai-hint">กำหนดเพดานรายจ่ายของแต่ละหมวดในแต่ละเดือน ระบบจะคำนวณยอดใช้ไป ยอดเหลือ และ pace การใช้เงินให้เอง</p>
       <div class="budget-form-grid"><div><label class="field-label" style="margin-top:8px;">เดือน</label><input id="budgetMonthInput" class="text-input" type="month" /></div><div><label class="field-label" style="margin-top:8px;">ชื่องบ (ไม่บังคับ)</label><input id="budgetNameInput" class="text-input" type="text" maxlength="30" placeholder="เช่น ที่พัก" autocomplete="off" /></div></div>
       <label class="field-label">เลือกหมวด (เลือกได้หลายอัน)</label><div id="budgetCategoryInput" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
@@ -2150,7 +2158,7 @@ async function ensureGDriveToken(){
 // ===== Vaultet Backup Engine (A+) =====
 // ศูนย์กลาง Backup/Restore ของแอป: เก็บข้อมูลที่จำเป็นต่อการกู้ Vaultet
 // พร้อมจับ localStorage namespace ใหม่ๆ โดยอัตโนมัติ เพื่อไม่ต้องแก้ buildBackupPayload() ทุกครั้งที่เพิ่มฟีเจอร์
-const VAULTET_BACKUP_SCHEMA_VERSION = 2;
+const VAULTET_BACKUP_SCHEMA_VERSION = 3;
 const VAULTET_BACKUP_EXCLUDED_KEYS = new Set([
   AI_APIKEY_KEY, AI_APIKEYS_KEY,
   GDRIVE_CLIENT_ID_KEY, GDRIVE_FILE_ID_KEY, GDRIVE_LAST_SYNC_KEY, GDRIVE_AUTOSYNC_KEY,
@@ -2186,12 +2194,35 @@ function getVaultetAppVersion(){
 
 // Backup envelope มีทั้งข้อมูลแบบเดิม (เพื่อ backward compatibility) และ localStorage snapshot
 // จึงรองรับข้อมูลฟีเจอร์ใหม่ที่ถูก persist ใน localStorage โดยไม่ต้องแก้รายการทุกครั้ง
+// SHA-256 แบบ sync (ใช้ได้ทุกบริบท ไม่พึ่ง crypto.subtle) — ใช้ตรวจว่าไฟล์สำรองไม่เสีย/ไม่ถูกแก้
+function vaultetSha256(str){
+  const K=[],H=[]; let p=2;
+  while(K.length<64){ let ok=true; for(let i=2;i*i<=p;i++){ if(p%i===0){ok=false;break;} } if(ok){ K.push(Math.floor((Math.cbrt(p)%1)*4294967296)); if(H.length<8) H.push(Math.floor((Math.sqrt(p)%1)*4294967296)); } p++; }
+  const data=new TextEncoder().encode(str), l=data.length, total=((l+9+63)>>6)<<6, buf=new Uint8Array(total);
+  buf.set(data); buf[l]=0x80;
+  const dv=new DataView(buf.buffer); dv.setUint32(total-8,Math.floor(l/536870912)); dv.setUint32(total-4,(l<<3)>>>0);
+  const w=new Uint32Array(64), h=Uint32Array.from(H), rr=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let o=0;o<total;o+=64){
+    for(let i=0;i<16;i++) w[i]=dv.getUint32(o+i*4);
+    for(let i=16;i<64;i++){ const a=w[i-15], b=w[i-2], s0=rr(a,7)^rr(a,18)^(a>>>3), s1=rr(b,17)^rr(b,19)^(b>>>10); w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0; }
+    let [a,b,c,d,e,f,g,hh]=h;
+    for(let i=0;i<64;i++){ const S1=rr(e,6)^rr(e,11)^rr(e,25), ch=(e&f)^(~e&g), t1=(hh+S1+ch+K[i]+w[i])>>>0, S0=rr(a,2)^rr(a,13)^rr(a,22), mj=(a&b)^(a&c)^(b&c), t2=(S0+mj)>>>0; hh=g; g=f; f=e; e=(d+t1)>>>0; d=c; c=b; b=a; a=(t1+t2)>>>0; }
+    h[0]=(h[0]+a)>>>0; h[1]=(h[1]+b)>>>0; h[2]=(h[2]+c)>>>0; h[3]=(h[3]+d)>>>0; h[4]=(h[4]+e)>>>0; h[5]=(h[5]+f)>>>0; h[6]=(h[6]+g)>>>0; h[7]=(h[7]+hh)>>>0;
+  }
+  return Array.from(h).map(x=>x.toString(16).padStart(8,"0")).join("");
+}
+function verifyBackupIntegrity(data){
+  const ig=data&&data.integrity; if(!ig||!ig.hash) return {status:"none"};
+  try{ const copy=Object.assign({},data); delete copy.integrity; const h=vaultetSha256(JSON.stringify(copy)); return {status:h===ig.hash?"ok":"mismatch",hash:h,expected:ig.hash}; }catch(e){ return {status:"none"}; }
+}
 function buildBackupPayload(){
-  return {
+  const ls=collectVaultetLocalStorage();
+  const payload={
     backupSchemaVersion: VAULTET_BACKUP_SCHEMA_VERSION,
     app: "Vaultet",
     appVersion: getVaultetAppVersion(),
     exportedAt: new Date().toISOString(),
+    timezone: (()=>{ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||""; }catch(e){ return ""; } })(),
     entries,
     categories: CATS_BY_TYPE,
     accounts,
@@ -2201,9 +2232,20 @@ function buildBackupPayload(){
     debts,
     budgets,
     emergencyFundConfig,
-    appState: { localStorage: collectVaultetLocalStorage() }
+    appState: { localStorage: ls }
   };
+  const sumBy=t=>entries.filter(e=>e.type===t).reduce((a,e)=>a+toCents(e.amount),0)/100;
+  const text=JSON.stringify(payload);
+  payload.integrity={ algorithm:"sha256", hash:vaultetSha256(text), chars:text.length,
+    counts:{ entries:entries.length, accounts:accounts.length, reservedItems:reservedItems.length, loans:loans.length, recurringExpenses:recurringExpenses.length, debts:debts.length, budgets:budgets.length, storageKeys:Object.keys(ls).length },
+    totals:{ income:sumBy("income"), expense:sumBy("expense"), saving:sumBy("saving") } };
+  return payload;
 }
+function downloadJsonFile(obj,filename){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+function backupStamp(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
 
 // ถ้ามีฟีเจอร์ใหม่เขียน localStorage ในอนาคต มันจะเข้าคิว auto-sync เองเมื่อเปิดไว้
 (function installBackupStorageWatcher(){
@@ -2230,6 +2272,8 @@ async function gdriveUploadBackup(){
   const token = await ensureGDriveToken();
   const payload = buildBackupPayload();
   const fileId = localStorage.getItem(GDRIVE_FILE_ID_KEY);
+  // กันข้อมูลในเครื่องว่าง (เช่น ล้างเบราว์เซอร์) ไปทับไฟล์สำรองดีๆ บน Drive
+  if(fileId && !payload.entries.length && !payload.accounts.length) throw new Error("empty_state_guard");
   const metadata = fileId ? {} : { name: GDRIVE_BACKUP_FILENAME, mimeType: "application/json" };
   const boundary = "finance_tracker_backup_boundary";
   const body =
@@ -2247,6 +2291,12 @@ async function gdriveUploadBackup(){
   if(!res.ok) throw new Error("upload_failed_" + res.status);
   const data = await res.json();
   if(!fileId && data.id) localStorage.setItem(GDRIVE_FILE_ID_KEY, data.id);
+  // อ่านไฟล์กลับจาก Drive มาเทียบรหัสตรวจกับต้นฉบับ เพื่อยืนยันว่าบันทึกครบตรงจริง
+  const vid = fileId || data.id;
+  const back = await fetch(`https://www.googleapis.com/drive/v3/files/${vid}?alt=media`, { headers: { "Authorization": "Bearer " + token } });
+  if(!back.ok) throw new Error("verify_failed_" + back.status);
+  const parsed = await back.json();
+  if(verifyBackupIntegrity(parsed).hash !== payload.integrity.hash) throw new Error("verify_failed");
   localStorage.setItem(GDRIVE_LAST_SYNC_KEY, new Date().toISOString());
   return data;
 }
@@ -2290,11 +2340,13 @@ async function runGDriveSync(silent){
   try{
     await gdriveUploadBackup();
     gdriveLastAutoError="";
-    if(!silent) showToast("สำรองขึ้น Google Drive แล้ว");
+    if(!silent) showToast("สำรองขึ้น Google Drive แล้ว ✓ ตรวจแล้วตรงกับต้นฉบับ");
   }catch(e){
     if(String(e?.message||e).includes("upload_failed_401") || String(e?.message||e).includes("upload_failed_403")){ gdriveAccessToken=null; gdriveAccessTokenExpiry=0; }
     gdriveLastAutoError = (String(e?.message||e).includes("401") || String(e?.message||e).includes("403")) ? "Auto Backup ใช้งานไม่ได้ — ต้องเชื่อมต่อ Google Drive ใหม่" : "Auto Backup ล่าสุดไม่สำเร็จ — ตรวจสอบการเชื่อมต่อ Google Drive";
-    if(!silent) showToast("สำรองขึ้น Drive ไม่สำเร็จ — ลองเชื่อมต่อ Google Drive ใหม่");
+    if(/empty_state_guard/.test(String(e?.message||e))){ gdriveLastAutoError="ข้อมูลในเครื่องว่าง จึงไม่ทับไฟล์สำรองบน Drive — กู้คืนจาก Drive ก่อน"; if(!silent) showToast(gdriveLastAutoError); }
+    else if(/verify_failed/.test(String(e?.message||e))){ gdriveLastAutoError="อัปโหลดแล้วแต่ตรวจกลับไม่ตรงกับต้นฉบับ — ลองสำรองใหม่อีกครั้ง"; if(!silent) showToast(gdriveLastAutoError); }
+    else if(!silent) showToast("สำรองขึ้น Drive ไม่สำเร็จ — ลองเชื่อมต่อ Google Drive ใหม่");
   }finally{
     gdriveSyncBusy = false;
     if(document.getElementById("settingsOverlay").classList.contains("open")) refreshGDriveStatus();
@@ -2566,7 +2618,50 @@ function computeEmergencyFund(){
 }
 
 // ===== Round 1: Budget Engine storage + deterministic calculations =====
-function budgetKey(b){ return b.month+"|"+(b.categories||[b.category]).slice().sort().join("+"); }
+function bKey(month,cats,kind){ return (kind==="saving"?"S|":"")+month+"|"+(cats||[]).slice().sort().join("+"); }
+function budgetKey(b){ return bKey(b.month,(b.categories||[b.category]),b.kind); }
+function getMonthSavingByCategories(month,cats){ const set=new Set(cats||[]); return entries.filter(e=>e.type==="saving" && monthKey(e.date)===month && set.has(e.category)).reduce((s,e)=>s+toCents(e.amount),0)/100; }
+// ===== เงินสำรองเผื่อเหตุไม่คาดฝันรายเดือน (buffer) =====
+const BUFFER_KEY="vaultet_buffer_v1";
+function __readBuffer(){ let o={}; try{o=JSON.parse(localStorage.getItem(BUFFER_KEY)||"{}");}catch(e){} o.months=o.months||{}; return o; }
+function getBufferInfo(month=monthKey(todayISO())){
+  const amt=__readBuffer().months[month]; if(amt==null) return null;
+  const covered=new Set(); budgets.filter(b=>b.enabled!==false&&(b.kind||"expense")==="expense"&&b.month===month).forEach(b=>(b.categories||[]).forEach(c=>covered.add(c)));
+  const used=covered.size?entries.filter(e=>e.type==="expense"&&monthKey(e.date)===month&&!covered.has(e.category)).reduce((t,e)=>t+toCents(e.amount),0)/100:0;
+  const swept=Number((__readBuffer().swept||{})[month]||0);
+  return {month,amount:Number(amt),used,swept,remaining:Number(amt)-used-swept,daysLeft:getBudgetRemainingDays(month)};
+}
+// ===== รายรับฐาน: เฉลี่ยย้อนหลังสูงสุด 3 เดือนที่ผ่านมาแล้ว (ไม่นับถอนเงินออม/เงินที่ถูกคืนจากการยืม) =====
+function sweepBufferToSaving(month,amount,category){
+  const bf=getBufferInfo(month); if(!bf) return {ok:false,msg:"ยังไม่ได้ตั้งเงินสำรองเดือนนี้"};
+  const amt=Math.round(Number(amount)*100)/100; if(!(amt>0)) return {ok:false,msg:"จำนวนเงินไม่ถูกต้อง"};
+  if(amt>bf.remaining+0.005) return {ok:false,msg:`เงินสำรองเหลือแค่ ฿${fmt(Math.max(0,bf.remaining))}`};
+  const sc=CATS_BY_TYPE.saving||[], cat=sc.includes(category)?category:(sc.includes("เงินออม")?"เงินออม":sc[0]); if(!cat) return {ok:false,msg:"ยังไม่มีหมวดออม"};
+  const acc=accounts.find(x=>x.id!==UNASSIGNED_ACCOUNT_ID)||accounts[0];
+  const r=commitEntry({type:"saving",category:cat,accountId:acc?acc.id:UNASSIGNED_ACCOUNT_ID,amount:amt,date:todayISO(),note:"ย้ายเศษเงินสำรอง "+monthLabel(month)});
+  if(!r||!r.ok) return {ok:false,msg:"บันทึกรายการออมไม่สำเร็จ"};
+  const o=__readBuffer(); o.swept=o.swept||{}; o.swept[month]=Math.round((Number(o.swept[month]||0)+amt)*100)/100; localStorage.setItem(BUFFER_KEY,JSON.stringify(o));
+  return {ok:true,entry:r.entry,amount:amt,category:cat};
+}
+// แผนปิดเดือนที่คำนวณด้วยโค้ด (AI ไม่ต้องคิดเลขเอง): เงินสำรองที่เหลือ → เติมเงินสำรองฉุกเฉิน → เป้าออมเดือนนี้ → ออมเพิ่ม
+function buildMonthEndPlan(snapshot){
+  const month=monthKey(todayISO()), bf=getBufferInfo(month), sv=computeBudgetSummary(month,"saving"), ex=computeBudgetSummary(month);
+  const ef=(snapshot&&snapshot.emergencyFund)||{}, efGap=Math.max(0,Number(ef.reserveShortfall||0)), sc=CATS_BY_TYPE.saving||[];
+  const defCat=sc.includes("เงินออม")?"เงินออม":(sc[0]||null), emCat=sc.find(c=>c.includes("สำรอง"))||defCat;
+  let left=bf?Math.max(0,Math.round(bf.remaining*100)/100):0;
+  const toEm=Math.min(left,efGap); left=Math.round((left-toEm)*100)/100;
+  const goalGap=Math.max(0,sv.totalRemaining||0), toGoal=Math.min(left,goalGap); left=Math.round((left-toGoal)*100)/100;
+  const waterfall=[{to:"เติมเงินสำรองฉุกเฉิน",category:emCat,amount:Math.round(toEm*100)/100},{to:"เติมเป้าออมเดือนนี้",category:defCat,amount:Math.round(toGoal*100)/100},{to:"ออมเพิ่ม (หรือเก็บไว้เป็น buffer เดือนหน้า)",category:defCat,amount:left}].filter(x=>x.amount>0&&x.category);
+  return {month,daysLeft:getBudgetRemainingDays(month),buffer:bf,emergencyFundGap:efGap,savingGoalGap:goalGap,overBudget:ex.rows.filter(r=>r.status==="OVER").map(r=>({category:r.category,over:Math.round(-r.remaining)})),waterfall,note:bf?(bf.remaining<0?"ใช้เกินเงินสำรอง":""):"ยังไม่ได้ตั้ง buffer เดือนนี้"};
+}
+function getIncomeBaseline(){
+  const cur=monthKey(todayISO()), tot={};
+  entries.forEach(e=>{ if(e.type!=="income"||e.category===WITHDRAW_CAT||e.source==="loan_repayment"||e.category==="เงินคืนจากการยืม") return; const m=monthKey(e.date); if(m>=cur) return; tot[m]=(tot[m]||0)+toCents(e.amount); });
+  const ms=Object.keys(tot).sort().reverse().slice(0,3), v=ms.map(m=>tot[m]/100).filter(x=>x>0);
+  if(!v.length) return {months:0};
+  const avg=v.reduce((a,b)=>a+b,0)/v.length, sd=Math.sqrt(v.reduce((a,b)=>a+(b-avg)*(b-avg),0)/v.length);
+  return {months:v.length,avg:Math.round(avg),min:Math.round(Math.min(...v)),max:Math.round(Math.max(...v)),volatilityPct:avg>0?Math.round(sd/avg*100):0};
+}
 function getMonthExpenseByCategories(month, cats){ const set=new Set(cats||[]); return entries.filter(e=>e.type==="expense" && monthKey(e.date)===month && set.has(e.category)).reduce((s,e)=>s+toCents(e.amount),0)/100; }
 function normalizeBudget(b){
   if(!b || typeof b !== "object") return null;
@@ -2575,7 +2670,7 @@ function normalizeBudget(b){
   const month = /^\d{4}-\d{2}$/.test(String(b.month || "")) ? String(b.month) : monthKey(todayISO());
   const cats=(Array.isArray(b.categories)&&b.categories.length?b.categories:[b.category]).map(String).filter(Boolean);
   const name=b.name?String(b.name):"";
-  return { id:String(b.id), category:name||cats.join(" + "), categories:cats, name, amount:Math.round(amount*100)/100, period:"monthly", month,
+  return { id:String(b.id), kind:(b.kind==="saving"?"saving":"expense"), category:name||cats.join(" + "), categories:cats, name, amount:Math.round(amount*100)/100, period:"monthly", month,
     enabled:b.enabled !== false, createdAt:b.createdAt || new Date().toISOString(), updatedAt:b.updatedAt || b.createdAt || new Date().toISOString() };
 }
 function loadBudgets(){
@@ -2600,11 +2695,11 @@ function getBudgetStatus(spent,budget,projected){
   if(projected>budget || spent>=budget*0.8) return "WATCH";
   return "SAFE";
 }
-function computeBudgetSummary(month=monthKey(todayISO())){
-  const rows=budgets.filter(b=>b.enabled!==false && b.period==="monthly" && b.month===month).map(b=>{
-    const spent=getMonthExpenseByCategories(month,b.categories), days=getDaysInMonth(month), elapsed=getBudgetElapsedDays(month), remainingDays=getBudgetRemainingDays(month);
+function computeBudgetSummary(month=monthKey(todayISO()),kind="expense"){
+  const rows=budgets.filter(b=>b.enabled!==false && b.period==="monthly" && b.month===month && (b.kind||"expense")===kind).map(b=>{
+    const spent=(kind==="saving"?getMonthSavingByCategories:getMonthExpenseByCategories)(month,b.categories), days=getDaysInMonth(month), elapsed=getBudgetElapsedDays(month), remainingDays=getBudgetRemainingDays(month);
     const remaining=b.amount-spent, pct=b.amount>0?(spent/b.amount)*100:(spent>0?100:0), projected=elapsed>0?(spent/elapsed)*days:spent;
-    return {id:b.id,category:b.category,categories:b.categories,budget:b.amount,spent,remaining,pct,projected,dailyAllowance:remainingDays>0?Math.max(0,remaining)/remainingDays:0,status:getBudgetStatus(spent,b.amount,projected),elapsedDays:elapsed,remainingDays,daysInMonth:days};
+    return {id:b.id,category:b.category,categories:b.categories,budget:b.amount,spent,remaining,pct,projected,dailyAllowance:remainingDays>0?Math.max(0,remaining)/remainingDays:0,status:kind==="saving"?(spent>=b.amount?"DONE":"SAVING"):getBudgetStatus(spent,b.amount,projected),kind,elapsedDays:elapsed,remainingDays,daysInMonth:days};
   });
   const totalBudget=rows.reduce((s,r)=>s+r.budget,0), totalSpent=rows.reduce((s,r)=>s+r.spent,0);
   return {month,daysInMonth:getDaysInMonth(month),elapsedDays:getBudgetElapsedDays(month),remainingDays:getBudgetRemainingDays(month),rows,totalBudget,totalSpent,totalRemaining:totalBudget-totalSpent,totalPct:totalBudget>0?totalSpent/totalBudget*100:0,projectedTotal:getBudgetElapsedDays(month)>0?totalSpent/getBudgetElapsedDays(month)*getDaysInMonth(month):totalSpent,overCount:rows.filter(r=>r.status==="OVER").length,watchCount:rows.filter(r=>r.status==="WATCH").length,budgetCount:rows.length};
@@ -3345,7 +3440,9 @@ function refreshBackupBanner(){
   const banner = document.getElementById("backupBanner");
   if(!entries.length){ banner.classList.remove("show"); return; }
   const lastBackup = getLastBackup();
-  const staleBackup = !lastBackup || monthKey(lastBackup) !== monthKey(todayISO());
+  let driveLast=""; try{ driveLast=localStorage.getItem(GDRIVE_LAST_SYNC_KEY)||""; }catch(_){}
+  const lastAny=[lastBackup,driveLast].filter(Boolean).sort().pop();
+  const staleBackup = !lastAny || (Date.now()-new Date(lastAny).getTime())>7*86400000;
   const dismissedThisMonth = sessionStorage.getItem("backupDismissedMonth") === monthKey(todayISO());
   banner.classList.toggle("show", staleBackup && !dismissedThisMonth);
 }
@@ -3855,14 +3952,14 @@ document.getElementById("exportBtn").addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `finance-backup-${todayISO()}.json`;
+  a.download = `finance-backup-${backupStamp()}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
   setLastBackup(todayISO());
   refreshBackupBanner();
-  showToast("ดาวน์โหลดไฟล์สำรองแล้ว");
+  showToast(`ดาวน์โหลดไฟล์สำรองแล้ว ✓ ${payload.integrity.counts.entries} รายการ · ${payload.integrity.counts.storageKeys} ชุดข้อมูล · รหัสตรวจ ${payload.integrity.hash.slice(0,8)}`);
 });
 
 document.getElementById("importBtn").addEventListener("click", () => {
@@ -3937,6 +4034,53 @@ function applyImportedBackup(data){
   return true;
 }
 
+
+// ===== กู้คืนข้อมูล: ตรวจไฟล์ → เทียบจำนวน → เลือก "แทนที่ทั้งหมด" (ตรงไฟล์เป๊ะ) หรือ "รวมเข้ากับของเดิม" =====
+function promptRestore(data,label){
+  const source=data&&data.data&&typeof data.data==="object"?data.data:data;
+  if(!source||!Array.isArray(source.entries)){ showToast("ไฟล์ไม่ถูกต้อง กู้คืนไม่สำเร็จ"); return; }
+  const ver=verifyBackupIntegrity(data), stored=(data.appState&&data.appState.localStorage)||(source.appState&&source.appState.localStorage);
+  const canReplace=!!stored&&typeof stored==="object"&&ver.status!=="mismatch";
+  const c=a=>Array.isArray(a)?a.length:0;
+  const rows=[["รายการเงิน",c(source.entries),entries.length],["บัญชี",c(source.accounts),accounts.length],["งบประมาณ",c(source.budgets),budgets.length],["หนี้",c(source.debts),debts.length],["เงินให้ยืม",c(source.loans),loans.length],["รายจ่ายประจำ",c(source.recurringExpenses),recurringExpenses.length],["เงินที่กันไว้",c(source.reservedItems),reservedItems.length]];
+  const vtxt=ver.status==="ok"?`<span style="color:#52b788">✓ ผ่านการตรวจความถูกต้อง (รหัส ${escapeHtml(ver.hash.slice(0,8))})</span>`:ver.status==="mismatch"?`<span style="color:#ef5350">✗ ไฟล์ไม่ตรงกับรหัสตรวจ — อาจเสียหายหรือถูกแก้ไข จึงปิดโหมดแทนที่</span>`:`<span style="color:#e9c46a">ไฟล์รุ่นเก่า ไม่มีรหัสตรวจ (ตรวจความถูกต้องไม่ได้)</span>`;
+  const when=data.exportedAt?new Date(data.exportedAt).toLocaleString("th-TH"):"ไม่ทราบ";
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px;";
+  const bs="width:100%;padding:13px 0;border-radius:14px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:8px;";
+  ov.innerHTML=`<div style="background:var(--surface,#161618);color:var(--ink,#F5F5F7);border:1px solid var(--line,#2a2a2e);border-radius:18px;padding:18px;max-width:420px;width:100%;max-height:88vh;overflow:auto;">
+    <div style="font-weight:800;font-size:16px;margin-bottom:4px;">กู้คืนข้อมูลจาก ${escapeHtml(label||"ไฟล์")}</div>
+    <div style="font-size:12px;color:var(--faint,#8E8E93);margin-bottom:8px;">สำรองเมื่อ ${escapeHtml(when)}</div>
+    <div style="font-size:12.5px;margin-bottom:10px;">${vtxt}</div>
+    <div style="font-size:12.5px;border:1px solid var(--line,#2a2a2e);border-radius:12px;padding:8px 10px;"><div style="display:flex;justify-content:space-between;color:var(--faint,#8E8E93);"><span></span><span>ในไฟล์ / ตอนนี้</span></div>${rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:3px 0;"><span>${r[0]}</span><span class="mono">${r[1]} / ${r[2]}</span></div>`).join("")}</div>
+    <button type="button" id="rsReplace" ${canReplace?"":"disabled"} style="${bs}border:none;background:${canReplace?"var(--accent1,#1DB954)":"#333"};color:${canReplace?"#0A0A0C":"#777"};">♻️ แทนที่ทั้งหมด (ให้ตรงไฟล์เป๊ะ)</button>
+    <div style="font-size:11px;color:var(--faint,#8E8E93);margin:4px 2px 0;">${canReplace?"ข้อมูลปัจจุบันจะถูกดาวน์โหลดเก็บไว้เป็นไฟล์ก่อนเสมอ แล้วแอปจะโหลดใหม่":"ใช้ไม่ได้: ไฟล์ไม่มีข้อมูลสถานะแอป หรือรหัสตรวจไม่ตรง"}</div>
+    <button type="button" id="rsMerge" style="${bs}border:1px solid var(--line,#2a2a2e);background:var(--surface-2,#1c1c1f);color:var(--ink,#F5F5F7);">➕ รวมเข้ากับข้อมูลเดิม (ไม่ลบอะไร)</button>
+    <button type="button" id="rsCancel" style="${bs}border:none;background:transparent;color:var(--faint,#8E8E93);">ยกเลิก</button></div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector("#rsCancel").onclick=close;
+  ov.querySelector("#rsMerge").onclick=()=>{ close(); try{ if(!applyImportedBackup(data)) throw new Error("invalid"); showToast("รวมข้อมูลสำเร็จ"); }catch(e){ showToast("กู้คืนไม่สำเร็จ"); } };
+  ov.querySelector("#rsReplace").onclick=()=>{
+    if(!canReplace) return;
+    if(!confirm("ข้อมูลในเครื่องจะถูกแทนที่ด้วยข้อมูลในไฟล์ทั้งหมด (รวมรายการที่ไม่มีในไฟล์จะหายไป)\nระบบจะดาวน์โหลดข้อมูลปัจจุบันเก็บไว้ให้ก่อน ดำเนินการต่อไหม?")) return;
+    try{
+      downloadJsonFile(buildBackupPayload(),`finance-before-restore-${backupStamp()}.json`);
+      const keep=new Set(Object.keys(stored).filter(k=>shouldBackupLocalStorageKey(k)&&typeof stored[k]==="string")), drop=[];
+      for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(shouldBackupLocalStorageKey(k)&&!keep.has(k)) drop.push(k); }
+      setTimeout(()=>{
+        try{
+          drop.forEach(k=>localStorage.removeItem(k));
+          keep.forEach(k=>localStorage.setItem(k,stored[k]));
+          sessionStorage.setItem("vaultet_restored",`กู้คืนแบบแทนที่ทั้งหมดสำเร็จ ✓ (${c(source.entries)} รายการ) — ไฟล์ข้อมูลก่อนกู้คืนถูกดาวน์โหลดเก็บไว้แล้ว`);
+          location.reload();
+        }catch(e){ showToast("กู้คืนไม่สำเร็จ: "+(e&&e.message||e)); }
+      },1200);
+      close(); showToast("กำลังเก็บไฟล์ข้อมูลเดิม แล้วกู้คืน…");
+    }catch(e){ showToast("กู้คืนไม่สำเร็จ: "+(e&&e.message||e)); }
+  };
+}
+
 document.getElementById("importFile").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if(!file) return;
@@ -3944,8 +4088,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   reader.onload = () => {
     try{
       const data = JSON.parse(reader.result);
-      if(!applyImportedBackup(data)) throw new Error("invalid");
-      showToast("กู้คืนข้อมูลสำเร็จ");
+      promptRestore(data, "ไฟล์ " + file.name);
     }catch(err){
       showToast("ไฟล์ไม่ถูกต้อง กู้คืนไม่สำเร็จ");
     }
@@ -4097,8 +4240,7 @@ document.getElementById("gdriveSyncNowBtn").addEventListener("click", async () =
 document.getElementById("gdriveRestoreBtn").addEventListener("click", async () => {
   try{
     const data = await gdriveDownloadBackup();
-    if(!applyImportedBackup(data)) throw new Error("invalid");
-    showToast("กู้คืนข้อมูลจาก Google Drive สำเร็จ");
+    promptRestore(data, "Google Drive");
   }catch(e){
     showToast("กู้คืนจาก Drive ไม่สำเร็จ");
   }
@@ -4824,7 +4966,10 @@ function buildAdvisorQueryContext(query,snapshot,profile){
   const hypo=extractHypotheticalIncome(query);
   if(hypo!=null){
     const T=getBrainTargets(),ef=snapshot.emergencyFund||{},gap=Math.max(0,Number(ef.recommendedEmergencyFund||0)-Number(ef.currentAvailableReserve||0));
-    return {mode:'income_allocation',hypotheticalIncome:hypo,plan:{saveAtLeast:Math.round(hypo*T.savingsRatePct/100),essentialMax:Math.round(hypo*T.essentialMaxPct/100),discretionaryMax:Math.round(hypo*T.discretionaryMaxPct/100)},targetsPct:T,emergencyFundGap:gap};
+    return {mode:'income_allocation',hypotheticalIncome:hypo,plan:{saveAtLeast:Math.round(hypo*T.savingsRatePct/100),essentialMax:Math.round(hypo*T.essentialMaxPct/100),discretionaryMax:Math.round(hypo*T.discretionaryMaxPct/100)},targetsPct:T,emergencyFundGap:gap,incomeBaseline:getIncomeBaseline(),bufferSuggested:{min:Math.round(hypo*0.05),max:Math.round(hypo*0.10)},upcomingBills30d:(()=>{try{return Math.round(getUpcomingOccurrences("30d").reduce((t,o)=>t+Number((o.r||o).amount||0),0));}catch(e){return null;}})()};
+  }
+  if(/สิ้นเดือน|ปิดเดือน|สรุปเดือน|เศษเงิน|เงินเหลือ|เหลือเท่า|ย้าย.{0,6}(ออม|สำรอง)|buffer|บัฟเฟอร์/i.test(String(query||""))){
+    return {mode:"month_end",plan:buildMonthEndPlan(snapshot)};
   }
   const amount=extractAdvisorAmount(query);
   if(amount==null)return {mode:'general',note:'ไม่ได้ระบุจำนวนเงินที่ตรวจสอบ affordability ได้ชัดเจน'};
@@ -4853,6 +4998,12 @@ function buildFinancialAnalystSystemPrompt(snapshot, profile){
     `- เดือนปัจจุบัน ${monthKey(todayISO())}; categories ต้องเป็นชื่อหมวดรายจ่ายที่มีจริงเท่านั้น: ${JSON.stringify(CATS_BY_TYPE.expense||[])}; 1 หมวดอยู่ได้แค่งบเดียวต่อเดือน; ออม+จำเป็น+ไม่จำเป็นรวมกันต้องไม่เกิน 100%`,
     `- รายการที่แก้/ลบได้ (ล่าสุด 40 รายการ; ใช้ id ตามนี้เท่านั้น ห้ามเดา id; ถ้าผู้ใช้พูดคลุมเครือว่าหมายถึงรายการไหน ให้ถามก่อน และห้ามเสนอลบ/แก้หลายรายการพร้อมกันถ้าไม่ชัดเจน): ${JSON.stringify(entries.filter(e=>(e.type==="income"||e.type==="expense")&&!e.source&&!e.recurringId&&e.category!=="กยศ.").slice(0,40).map(e=>({id:e.id,date:e.date,type:e.type,category:e.category,amount:e.amount,note:e.note||""})))}`,
     "- ผู้ใช้ต้องกดยืนยันก่อนระบบถึงจะเปลี่ยนจริง ดังนั้นห้ามบอกว่า \"ปรับให้แล้ว\" ให้บอกว่าเสนอแล้วให้กดยืนยันด้านล่าง และห้ามใส่ action ถ้าผู้ใช้แค่ถามหรือขอคำแนะนำเฉยๆ ที่ไม่ได้ขอให้ปรับระบบ; ห้ามเปิดเผยบรรทัด @@ACTION@@ ในเนื้อหาคำตอบ",
+    `- งบรายออม: set_budget/delete_budget ใส่ "kind":"saving" ได้ โดย categories ต้องเป็นหมวดออมเท่านั้น: ${JSON.stringify(CATS_BY_TYPE.saving||[])} (หน้าแผนจะแสดงว่าเดือนนี้ออมไปแล้วเท่าไหร่เทียบเป้า) | เงินสำรองเผื่อเหตุไม่คาดฝัน: {"type":"set_buffer","month":"YYYY-MM","amount":1500} | ย้ายเศษเงินสำรองไปออม: {"type":"sweep_buffer","month":"YYYY-MM","amount":800,"category":"หมวดออม"} (เสนอได้หลายบรรทัดเพื่อแยกหมวด แต่ผลรวมต้องไม่เกินเงินสำรองที่เหลือ)`,
+    (()=>{const bf=getBufferInfo();return `- บทบาท: คุณคือผู้จัดการการเงินส่วนตัวที่ฉลาด ไม่ใช่แค่เครื่องคิดเลข ทุกครั้งที่จัดสรรรายรับ/วางแผนงบ ต้องกันเงินสำรองเผื่อเหตุไม่คาดฝัน (ซ่อมรถ/ค่ารักษา/ของพัง/งานด่วน) ราว 5-10% ของรายรับ (หรือประมาณ 1 เดือนของค่าใช้จ่ายผันแปร ถ้าเงินสำรองฉุกเฉินยังไม่ถึงเป้าให้เลือกต่ำ-กลาง) แยกเป็นก้อนชัดเจน บอกเหตุผลสั้นๆ และเสนอ set_buffer คู่กับงบอื่นเสมอ; จัดลำดับ: เงินสำรองฉุกเฉินไม่ถึงเป้า > buffer > หนี้ดอกแพง > ออม/ลงทุน > ใช้ชีวิต; ${bf?`buffer เดือนนี้ตั้งไว้ ฿${bf.amount}, ใช้ไปแล้ว(รายจ่ายนอกหมวดที่ตั้งงบ) ฿${bf.used}, คงเหลือ ฿${bf.remaining}, เหลืออีก ${bf.daysLeft} วันจะสิ้นเดือน`:"ยังไม่ได้ตั้ง buffer เดือนนี้"}; ถ้าใกล้สิ้นเดือน(เหลือ ≤5 วัน) หรือผู้ใช้ถามสรุปเดือน และ buffer ยังเหลือ ให้แนะนำชัดว่าควรย้ายเศษไปไหน พร้อมจำนวนเงิน ตามลำดับความสำคัญข้างต้น (เช่น เติมเงินสำรองฉุกเฉิน → โปะหนี้ → ออมเพิ่ม) แล้วเสนอ action ที่เกี่ยวข้อง; ถ้า buffer ถูกใช้เกินให้เตือนและเสนอวิธีชดเชยจากหมวดไม่จำเป็นเดือนหน้า`;})(),
+    "ถ้า queryContext.mode=month_end ให้ใช้ queryContext.plan.waterfall เป็นคำตอบหลักตามลำดับที่ให้มาโดยตรง ห้ามคำนวณใหม่ อธิบายเหตุผลของแต่ละก้อนสั้นๆ แล้วเสนอ sweep_buffer หนึ่งบรรทัดต่อหนึ่งก้อน (ใช้ category ตามที่ระบุ) ถ้า plan.note บอกว่าใช้เกิน/ยังไม่ตั้ง buffer ให้บอกตรงๆ และเสนอวิธีแก้ (เช่น ลดหมวดไม่จำเป็นเดือนหน้า หรือ set_buffer เดือนหน้า) ถ้า overBudget ไม่ว่าง ให้เตือนหมวดที่เกินด้วย",
+    "ถ้า queryContext.mode=income_allocation: (1) เสนอการจัดสรรให้ครบ 100% ของรายรับ โดยมีก้อน buffer ชัดเจนในช่วง queryContext.bufferSuggested (ถ้าเงินสำรองฉุกเฉินยังขาดมากให้เลือกฝั่งต่ำของช่วง) ให้หัก buffer จากส่วน \"ไม่จำเป็น\" ก่อน เพื่อไม่ให้เปอร์เซ็นต์ออม/จำเป็นเพี้ยน (2) ตรวจว่าก้อน \"จำเป็น\" ครอบคลุมรายจ่ายประจำที่รอตัด/queryContext.upcomingBills30d แล้ว ถ้าไม่พอให้เตือนและปรับ (3) สรุปตัวเลขทุกก้อนให้รวมเท่ากับรายรับ (4) เสนอ action ให้ครบชุดในคำตอบเดียว: set_brain_targets + set_buffer และ set_budget/ออมรายหมวดถ้าเกี่ยวข้อง ไม่ต้องรอให้ถามซ้ำ",
+    "หลักการทั่วไป: ตอบแบบผู้จัดการการเงินที่ลงมือทำ — เริ่มจากข้อสรุป/คำแนะนำที่ชัด ตามด้วยตัวเลขที่อ้างจาก Snapshot เท่านั้น ถ้าข้อมูลที่จำเป็นขาด (เช่น ไม่รู้รายรับจริง) ให้ถามกลับสั้นๆ 1 ข้อ แทนการเดา และถ้าผู้ใช้เสนอแก้แผนให้ปรับเฉพาะส่วนที่ขอ พร้อมบอกว่าอะไรเปลี่ยนจากเดิม",
+    (()=>{const ib=getIncomeBaseline();return ib.months>=2?`- ฐานรายรับ: รายรับจริงเฉลี่ย ${ib.months} เดือนที่ผ่านมา ฿${ib.avg} (ต่ำสุด ฿${ib.min} สูงสุด ฿${ib.max}, ผันผวน ${ib.volatilityPct}%). ถ้าผันผวน >25% หรือรายรับที่ผู้ใช้สมมติสูงกว่าค่าเฉลี่ย >20% ให้คำนวณงบหมวดจำเป็นและเป้าออมจากค่าเฉลี่ย (ถ้าผันผวนมากใช้ใกล้ยอดต่ำสุด) ส่วนที่เกินให้เข้า buffer/เงินสำรองฉุกเฉินก่อน และต้องบอกผู้ใช้ชัดเจนว่าใช้ฐานไหนเพราะอะไร`:"- ฐานรายรับ: ข้อมูลรายรับย้อนหลังยังไม่พอ (<2 เดือน) ให้ใช้ยอดที่ผู้ใช้บอก แต่แนะนำให้เผื่อ buffer เพิ่มเพราะยังประเมินความผันผวนไม่ได้";})(),
     "ถ้า Snapshot มี queryContext.mode=affordability ให้ใช้ผลคำนวณนั้นโดยตรงในการอธิบายว่าเงินก้อนนี้กระทบ cash, known obligations และ minimum reserve อย่างไร ห้ามคำนวณซ้ำเอง",
     "",
     "เรื่องหนี้สิน (debts): หนี้ กยศ. เป็นหนี้เพื่อการศึกษาที่ยังอยู่ใน Grace Period (ระหว่างศึกษา) — ยังไม่มีดอกเบี้ยเดินและยังไม่ต้องผ่อนชำระรายเดือนตอนนี้",
@@ -5116,10 +5267,12 @@ function takePendingActions(){ const a=__pendingActions; __pendingActions=[]; re
 function sanitizeAiAction(a){
   if(!a||typeof a!=="object") return null;
   const month=/^\d{4}-\d{2}$/.test(String(a.month||""))?String(a.month):monthKey(todayISO());
-  const valid=new Set(CATS_BY_TYPE.expense||[]), cats=Array.isArray(a.categories)?Array.from(new Set(a.categories.map(String))).filter(c=>valid.has(c)):[];
+  const valid=new Set(a.kind==="saving"?(CATS_BY_TYPE.saving||[]):(CATS_BY_TYPE.expense||[])), kind=(a.kind==="saving"?"saving":"expense"), cats=Array.isArray(a.categories)?Array.from(new Set(a.categories.map(String))).filter(c=>valid.has(c)):[];
   const n=v=>{v=Number(v);return isFinite(v)&&v>=0&&v<=100?Math.round(v):null;};
-  if(a.type==="set_budget"){ const amount=Number(a.amount); if(!cats.length||!isFinite(amount)||amount<0) return null; return {type:a.type,month,categories:cats,name:String(a.name||"").slice(0,30),amount:Math.round(amount*100)/100,status:"pending"}; }
-  if(a.type==="delete_budget"){ if(!cats.length) return null; return {type:a.type,month,categories:cats,status:"pending"}; }
+  if(a.type==="set_budget"){ const amount=Number(a.amount); if(!cats.length||!isFinite(amount)||amount<0) return null; return {type:a.type,kind,month,categories:cats,name:String(a.name||"").slice(0,30),amount:Math.round(amount*100)/100,status:"pending"}; }
+  if(a.type==="delete_budget"){ if(!cats.length) return null; return {type:a.type,kind,month,categories:cats,status:"pending"}; }
+  if(a.type==="sweep_buffer"){ const amount=Number(a.amount); if(!isFinite(amount)||amount<=0||amount>10000000) return null; const sc=CATS_BY_TYPE.saving||[]; const cat=sc.includes(String(a.category||""))?String(a.category):(sc.includes("เงินออม")?"เงินออม":sc[0]); if(!cat) return null; return {type:a.type,month,amount:Math.round(amount*100)/100,category:cat,status:"pending"}; }
+  if(a.type==="set_buffer"){ const amount=Number(a.amount); if(!isFinite(amount)||amount<0||amount>10000000) return null; return {type:a.type,month,amount:Math.round(amount*100)/100,status:"pending"}; }
   if(a.type==="set_brain_targets"){ const s=n(a.savingsRatePct),e=n(a.essentialMaxPct),d=n(a.discretionaryMaxPct); if(s==null||e==null||d==null||s+e+d>100) return null; return {type:a.type,month,savingsRatePct:s,essentialMaxPct:e,discretionaryMaxPct:d,status:"pending"}; }
   if(a.type==="reset_brain_targets") return {type:a.type,month,status:"pending"};
   if(a.type==="add_entry"){ const type=a.type2||a.entryType||a.kind; const et=(a.entryType==="income"||a.entryType==="expense")?a.entryType:null, amount=Number(a.amount), date=/^\d{4}-\d{2}-\d{2}$/.test(String(a.date||""))?String(a.date):todayISO(), cat=String(a.category||"");
@@ -5142,8 +5295,10 @@ function sanitizeAiAction(a){
 }
 function describeAiAction(a){
   const ml=monthLabel(a.month), nm=a.name||(a.categories||[]).join(" + ");
-  if(a.type==="set_budget") return `ตั้งงบ "${nm}" ${ml} = ฿${fmt(a.amount)}`;
-  if(a.type==="delete_budget") return `ลบงบ "${nm}" ${ml}`;
+  if(a.type==="set_budget") return `${a.kind==="saving"?"ตั้งเป้าออม":"ตั้งงบ"} "${nm}" ${ml} = ฿${fmt(a.amount)}`;
+  if(a.type==="delete_budget") return `ลบ${a.kind==="saving"?"เป้าออม":"งบ"} "${nm}" ${ml}`;
+  if(a.type==="sweep_buffer") return `ย้ายเศษเงินสำรอง ฿${fmt(a.amount)} ไปออมหมวด "${a.category}"`;
+  if(a.type==="set_buffer") return `ตั้งเงินสำรองเผื่อเหตุไม่คาดฝัน ${ml} = ฿${fmt(a.amount)}`;
   if(a.type==="set_brain_targets"){ const o=getBrainTargets(a.month); return `เกณฑ์ Brain ${ml}: ออม ≥${a.savingsRatePct}% · จำเป็น ≤${a.essentialMaxPct}% · ไม่จำเป็น ≤${a.discretionaryMaxPct}% (เดิม ${o.savingsRatePct}/${o.essentialMaxPct}/${o.discretionaryMaxPct})`; }
   if(a.type==="add_entry") return `บันทึก${a.entryType==="income"?"รายรับ":"รายจ่าย"} ${a.category} ฿${fmt(a.amount)} วันที่ ${a.date}${a.note?` (${a.note})`:""}`;
   if(a.type==="edit_entry"||a.type==="delete_entry"){ const e=entries.find(x=>x.id===a.id); const row=e?`${e.date} ${e.category} ฿${fmt(e.amount)}${e.note?` (${e.note})`:""}`:"(ไม่พบรายการแล้ว)";
@@ -5158,15 +5313,17 @@ function __readTargets(){ let o={}; try{o=JSON.parse(localStorage.getItem(BRAIN_
 function executeAiAction(a){
   const now=new Date().toISOString();
   if(a.type==="set_budget"||a.type==="delete_budget"){
-    const key=a.month+"|"+a.categories.slice().sort().join("+");
-    const clash=budgets.find(x=>x.enabled!==false&&x.month===a.month&&budgetKey(x)!==key&&x.categories.some(c=>a.categories.includes(c)));
+    const kind=a.kind==="saving"?"saving":"expense", key=bKey(a.month,a.categories,kind);
+    const clash=budgets.find(x=>x.enabled!==false&&x.month===a.month&&(x.kind||"expense")===kind&&budgetKey(x)!==key&&x.categories.some(c=>a.categories.includes(c)));
     if(a.type==="set_budget"&&clash) return {ok:false,msg:`หมวดซ้ำกับงบ "${clash.category}"`};
     const ex=budgets.find(x=>x.enabled!==false&&budgetKey(x)===key), prev=ex?JSON.parse(JSON.stringify(ex)):null;
     if(a.type==="delete_budget"){ if(!ex) return {ok:false,msg:"ไม่พบงบนี้"}; budgets=budgets.filter(x=>x!==ex); saveBudgets(); return {ok:true,undo:{kind:"budget",key,prev}}; }
     if(ex){ ex.amount=a.amount; ex.name=a.name; ex.category=a.name||a.categories.join(" + "); ex.updatedAt=now; }
-    else budgets.push({id:makeId(),category:a.name||a.categories.join(" + "),categories:a.categories,name:a.name,amount:a.amount,period:"monthly",month:a.month,enabled:true,createdAt:now,updatedAt:now});
+    else budgets.push({id:makeId(),kind,category:a.name||a.categories.join(" + "),categories:a.categories,name:a.name,amount:a.amount,period:"monthly",month:a.month,enabled:true,createdAt:now,updatedAt:now});
     saveBudgets(); return {ok:true,undo:{kind:"budget",key,prev}};
   }
+  if(a.type==="sweep_buffer"){ const r=sweepBufferToSaving(a.month,a.amount,a.category); if(!r.ok) return {ok:false,msg:r.msg}; return {ok:true,undo:{kind:"sweep",month:a.month,entryId:r.entry.id,amount:r.amount}}; }
+  if(a.type==="set_buffer"){ const o=__readBuffer(), prev=o.months[a.month]==null?null:o.months[a.month]; o.months[a.month]=a.amount; localStorage.setItem(BUFFER_KEY,JSON.stringify(o)); return {ok:true,undo:{kind:"buffer",month:a.month,prev}}; }
   if(a.type==="set_brain_targets"||a.type==="reset_brain_targets"){
     const o=__readTargets(), prev=o.months[a.month]||null;
     if(a.type==="set_brain_targets") o.months[a.month]={savingsRatePct:a.savingsRatePct,essentialMaxPct:a.essentialMaxPct,discretionaryMaxPct:a.discretionaryMaxPct}; else delete o.months[a.month];
@@ -5192,6 +5349,8 @@ function executeAiAction(a){
 }
 function undoAiAction(u){
   if(u.kind==="budget"){ budgets=budgets.filter(x=>!(x.enabled!==false&&budgetKey(x)===u.key)); if(u.prev) budgets.push(normalizeBudget(u.prev)); saveBudgets(); }
+  else if(u.kind==="sweep"){ entries=entries.filter(e=>e.id!==u.entryId); saveEntries(); const o=__readBuffer(); o.swept=o.swept||{}; o.swept[u.month]=Math.max(0,Math.round((Number(o.swept[u.month]||0)-u.amount)*100)/100); localStorage.setItem(BUFFER_KEY,JSON.stringify(o)); }
+  else if(u.kind==="buffer"){ const o=__readBuffer(); if(u.prev==null) delete o.months[u.month]; else o.months[u.month]=u.prev; localStorage.setItem(BUFFER_KEY,JSON.stringify(o)); }
   else if(u.kind==="targets"){ const o=__readTargets(); if(u.prev) o.months[u.month]=u.prev; else delete o.months[u.month]; localStorage.setItem(BRAIN_TARGETS_KEY,JSON.stringify(o)); }
   else if(u.kind==="entry"){ entries=entries.filter(e=>e.id!==u.id); saveEntries(); }
   else if(u.kind==="delete_entry"){ if(!entries.some(e=>e.id===u.prev.id)) entries.splice(Math.min(u.idx,entries.length),0,u.prev); saveEntries(); }
@@ -5201,19 +5360,25 @@ function undoAiAction(u){
 }
 function renderAiActionCard(m,idx){
   if(!Array.isArray(m.actions)||!m.actions.length) return "";
-  const st={pending:"",done:" ✓ ทำแล้ว",cancelled:" (ยกเลิก)",undone:" (ย้อนกลับแล้ว)",failed:" ✗ ทำไม่ได้"};
-  const btn=(op,ai,t)=>`<button type="button" data-aiact="${op}" data-mi="${idx}" data-ai="${ai}" style="padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:12px;cursor:pointer;">${t}</button>`;
-  return `<div style="margin:8px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);font-size:12.5px;"><div style="font-weight:700;margin-bottom:6px;">🛠 สิ่งที่ AI เสนอให้ปรับ</div>${m.actions.map((a,ai)=>`<div style="padding:6px 0;border-top:1px solid var(--line);"><div>${escapeHtml(describeAiAction(a))}<span style="color:var(--faint)">${st[a.status]||""}</span>${a.msg?`<div style="color:var(--expense)">${escapeHtml(a.msg)}</div>`:""}</div><div style="display:flex;gap:6px;margin-top:6px;">${a.status==="pending"?btn("ok",ai,"✓ ยืนยัน")+btn("no",ai,"ยกเลิก"):a.status==="done"?btn("undo",ai,"↩ ย้อนกลับ"):""}</div></div>`).join("")}</div>`;
+  const st={pending:"",done:" ✓ ทำแล้ว",cancelled:" (ยกเลิก)",revised:" (ขอปรับ — พิมพ์ข้อเสนอของคุณด้านล่าง)",undone:" (ย้อนกลับแล้ว)",failed:" ✗ ทำไม่ได้"};
+  const btn=(op,ai,t)=>`<button type="button" data-aiact="${op}" data-mi="${idx}" data-ai="${ai}" style="padding:9px 14px;min-height:38px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:13px;cursor:pointer;position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;">${t}</button>`;
+  return `<div style="margin:8px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);font-size:12.5px;"><div style="font-weight:700;margin-bottom:6px;">🛠 สิ่งที่ AI เสนอให้ปรับ</div>${m.actions.map((a,ai)=>`<div style="padding:6px 0;border-top:1px solid var(--line);"><div>${escapeHtml(describeAiAction(a))}<span style="color:var(--faint)">${st[a.status]||""}</span>${a.msg?`<div style="color:var(--expense)">${escapeHtml(a.msg)}</div>`:""}</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">${a.status==="pending"?btn("ok",ai,"✓ ยืนยัน")+btn("rev",ai,"💬 เสนอแก้")+btn("no",ai,"ยกเลิก"):a.status==="done"?btn("undo",ai,"↩ ย้อนกลับ"):""}</div></div>`).join("")}</div>`;
 }
 document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-aiact]"); if(!b) return;
-  const op=b.dataset.aiact, mi=Number(b.dataset.mi), ai=Number(b.dataset.ai), cid=loadAllChats().activeId, h=loadAIChatHistory(), a=h[mi]&&h[mi].actions&&h[mi].actions[ai];
-  if(!a) return;
-  if(op==="ok"&&a.status==="pending"){ const r=executeAiAction(a); if(r.ok){a.status="done";a.undo=r.undo;showToast("ปรับระบบแล้ว ✓");}else{a.status="failed";a.msg=r.msg;} }
-  else if(op==="no"&&a.status==="pending") a.status="cancelled";
-  else if(op==="undo"&&a.status==="done"&&a.undo){ undoAiAction(a.undo); a.status="undone"; delete a.undo; showToast("ย้อนกลับแล้ว"); }
-  saveAIChatHistoryForChat(cid,h); render(); renderAiChatBubbles();
-});
+  const b=e.target.closest&&e.target.closest("[data-aiact]"); if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  try{
+    const op=b.dataset.aiact, mi=Number(b.dataset.mi), ai=Number(b.dataset.ai), cid=loadAllChats().activeId, h=loadAIChatHistory(), a=h[mi]&&h[mi].actions&&h[mi].actions[ai];
+    if(!a){ showToast("ไม่พบข้อเสนอนี้แล้ว"); return; }
+    if(op==="ok"&&a.status==="pending"){ const r=executeAiAction(a); if(r.ok){a.status="done";a.undo=r.undo;showToast("ปรับระบบแล้ว ✓");}else{a.status="failed";a.msg=r.msg;showToast(r.msg||"ทำไม่สำเร็จ");} }
+    else if(op==="no"&&a.status==="pending"){ a.status="cancelled"; }
+    else if(op==="rev"&&a.status==="pending"){ a.status="revised"; const inp=document.getElementById("aiChatInput"); if(inp){ inp.value="ขอปรับข้อเสนอนี้: "+describeAiAction(a)+" → อยากให้ปรับเป็น "; inp.focus(); try{inp.setSelectionRange(inp.value.length,inp.value.length);}catch(_){} } showToast("พิมพ์สิ่งที่อยากปรับแล้วกดส่งได้เลย"); }
+    else if(op==="undo"&&a.status==="done"&&a.undo){ undoAiAction(a.undo); a.status="undone"; delete a.undo; showToast("ย้อนกลับแล้ว"); }
+    saveAIChatHistoryForChat(cid,h);
+    renderAiChatBubbles();
+    try{ render(); }catch(err){ console.error("render after ai action",err); }
+  }catch(err){ console.error("ai action click",err); showToast("เกิดข้อผิดพลาด: "+(err&&err.message||err)); }
+},true);
 function processAiReplyForMemory(text){
   { const acts=[]; const re=/^@@ACTION@@\s*(\{.*\})\s*$/gm; let m; while((m=re.exec(text||""))){ try{ const s=sanitizeAiAction(JSON.parse(m[1])); if(s) acts.push(s); }catch(e){} } __pendingActions=acts.slice(0,6); text=String(text||"").replace(/^@@ACTION@@.*$/gm,""); }
   const { cleaned, adds, dels } = extractMemoryDirectives(text);
@@ -7459,31 +7624,102 @@ document.getElementById("saveEmergencyBtn")?.addEventListener("click",()=>{
 
 // ===== Round 1: Budget Engine UI =====
 let budgetEditingId = null;
-function budgetStatusMeta(status){ return {SAFE:{label:"ปกติ",cls:"safe"},WATCH:{label:"เฝ้าดู",cls:"watch"},OVER:{label:"เกินงบ",cls:"over"}}[status] || {label:"ปกติ",cls:"safe"}; }
-function renderBudgetCategorySelect(selected){ const el=document.getElementById("budgetCategoryInput"); if(!el)return; const cats=CATS_BY_TYPE.expense||[]; const sel=new Set(selected||getBudgetSelectedCats()); el.innerHTML=cats.map(c=>`<label style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;cursor:pointer;"><input type="checkbox" value="${escapeHtml(c)}" ${sel.has(c)?"checked":""} style="accent-color:var(--income);" />${escapeHtml(c)}</label>`).join(""); }
+let budgetFormKind = "expense";
+function updateBudgetKindUI(){ document.querySelectorAll("#budgetKindToggle [data-bk]").forEach(b=>{const on=b.dataset.bk===budgetFormKind; b.style.background=on?"var(--accent1)":""; b.style.color=on?"#0A0A0C":""; b.style.fontWeight=on?"700":"";}); const a=document.getElementById("budgetAmountInput"); if(a) a.placeholder=budgetFormKind==="saving"?"เป้าออมต่อเดือน เช่น 3000":"เช่น 5000"; const l=document.querySelector("#budgetCategoryInput")?.previousElementSibling; if(l) l.textContent=budgetFormKind==="saving"?"เลือกหมวดออม (เลือกได้หลายอัน)":"เลือกหมวดรายจ่าย (เลือกได้หลายอัน)"; }
+document.getElementById("budgetKindToggle")?.addEventListener("click",e=>{const b=e.target.closest("[data-bk]"); if(!b) return; budgetFormKind=b.dataset.bk; budgetEditingId=null; document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ"; renderBudgetCategorySelect([]); updateBudgetKindUI();});
+function budgetStatusMeta(status){ return {DONE:{label:"ครบเป้า ✓",cls:"safe"},SAVING:{label:"กำลังออม",cls:"watch"},SAFE:{label:"ปกติ",cls:"safe"},WATCH:{label:"เฝ้าดู",cls:"watch"},OVER:{label:"เกินงบ",cls:"over"}}[status] || {label:"ปกติ",cls:"safe"}; }
+function renderBudgetCategorySelect(selected){ const el=document.getElementById("budgetCategoryInput"); if(!el)return; const cats=CATS_BY_TYPE[budgetFormKind]||[]; const sel=new Set(selected||getBudgetSelectedCats()); el.innerHTML=cats.map(c=>`<label style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;cursor:pointer;"><input type="checkbox" value="${escapeHtml(c)}" ${sel.has(c)?"checked":""} style="accent-color:var(--income);" />${escapeHtml(c)}</label>`).join(""); }
 function getBudgetSelectedCats(){ return Array.from(document.querySelectorAll("#budgetCategoryInput input:checked")).map(x=>x.value); }
-function openBudgetManager(){ budgetEditingId=null; document.getElementById("budgetMonthInput").value=monthKey(todayISO()); document.getElementById("budgetAmountInput").value=""; document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ"; renderBudgetCategorySelect([]); document.getElementById("budgetNameInput").value=""; renderBudgetManager(); document.getElementById("budgetOverlay").classList.add("open"); }
+function openBudgetManager(){ budgetEditingId=null; budgetFormKind="expense"; document.getElementById("budgetMonthInput").value=monthKey(todayISO()); document.getElementById("budgetAmountInput").value=""; document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ"; renderBudgetCategorySelect([]); document.getElementById("budgetNameInput").value=""; updateBudgetKindUI(); renderBudgetManager(); document.getElementById("budgetOverlay").classList.add("open"); }
+function budgetRowHtml(r,manage){
+  const sv=r.kind==="saving", m=budgetStatusMeta(r.status), w=Math.min(100,Math.max(0,r.pct));
+  const col=sv?"var(--saving)":(r.status==="OVER"?"var(--expense)":r.status==="WATCH"?"#d99a00":"var(--income)");
+  const rem=sv?(r.remaining<=0?`เกินเป้า ฿${fmt(Math.abs(r.remaining))} 🎉`:`อีก ฿${fmt(r.remaining)} ถึงเป้า`):(r.remaining<0?`เกิน ฿${fmt(Math.abs(r.remaining))}`:`เหลือ ฿${fmt(r.remaining)}`);
+  const left=sv?`ออมแล้ว ฿${fmt(r.spent)} / ฿${fmt(r.budget)}`:`฿${fmt(r.spent)} / ฿${fmt(r.budget)}`;
+  const pace=sv?(r.remainingDays>0&&r.remaining>0?`ออมเฉลี่ย ฿${fmt(r.remaining/r.remainingDays)}/วัน ที่เหลือ`:(r.remaining>0?"หมดเดือนแล้ว ยังไม่ถึงเป้า":"ถึงเป้าแล้ว")):(r.remainingDays>0?`ใช้ได้เฉลี่ย ฿${fmt(r.dailyAllowance)}/วัน`:(r.projected>r.budget?"pace สูงกว่างบ":"ครบช่วงเดือนแล้ว"));
+  const tail=sv?`${fmt(r.pct)}%`:`คาดทั้งเดือน ฿${fmt(r.projected)}`;
+  return `<div class="budget-row"><div class="budget-row-top"><span style="font-weight:700;">${sv?"🌱 ":""}${escapeHtml(r.category)}</span><span class="budget-status ${m.cls}">${m.label}${manage?"":" · "+fmt(r.pct)+"%"}</span></div><div class="budget-row-meta"><span>${left}</span><span>${escapeHtml(rem)}</span></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${w}%;background:${col}"></div></div><div class="budget-row-meta"><span>${escapeHtml(pace)}</span><span>${tail}</span></div>${manage?`<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:5px;"><button class="icon-btn budget-edit-btn" data-id="${escapeHtml(r.id)}">✏️</button><button class="icon-btn budget-delete-btn" data-id="${escapeHtml(r.id)}">🗑</button></div>`:""}</div>`;
+}
 function renderBudgetManager(){
-  const month=document.getElementById("budgetMonthInput")?.value||monthKey(todayISO()), s=computeBudgetSummary(month), summaryEl=document.getElementById("budgetManageSummary"), listEl=document.getElementById("budgetManageList");
-  if(summaryEl) summaryEl.innerHTML=s.budgetCount?`<div class="networth-sub"><span>งบรวม</span><span class="mono">฿${fmt(s.totalBudget)}</span></div><div class="networth-sub"><span>ใช้ไป</span><span class="mono" style="color:var(--expense)">฿${fmt(s.totalSpent)}</span></div><div class="networth-sub"><span>เหลือ</span><span class="mono" style="color:${s.totalRemaining<0?"var(--expense)":"var(--ink)"}">${s.totalRemaining<0?"-":""}฿${fmt(Math.abs(s.totalRemaining))}</span></div><div class="networth-sub"><span>ใช้ไปแล้ว</span><span class="mono">${fmt(s.totalPct)}%</span></div>`:`<div class="budget-empty">ยังไม่ได้ตั้งงบสำหรับเดือน ${escapeHtml(monthLabel(month))}</div>`;
-  if(!listEl)return; if(!s.rows.length){listEl.innerHTML="";return;}
-  listEl.innerHTML=s.rows.map(r=>{const m=budgetStatusMeta(r.status),w=Math.min(100,Math.max(0,r.pct)),rem=r.remaining<0?`เกิน ฿${fmt(Math.abs(r.remaining))}`:`เหลือ ฿${fmt(r.remaining)}`,pace=r.remainingDays>0?`ใช้ได้เฉลี่ย ฿${fmt(r.dailyAllowance)}/วัน`:(r.projected>r.budget?"pace สูงกว่างบ":"ครบช่วงเดือนแล้ว");return `<div class="budget-row"><div class="budget-row-top"><span style="font-weight:700;">${escapeHtml(r.category)}</span><span class="budget-status ${m.cls}">${m.label}</span></div><div class="budget-row-meta"><span>฿${fmt(r.spent)} / ฿${fmt(r.budget)}</span><span>${escapeHtml(rem)}</span></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${w}%;background:${r.status==="OVER"?"var(--expense)":r.status==="WATCH"?"#d99a00":"var(--income)"}"></div></div><div class="budget-row-meta"><span>${escapeHtml(pace)}</span><span>คาดทั้งเดือน ฿${fmt(r.projected)}</span></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:5px;"><button class="icon-btn budget-edit-btn" data-id="${escapeHtml(r.id)}">✏️</button><button class="icon-btn budget-delete-btn" data-id="${escapeHtml(r.id)}">🗑</button></div></div>`;}).join("");
-  listEl.querySelectorAll(".budget-edit-btn").forEach(btn=>btn.addEventListener("click",()=>{const b=budgets.find(x=>x.id===btn.dataset.id);if(!b)return;budgetEditingId=b.id;document.getElementById("budgetMonthInput").value=b.month;renderBudgetCategorySelect(b.categories);document.getElementById("budgetNameInput").value=b.name||"";document.getElementById("budgetAmountInput").value=b.amount;document.getElementById("saveBudgetBtn").textContent="บันทึกการแก้ไข";}));
+  const month=document.getElementById("budgetMonthInput")?.value||monthKey(todayISO()), s=computeBudgetSummary(month), sv=computeBudgetSummary(month,"saving"), summaryEl=document.getElementById("budgetManageSummary"), listEl=document.getElementById("budgetManageList");
+  if(summaryEl){
+    let h="";
+    if(s.budgetCount) h+=`<div class="networth-sub"><span>งบรายจ่ายรวม</span><span class="mono">฿${fmt(s.totalBudget)}</span></div><div class="networth-sub"><span>ใช้ไป</span><span class="mono" style="color:var(--expense)">฿${fmt(s.totalSpent)}</span></div><div class="networth-sub"><span>เหลือ</span><span class="mono" style="color:${s.totalRemaining<0?"var(--expense)":"var(--ink)"}">${s.totalRemaining<0?"-":""}฿${fmt(Math.abs(s.totalRemaining))}</span></div>`;
+    if(sv.budgetCount) h+=`<div class="networth-sub"><span>เป้าออมรวม</span><span class="mono">฿${fmt(sv.totalBudget)}</span></div><div class="networth-sub"><span>ออมแล้ว</span><span class="mono" style="color:var(--saving)">฿${fmt(sv.totalSpent)} (${fmt(sv.totalPct)}%)</span></div>`;
+    summaryEl.innerHTML=h||`<div class="budget-empty">ยังไม่ได้ตั้งงบสำหรับเดือน ${escapeHtml(monthLabel(month))}</div>`;
+  }
+  if(!listEl) return;
+  const rows=s.rows.concat(sv.rows);
+  listEl.innerHTML=rows.map(r=>budgetRowHtml(r,true)).join("");
+  listEl.querySelectorAll(".budget-edit-btn").forEach(btn=>btn.addEventListener("click",()=>{const b=budgets.find(x=>x.id===btn.dataset.id);if(!b)return;budgetEditingId=b.id;budgetFormKind=b.kind==="saving"?"saving":"expense";document.getElementById("budgetMonthInput").value=b.month;renderBudgetCategorySelect(b.categories);updateBudgetKindUI();document.getElementById("budgetNameInput").value=b.name||"";document.getElementById("budgetAmountInput").value=b.amount;document.getElementById("saveBudgetBtn").textContent="บันทึกการแก้ไข";}));
   listEl.querySelectorAll(".budget-delete-btn").forEach(btn=>btn.addEventListener("click",()=>{const b=budgets.find(x=>x.id===btn.dataset.id);if(!b)return;if(!confirm(`ลบงบ ${b.category} เดือน ${monthLabel(b.month)} ใช่ไหม?`))return;budgets=budgets.filter(x=>x.id!==b.id);saveBudgets();budgetEditingId=null;renderBudgetManager();render();showToast("ลบงบประมาณแล้ว");}));
 }
 function renderBudgetDashboard(){
-  const card=document.getElementById("budgetDashboardCard");if(!card)return;const s=computeBudgetSummary();if(!s.budgetCount){card.style.display="none";return;}card.style.display="block";
-  const rem=document.getElementById("budgetDashboardRemaining");rem.textContent=(s.totalRemaining<0?"-":"")+"฿"+fmt(Math.abs(s.totalRemaining));rem.style.color=s.totalRemaining<0?"var(--expense)":"var(--ink)";
-  document.getElementById("budgetDashboardSub").textContent=`ใช้ ฿${fmt(s.totalSpent)} จาก ฿${fmt(s.totalBudget)} · ${s.overCount?`เกินงบ ${s.overCount} หมวด`:s.watchCount?`ควรเฝ้าดู ${s.watchCount} หมวด`:"อยู่ในกรอบงบ"} · เหลือ ${s.remainingDays} วัน`;
-  const fill=document.getElementById("budgetDashboardFill");fill.style.width=Math.min(100,Math.max(0,s.totalPct))+"%";fill.style.background=s.totalRemaining<0?"var(--expense)":s.totalPct>=80?"#d99a00":"var(--income)";
-  document.getElementById("budgetDashboardRows").innerHTML=s.rows.slice().sort((a,b)=>({OVER:0,WATCH:1,SAFE:2}[a.status] - {OVER:0,WATCH:1,SAFE:2}[b.status])).slice(0,5).map(r=>{const m=budgetStatusMeta(r.status),w=Math.min(100,Math.max(0,r.pct));return `<div class="budget-row"><div class="budget-row-top"><span>${escapeHtml(r.category)}</span><span class="budget-status ${m.cls}">${m.label} · ${fmt(r.pct)}%</span></div><div class="budget-row-meta"><span>฿${fmt(r.spent)} / ฿${fmt(r.budget)}</span><span>${r.remaining<0?"เกิน ":"เหลือ "}฿${fmt(Math.abs(r.remaining))}</span></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${w}%;background:${r.status==="OVER"?"var(--expense)":r.status==="WATCH"?"#d99a00":"var(--income)"}"></div></div></div>`;}).join("");
+  const card=document.getElementById("budgetDashboardCard");if(!card)return;
+  const s=computeBudgetSummary(), sv=computeBudgetSummary(monthKey(todayISO()),"saving"), bf=getBufferInfo();
+  if(!s.budgetCount&&!sv.budgetCount&&!bf){card.style.display="none";return;}card.style.display="block";
+  const rem=document.getElementById("budgetDashboardRemaining"), sub=document.getElementById("budgetDashboardSub"), fill=document.getElementById("budgetDashboardFill");
+  if(s.budgetCount){
+    rem.textContent=(s.totalRemaining<0?"-":"")+"฿"+fmt(Math.abs(s.totalRemaining));rem.style.color=s.totalRemaining<0?"var(--expense)":"var(--ink)";
+    sub.textContent=`ใช้ ฿${fmt(s.totalSpent)} จาก ฿${fmt(s.totalBudget)} · ${s.overCount?`เกินงบ ${s.overCount} หมวด`:s.watchCount?`ควรเฝ้าดู ${s.watchCount} หมวด`:"อยู่ในกรอบงบ"} · เหลือ ${s.remainingDays} วัน`;
+    fill.style.width=Math.min(100,Math.max(0,s.totalPct))+"%";fill.style.background=s.totalRemaining<0?"var(--expense)":s.totalPct>=80?"#d99a00":"var(--income)";
+  } else {
+    rem.textContent="฿"+fmt(sv.totalSpent);rem.style.color="var(--saving)";
+    sub.textContent=`ออมแล้ว ฿${fmt(sv.totalSpent)} จากเป้า ฿${fmt(sv.totalBudget)} · เหลือ ${sv.remainingDays} วัน`;
+    fill.style.width=Math.min(100,Math.max(0,sv.totalPct))+"%";fill.style.background="var(--saving)";
+  }
+  const order={OVER:0,WATCH:1,SAFE:2};
+  let html=s.rows.slice().sort((a,b)=>order[a.status]-order[b.status]).map(r=>budgetRowHtml(r,false)).join("");
+  if(sv.budgetCount){
+    html+=`<div style="margin:14px 0 6px;font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;"><span>🌱 งบรายออมเดือนนี้</span><span class="mono" style="color:var(--saving)">฿${fmt(sv.totalSpent)} / ฿${fmt(sv.totalBudget)} · ${fmt(sv.totalPct)}%</span></div>`+sv.rows.map(r=>budgetRowHtml(r,false)).join("");
+  }
+  if(bf){
+    const low=bf.remaining<0, col=low?"var(--expense)":"var(--income)", w=bf.amount>0?Math.min(100,Math.max(0,bf.used/bf.amount*100)):0;
+    html+=`<div class="budget-row" style="margin-top:12px;"><div class="budget-row-top"><span style="font-weight:700;">🛟 เงินสำรองเผื่อเหตุไม่คาดฝัน</span><span class="budget-status ${low?"over":"safe"}">${low?"เกินสำรอง":"พร้อมใช้"}</span></div><div class="budget-row-meta"><span>ใช้ไปนอกงบ ฿${fmt(bf.used)} / ฿${fmt(bf.amount)}</span><span>${low?"เกิน":"เหลือ"} ฿${fmt(Math.abs(bf.remaining))}</span></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${w}%;background:${col}"></div></div><div class="budget-row-meta"><span>${bf.swept>0?`ย้ายไปออมแล้ว ฿${fmt(bf.swept)}`:"ถ้าสิ้นเดือนเหลือ ย้ายไปออมได้เลย"}</span><span></span></div>${bf.remaining>0?`<button type="button" id="bufferSweepBtn" class="quick-amount-btn" style="width:100%;margin-top:8px;padding:10px 0;">➡️ ย้ายเศษ ฿${fmt(bf.remaining)} ไปเป็นเงินออม</button>`:""}</div>`;
+  }
+  // เตือนช่วงท้ายเดือน (เหลือ ≤5 วัน)
+  if(s.remainingDays<=5){
+    const tips=[];
+    if(bf&&bf.remaining>0) tips.push(`เงินสำรองเผื่อเหตุไม่คาดฝันเหลือ ฿${fmt(bf.remaining)} → ย้ายไปออมได้`);
+    if(bf&&bf.remaining<0) tips.push(`ใช้เกินเงินสำรอง ฿${fmt(Math.abs(bf.remaining))} → เดือนหน้าลดหมวดไม่จำเป็นชดเชย`);
+    if(sv.budgetCount&&sv.totalRemaining>0) tips.push(`เป้าออมยังขาด ฿${fmt(sv.totalRemaining)}`);
+    if(s.overCount) tips.push(`เกินงบ ${s.overCount} หมวด`);
+    if(tips.length){
+      html=`<div style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);font-size:12.5px;line-height:1.6;"><div style="font-weight:700;margin-bottom:2px;">🗓 ใกล้สิ้นเดือน (เหลือ ${s.remainingDays} วัน)</div>${tips.map(t=>"• "+escapeHtml(t)).join("<br>")}</div>`+html;
+      try{
+        const mk=monthKey(todayISO()), nid="monthend-"+mk, list=loadVaultetNotifications();
+        if(!list.some(n=>n.id===nid)){ list.unshift({id:nid,icon:"🗓",title:"ใกล้สิ้นเดือนแล้ว",body:tips.join(" · "),read:false,day:todayISO(),createdAt:new Date().toISOString()}); saveVaultetNotifications(list); if(typeof renderVaultetNotifications==="function") renderVaultetNotifications(); }
+      }catch(err){ console.error(err); }
+    }
+  }
+  document.getElementById("budgetDashboardRows").innerHTML=html;
 }
+document.addEventListener("click",e=>{
+  const b=e.target.closest&&e.target.closest("#bufferSweepBtn"); if(!b) return;
+  const bf=getBufferInfo(); if(!bf||bf.remaining<=0){ showToast("ไม่มีเศษเงินสำรองให้ย้าย"); return; }
+  const amt=Math.round(bf.remaining*100)/100;
+  if(!confirm(`ย้ายเศษเงินสำรอง ฿${fmt(amt)} ไปบันทึกเป็นรายการออมใช่ไหม?`)) return;
+  const r=sweepBufferToSaving(bf.month,amt,"เงินออม");
+  if(!r.ok){ showToast(r.msg||"บันทึกไม่สำเร็จ"); return; }
+  render(); showToast("ย้ายไปออมแล้ว ✓ (ลบได้ที่รายการออมถ้ากดผิด)");
+});
 document.getElementById("manageBudgetsBtn")?.addEventListener("click",openBudgetManager);
 document.getElementById("budgetDashboardManageBtn")?.addEventListener("click",openBudgetManager);
 document.getElementById("closeBudgetBtn")?.addEventListener("click",()=>document.getElementById("budgetOverlay").classList.remove("open"));
 document.getElementById("budgetOverlay")?.addEventListener("click",()=>document.getElementById("budgetOverlay").classList.remove("open"));
 document.getElementById("budgetMonthInput")?.addEventListener("change",()=>{budgetEditingId=null;document.getElementById("budgetAmountInput").value="";document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ";renderBudgetManager();});
-document.getElementById("saveBudgetBtn")?.addEventListener("click",()=>{const month=document.getElementById("budgetMonthInput").value||monthKey(todayISO()),cats=getBudgetSelectedCats(),name=(document.getElementById("budgetNameInput").value||"").trim(),category=name||cats.join(" + "),amount=Number(document.getElementById("budgetAmountInput").value);if(!/^\d{4}-\d{2}$/.test(month)){showToast("เลือกเดือนให้ถูกต้อง");return;}if(!cats.length){showToast("เลือกหมวดรายจ่ายอย่างน้อย 1 หมวด");return;}{const clash=budgets.find(x=>x.enabled!==false&&x.month===month&&x.id!==budgetEditingId&&x.categories.some(c=>cats.includes(c))&&budgetKey(x)!==month+"|"+cats.slice().sort().join("+"));if(clash){showToast(`หมวดซ้ำกับงบ "${clash.category}" แล้ว`);return;}}if(!isFinite(amount)||amount<0){showToast("กรอกงบประมาณให้ถูกต้อง");return;}const now=new Date().toISOString();if(budgetEditingId){const b=budgets.find(x=>x.id===budgetEditingId);if(b){b.month=month;b.category=category;b.categories=cats;b.name=name;b.amount=Math.round(amount*100)/100;b.updatedAt=now;b.enabled=true;}}else{const existing=budgets.find(x=>x.month===month&&budgetKey(x)===month+"|"+cats.slice().sort().join("+")&&x.enabled!==false);if(existing){existing.amount=Math.round(amount*100)/100;existing.updatedAt=now;}else budgets.push({id:makeId(),category,categories:cats,name,amount:Math.round(amount*100)/100,period:"monthly",month,enabled:true,createdAt:now,updatedAt:now});}saveBudgets();budgetEditingId=null;document.getElementById("budgetAmountInput").value="";document.getElementById("budgetNameInput").value="";renderBudgetCategorySelect([]);document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ";renderBudgetManager();render();showToast("บันทึกงบประมาณแล้ว ✓");});
+document.getElementById("saveBudgetBtn")?.addEventListener("click",()=>{
+  const kind=budgetFormKind, month=document.getElementById("budgetMonthInput").value||monthKey(todayISO()), cats=getBudgetSelectedCats(), name=(document.getElementById("budgetNameInput").value||"").trim(), category=name||cats.join(" + "), amount=Number(document.getElementById("budgetAmountInput").value);
+  if(!/^\d{4}-\d{2}$/.test(month)){showToast("เลือกเดือนให้ถูกต้อง");return;}
+  if(!cats.length){showToast(kind==="saving"?"เลือกหมวดออมอย่างน้อย 1 หมวด":"เลือกหมวดรายจ่ายอย่างน้อย 1 หมวด");return;}
+  const clash=budgets.find(x=>x.enabled!==false&&x.month===month&&x.id!==budgetEditingId&&(x.kind||"expense")===kind&&x.categories.some(c=>cats.includes(c))&&budgetKey(x)!==bKey(month,cats,kind));
+  if(clash){showToast(`หมวดซ้ำกับงบ "${clash.category}" แล้ว`);return;}
+  if(!isFinite(amount)||amount<0){showToast("กรอกจำนวนเงินให้ถูกต้อง");return;}
+  const now=new Date().toISOString(), amt=Math.round(amount*100)/100;
+  if(budgetEditingId){const b=budgets.find(x=>x.id===budgetEditingId);if(b){b.month=month;b.kind=kind;b.category=category;b.categories=cats;b.name=name;b.amount=amt;b.updatedAt=now;b.enabled=true;}}
+  else{const existing=budgets.find(x=>x.enabled!==false&&budgetKey(x)===bKey(month,cats,kind));if(existing){existing.amount=amt;existing.updatedAt=now;}else budgets.push({id:makeId(),kind,category,categories:cats,name,amount:amt,period:"monthly",month,enabled:true,createdAt:now,updatedAt:now});}
+  saveBudgets();budgetEditingId=null;document.getElementById("budgetAmountInput").value="";document.getElementById("budgetNameInput").value="";renderBudgetCategorySelect([]);document.getElementById("saveBudgetBtn").textContent="เพิ่ม / อัปเดตงบ";renderBudgetManager();render();showToast("บันทึกแล้ว ✓");
+});
 function renderFinancialBrainCard(){const card=document.getElementById("financialBrainCard");if(!card)return;const s=buildFinancialSnapshot(),h=s.financialBrain,b=s.behaviorSummary;card.style.display="block";document.getElementById("brainScore").textContent=h.score;document.getElementById("brainFill").style.width=h.score+"%";const m=h.status==='CRITICAL'?{l:'ต้องจัดการเร่งด่วน',c:'critical'}:h.status==='WATCH'?{l:'ควรเฝ้าดู',c:'watch'}:{l:'สุขภาพดี ✓',c:'healthy'};const st=document.getElementById("brainStatus");st.className='brain-status '+m.c;st.textContent=m.l;
 const empty=s.thisMonth.income===0&&s.thisMonth.expense===0;
 document.getElementById("brainSub").textContent=empty?'เดือนนี้ยังไม่มีรายการ คะแนนจึงยังไม่สะท้อนความจริง — บันทึกรายรับ/รายจ่ายก่อน':'คะแนนเต็ม 100 ยิ่งสูงยิ่งดี คิดจาก 6 ข้อด้านล่าง (ของเดือนที่ดูอยู่)';
@@ -9132,5 +9368,6 @@ function renderSpendCard(){
 }
 (function(){const _r=render;render=function(){_r();try{renderSpendCard()}catch(e){console.error(e)}};setTimeout(()=>{try{renderSpendCard()}catch(e){console.error(e)}},600);})();
 </script>
+<script>try{const __m=sessionStorage.getItem("vaultet_restored"); if(__m){ sessionStorage.removeItem("vaultet_restored"); setTimeout(()=>{ try{ showToast(__m); }catch(e){} },700); }}catch(e){}</script>
 </body>
 </html>
