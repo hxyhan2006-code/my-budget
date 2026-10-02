@@ -1455,7 +1455,6 @@ body.ux-chat-active:not(.ux-keyboard-open) .ux-chat-panel .ai-chat-input-row{mar
         <button class="manage-accounts-btn" id="manageReservedBtn">🛡️ เงินสำรอง</button>
         <button class="manage-accounts-btn" id="openForecastBtn">📈 คาดการณ์</button>
         <button class="manage-accounts-btn" id="manageLoansBtn">🤝 เงินให้ยืม</button>
-        <button class="manage-accounts-btn" id="lockSettingsBtn">🔒 ล็อกแอป</button>
       </div>
     </div>
 
@@ -7352,7 +7351,7 @@ fe.innerHTML=list.map(r=>{const off=hid.includes(r.k);return `<div class="brain-
 fe.querySelectorAll('[data-tog]').forEach(x=>x.onclick=()=>{const k=x.dataset.tog;hid=hid.includes(k)?hid.filter(y=>y!==k):[...hid,k];localStorage.setItem('vaultet_brain_hidden',JSON.stringify(hid));renderFinancialBrainCard()});
 document.getElementById('brainEditBtn').onclick=()=>{window.__brainEdit=!window.__brainEdit;renderFinancialBrainCard()};
 const bad=shown.filter(r=>r.t===3).map(r=>r.l);
-document.getElementById("brainInsight").innerHTML=empty?'🟢 ดี · 🟡 พอใช้ · 🔴 ควรแก้ · ⚪ ยังไม่มีข้อมูล':bad.length?`สิ่งที่ควรแก้ก่อน: ${escapeHtml(bad.join(', '))}`:'ตอนนี้ไม่มีข้อที่อยู่ในโซนแดง 👍';try{renderTrendCard()}catch(e){console.error(e)}}
+document.getElementById("brainInsight").innerHTML=empty?'🟢 ดี · 🟡 พอใช้ · 🔴 ควรแก้ · ⚪ ยังไม่มีข้อมูล':bad.length?`สิ่งที่ควรแก้ก่อน: ${escapeHtml(bad.join(', '))}`:'ตอนนี้ไม่มีข้อที่อยู่ในโซนแดง 👍';try{if(typeof renderTrendCard==='function')renderTrendCard()}catch(e){console.error(e)}}
 const __baseVaultetRender=render;render=function(){__baseVaultetRender();renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();};renderBudgetDashboard();renderEmergencyDashboard();renderFinancialBrainCard();
 </script>
 
@@ -8777,7 +8776,7 @@ const newPin=()=>{const p=ask6("ตั้งรหัสใหม่ (ตัว�
 const newQA=salt=>{const q=prompt("เขียนคำถามไว้กู้รหัส (เช่น สัตว์เลี้ยงตัวแรกชื่ออะไร):");if(!q||!q.trim())return null;const a=prompt("คำตอบของคำถามนี้:");if(!a||!a.trim())return null;return {q:q.trim(),a:H(a.trim().toLowerCase(),salt)};};
 const verify=c=>{const o=prompt("ใส่รหัสปัจจุบัน:");if(o===null)return false;if(H(o,c.salt)!==c.pin){alert("รหัสไม่ถูกต้อง");return false;}return true;};
 ov.querySelector("#lockForgot").onclick=()=>{const c=get();if(!c)return;const a=prompt("คำถามกู้รหัส:\n"+c.q);if(a===null)return;if(H(a.trim().toLowerCase(),c.salt)!==c.a){alert("คำตอบไม่ถูกต้อง");return;}const p=newPin();if(!p)return;c.pin=H(p,c.salt);c.on=true;put(c);hide();};
-document.getElementById("lockSettingsBtn").addEventListener("click",()=>{
+const openLockMenu=()=>{
   const c=get();
   if(!c){const p=newPin();if(!p)return;const salt=Math.random().toString(36).slice(2),qa=newQA(salt);if(!qa){alert("ต้องมีคำถามและคำตอบกู้รหัส");return;}put({on:true,salt,pin:H(p,salt),q:qa.q,a:qa.a});alert("เปิดล็อกแอปแล้ว");return;}
   const x=prompt("ล็อกแอป: "+(c.on?"เปิดอยู่":"ปิดอยู่")+"\n1 = "+(c.on?"ปิด":"เปิด")+"ล็อก\n2 = เปลี่ยนรหัส\n3 = เปลี่ยนคำถาม/คำตอบกู้รหัส\n4 = ลบการตั้งค่าล็อกทั้งหมด");
@@ -8787,7 +8786,11 @@ document.getElementById("lockSettingsBtn").addEventListener("click",()=>{
   else if(x==="2"){const p=newPin();if(p){c.pin=H(p,c.salt);put(c);alert("เปลี่ยนรหัสแล้ว");}}
   else if(x==="3"){const qa=newQA(c.salt);if(qa){c.q=qa.q;c.a=qa.a;put(c);alert("เปลี่ยนแล้ว");}}
   else{localStorage.removeItem(K);alert("ลบการตั้งค่าล็อกแล้ว");}
-});
+};
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#lockSettingsBtn"))openLockMenu();},true);
+const addLockBtn=()=>{const more=document.getElementById("ux-more");if(!more||document.getElementById("lockSettingsBtn"))return !!more;
+  const b=document.createElement("button");b.type="button";b.id="lockSettingsBtn";b.className="manage-accounts-btn";b.style.cssText="width:100%;margin:12px 0";b.textContent="🔒 ล็อกแอป (PIN 6 หลัก)";more.appendChild(b);return true;};
+if(!addLockBtn()){let n=0;const iv=setInterval(()=>{if(addLockBtn()||++n>40)clearInterval(iv);},250);}
 let t0=0;document.addEventListener("visibilitychange",()=>{if(document.hidden)t0=Date.now();else if(t0&&Date.now()-t0>60000)show();});
 show();
 })();
@@ -8823,7 +8826,7 @@ function mergeCategories(){
   renderCatGrid(); render();
   showToast(`รวม "${src}" เข้า "${dst}" แล้ว`);
 }
-document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#mergeCatBtn"))mergeCategories();});
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#mergeCatBtn"))mergeCategories();},true);
 </script>
 <script>
 function renderTrendCard(){
@@ -8885,7 +8888,7 @@ document.addEventListener("click",e=>{
     t.push({id:Date.now().toString(36),name:name.trim(),type:formType,category:selectedCategory,amount:amt,note});
     jput(TK,t);renderTpl();showToast("บันทึกเทมเพลตแล้ว");
   }
-});
+},true);
 renderTpl();
 /* ===== เป้าหมายเก็บเงิน ===== */
 function renderGoalsBox(){
@@ -8932,8 +8935,9 @@ document.addEventListener("click",e=>{
   if(use){const inp=document.getElementById("amount");inp.value=(toCents(parseFloat(inp.value)||0)+toCents(parseFloat(use.dataset.qa)))/100;inp.dispatchEvent(new Event("input"));}
   else if(del){const a=get();a.splice(+del.dataset.qd,1);put(a);render();}
   else if(e.target.closest("#qaAdd")){const v=parseFloat(prompt("เพิ่มตัวเลขปุ่มลัด (บาท) เช่น 40:"));if(!v||v<=0)return;const a=get();if(!a.includes(v)){a.push(v);a.sort((x,y)=>x-y);put(a);}render();}
-});
+},true);
 render();
+try{renderTrendCard();}catch(e){console.error(e);}
 })();
 </script>
 </body>
