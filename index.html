@@ -4802,7 +4802,7 @@ function financialBrainRuleFindings(snapshot){
   if(b.discretionaryRatio>60)f.push({id:'HIGH_DISCRETIONARY_SPENDING',severity:'warning',data:{discretionaryRatio:b.discretionaryRatio}});
   if(Number(b.spendingTrend?.pctChange||0)>=30&&Number(b.spendingTrend?.change||0)>=500)f.push({id:'SPENDING_SPIKE',severity:'warning',data:b.spendingTrend});
   if(Number(b.incomeTrend?.pctChange||0)<=-20&&Number(b.incomeTrend?.change||0)<0)f.push({id:'INCOME_DROP',severity:'warning',data:b.incomeTrend});
-  if(b.savingsRate<10&&Number(snapshot.thisMonth.income||0)>0)f.push({id:'SAVINGS_RATE_LOW',severity:'warning',data:{savingsRate:b.savingsRate}});
+  if(b.savingsRate<getBrainTargets().savingsRatePct/2&&Number(snapshot.thisMonth.income||0)>0)f.push({id:'SAVINGS_RATE_LOW',severity:'warning',data:{savingsRate:b.savingsRate}});
   if(!f.length)f.push({id:'FINANCIAL_STRENGTH',severity:'positive',data:{score:snapshot.financialBrain?.score}});
   const rank={critical:4,warning:3,info:2,positive:1};return f.sort((a,z)=>(rank[z.severity]||0)-(rank[a.severity]||0));
 }
@@ -4849,8 +4849,9 @@ function buildFinancialAnalystSystemPrompt(snapshot, profile){
     "ถ้าคำถามของผู้ใช้ต้องการข้อมูลที่ไม่มีอยู่ใน Snapshot ให้บอกตรงๆ ว่าไม่มีข้อมูลส่วนนั้น อย่าสร้างตัวเลขขึ้นมาเอง",
     `เกณฑ์สุขภาพการเงินของเดือนนี้ในระบบ (หน้า Financial Brain ใช้ค่านี้): ออม ≥${getBrainTargets().savingsRatePct}% , จำเป็น ≤${getBrainTargets().essentialMaxPct}% , ไม่จำเป็น ≤${getBrainTargets().discretionaryMaxPct}% ของรายรับ`,
     "ถ้า queryContext.mode=income_allocation (ผู้ใช้สมมติรายรับ) ใช้ queryContext.plan เป็นฐาน แต่ปรับสัดส่วนให้เหมาะกับสถานการณ์ได้ (เช่น เงินสำรองยังไม่ถึงเป้า → ออมมากขึ้น) โดยต้องบอกเปอร์เซ็นต์ที่ใช้ชัดเจน และต้องเสนอ action set_brain_targets ให้หน้า Brain ตรงกับแผนที่เสนอ",
-    `การสั่งแก้ระบบ: ถ้าผู้ใช้ขอให้ตั้ง/ปรับ/ลบงบประมาณหรือเกณฑ์ Brain ให้ **เสนอ** การเปลี่ยนแปลงด้วยการเพิ่มบรรทัดท้ายคำตอบ รูปแบบ JSON บรรทัดเดียว ต่อ 1 action: @@ACTION@@ {"type":"set_budget","month":"YYYY-MM","name":"ชื่อกลุ่ม(ไม่บังคับ)","categories":["หมวด1","หมวด2"],"amount":3720} | {"type":"delete_budget","month":"YYYY-MM","categories":[...]} | {"type":"set_brain_targets","month":"YYYY-MM","savingsRatePct":20,"essentialMaxPct":50,"discretionaryMaxPct":30} | {"type":"reset_brain_targets","month":"YYYY-MM"}`,
+    `การสั่งแก้ระบบ: ถ้าผู้ใช้ขอให้ตั้ง/ปรับ/ลบงบประมาณหรือเกณฑ์ Brain ให้ **เสนอ** การเปลี่ยนแปลงด้วยการเพิ่มบรรทัดท้ายคำตอบ รูปแบบ JSON บรรทัดเดียว ต่อ 1 action: @@ACTION@@ {"type":"set_budget","month":"YYYY-MM","name":"ชื่อกลุ่ม(ไม่บังคับ)","categories":["หมวด1","หมวด2"],"amount":3720} | {"type":"delete_budget","month":"YYYY-MM","categories":[...]} | {"type":"set_brain_targets","month":"YYYY-MM","savingsRatePct":20,"essentialMaxPct":50,"discretionaryMaxPct":30} | {"type":"reset_brain_targets","month":"YYYY-MM"} | {"type":"add_entry","entryType":"income|expense","category":"หมวด","amount":123,"date":"YYYY-MM-DD","note":"","account":"ชื่อบัญชี(ไม่บังคับ)"} | {"type":"edit_entry","id":"รหัสรายการ","amount":123,"category":"หมวด","date":"YYYY-MM-DD","note":""(ใส่เฉพาะช่องที่จะแก้)} | {"type":"delete_entry","id":"รหัสรายการ"} | {"type":"add_recurring","name":"ชื่อ","amount":199,"category":"หมวดรายจ่าย","frequency":"weekly|monthly|bimonthly|quarterly|yearly","nextDueDate":"YYYY-MM-DD"} | {"type":"set_emergency_target","targetMonths":3}. add_entry ใช้เมื่อผู้ใช้บอกชัดว่ามีรายการเกิดขึ้นจริงให้บันทึก (ไม่ใช่การสมมติ) และ categories ของรายรับ: ${JSON.stringify(CATS_BY_TYPE.income||[])}; ห้ามเดาจำนวนเงินหรือวันที่ที่ผู้ใช้ไม่ได้บอก ถ้าไม่ชัดให้ถามก่อน`,
     `- เดือนปัจจุบัน ${monthKey(todayISO())}; categories ต้องเป็นชื่อหมวดรายจ่ายที่มีจริงเท่านั้น: ${JSON.stringify(CATS_BY_TYPE.expense||[])}; 1 หมวดอยู่ได้แค่งบเดียวต่อเดือน; ออม+จำเป็น+ไม่จำเป็นรวมกันต้องไม่เกิน 100%`,
+    `- รายการที่แก้/ลบได้ (ล่าสุด 40 รายการ; ใช้ id ตามนี้เท่านั้น ห้ามเดา id; ถ้าผู้ใช้พูดคลุมเครือว่าหมายถึงรายการไหน ให้ถามก่อน และห้ามเสนอลบ/แก้หลายรายการพร้อมกันถ้าไม่ชัดเจน): ${JSON.stringify(entries.filter(e=>(e.type==="income"||e.type==="expense")&&!e.source&&!e.recurringId&&e.category!=="กยศ.").slice(0,40).map(e=>({id:e.id,date:e.date,type:e.type,category:e.category,amount:e.amount,note:e.note||""})))}`,
     "- ผู้ใช้ต้องกดยืนยันก่อนระบบถึงจะเปลี่ยนจริง ดังนั้นห้ามบอกว่า \"ปรับให้แล้ว\" ให้บอกว่าเสนอแล้วให้กดยืนยันด้านล่าง และห้ามใส่ action ถ้าผู้ใช้แค่ถามหรือขอคำแนะนำเฉยๆ ที่ไม่ได้ขอให้ปรับระบบ; ห้ามเปิดเผยบรรทัด @@ACTION@@ ในเนื้อหาคำตอบ",
     "ถ้า Snapshot มี queryContext.mode=affordability ให้ใช้ผลคำนวณนั้นโดยตรงในการอธิบายว่าเงินก้อนนี้กระทบ cash, known obligations และ minimum reserve อย่างไร ห้ามคำนวณซ้ำเอง",
     "",
@@ -5121,6 +5122,22 @@ function sanitizeAiAction(a){
   if(a.type==="delete_budget"){ if(!cats.length) return null; return {type:a.type,month,categories:cats,status:"pending"}; }
   if(a.type==="set_brain_targets"){ const s=n(a.savingsRatePct),e=n(a.essentialMaxPct),d=n(a.discretionaryMaxPct); if(s==null||e==null||d==null||s+e+d>100) return null; return {type:a.type,month,savingsRatePct:s,essentialMaxPct:e,discretionaryMaxPct:d,status:"pending"}; }
   if(a.type==="reset_brain_targets") return {type:a.type,month,status:"pending"};
+  if(a.type==="add_entry"){ const type=a.type2||a.entryType||a.kind; const et=(a.entryType==="income"||a.entryType==="expense")?a.entryType:null, amount=Number(a.amount), date=/^\d{4}-\d{2}-\d{2}$/.test(String(a.date||""))?String(a.date):todayISO(), cat=String(a.category||"");
+    if(!et||!isFinite(amount)||amount<=0||!(CATS_BY_TYPE[et]||[]).includes(cat)) return null;
+    return {type:"add_entry",entryType:et,category:cat,amount:Math.round(amount*100)/100,date,note:String(a.note||"").slice(0,80),account:String(a.account||"").slice(0,40),status:"pending"}; }
+  if(a.type==="edit_entry"||a.type==="delete_entry"){
+    const e=entries.find(x=>x.id===String(a.id||"")); if(!e||(e.type!=="income"&&e.type!=="expense")||e.source||e.recurringId||e.category==="กยศ.") return null;
+    if(a.type==="delete_entry") return {type:a.type,id:e.id,status:"pending"};
+    const ch={}; if(a.amount!=null){const v=Number(a.amount); if(!isFinite(v)||v<=0) return null; ch.amount=Math.round(v*100)/100;}
+    if(a.category!=null){ if(!(CATS_BY_TYPE[e.type]||[]).includes(String(a.category))||a.category==="กยศ.") return null; ch.category=String(a.category); }
+    if(a.date!=null){ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(a.date))) return null; ch.date=String(a.date); }
+    if(a.note!=null) ch.note=String(a.note).slice(0,80);
+    if(!Object.keys(ch).length) return null; return {type:a.type,id:e.id,changes:ch,status:"pending"};
+  }
+  if(a.type==="add_recurring"){ const amount=Number(a.amount), cat=String(a.category||""), fr=["weekly","monthly","bimonthly","quarterly","yearly"].includes(a.frequency)?a.frequency:"monthly", due=/^\d{4}-\d{2}-\d{2}$/.test(String(a.nextDueDate||""))?String(a.nextDueDate):null, name=String(a.name||"").trim().slice(0,40);
+    if(!name||!isFinite(amount)||amount<=0||!(CATS_BY_TYPE.expense||[]).includes(cat)||!due) return null;
+    return {type:"add_recurring",name,amount:Math.round(amount*100)/100,category:cat,frequency:fr,nextDueDate:due,account:String(a.account||"").slice(0,40),status:"pending"}; }
+  if(a.type==="set_emergency_target"){ const m=Number(a.targetMonths); if(!isFinite(m)||m<1||m>24) return null; return {type:a.type,targetMonths:Math.round(m*10)/10,status:"pending"}; }
   return null;
 }
 function describeAiAction(a){
@@ -5128,27 +5145,60 @@ function describeAiAction(a){
   if(a.type==="set_budget") return `ตั้งงบ "${nm}" ${ml} = ฿${fmt(a.amount)}`;
   if(a.type==="delete_budget") return `ลบงบ "${nm}" ${ml}`;
   if(a.type==="set_brain_targets"){ const o=getBrainTargets(a.month); return `เกณฑ์ Brain ${ml}: ออม ≥${a.savingsRatePct}% · จำเป็น ≤${a.essentialMaxPct}% · ไม่จำเป็น ≤${a.discretionaryMaxPct}% (เดิม ${o.savingsRatePct}/${o.essentialMaxPct}/${o.discretionaryMaxPct})`; }
+  if(a.type==="add_entry") return `บันทึก${a.entryType==="income"?"รายรับ":"รายจ่าย"} ${a.category} ฿${fmt(a.amount)} วันที่ ${a.date}${a.note?` (${a.note})`:""}`;
+  if(a.type==="edit_entry"||a.type==="delete_entry"){ const e=entries.find(x=>x.id===a.id); const row=e?`${e.date} ${e.category} ฿${fmt(e.amount)}${e.note?` (${e.note})`:""}`:"(ไม่พบรายการแล้ว)";
+    if(a.type==="delete_entry") return `ลบรายการ: ${row}`;
+    const c=a.changes||{}; return `แก้รายการ: ${row} → ${[c.category,c.amount!=null?"฿"+fmt(c.amount):null,c.date,c.note!=null?`"${c.note}"`:null].filter(Boolean).join(" · ")}`; }
+  if(a.type==="add_recurring") return `เพิ่มรายจ่ายประจำ "${a.name}" ฿${fmt(a.amount)} (${a.category}) ครบกำหนดแรก ${a.nextDueDate}`;
+  if(a.type==="set_emergency_target") return `ตั้งเป้าเงินสำรองฉุกเฉิน ${a.targetMonths} เดือน (เดิม ${emergencyFundConfig.targetMonths})`;
   return `คืนเกณฑ์ Brain ${ml} เป็นค่าเริ่มต้น`;
 }
+function __aiAcct(name){ const n=String(name||"").trim(); return (n&&accounts.find(x=>x.name===n))||accounts.find(x=>x.id!==UNASSIGNED_ACCOUNT_ID)||accounts[0]; }
+function __readTargets(){ let o={}; try{o=JSON.parse(localStorage.getItem(BRAIN_TARGETS_KEY)||"{}");}catch(e){} o.months=o.months||{}; return o; }
 function executeAiAction(a){
-  const before={budgets:JSON.stringify(budgets),targets:localStorage.getItem(BRAIN_TARGETS_KEY)}, now=new Date().toISOString();
+  const now=new Date().toISOString();
   if(a.type==="set_budget"||a.type==="delete_budget"){
     const key=a.month+"|"+a.categories.slice().sort().join("+");
     const clash=budgets.find(x=>x.enabled!==false&&x.month===a.month&&budgetKey(x)!==key&&x.categories.some(c=>a.categories.includes(c)));
     if(a.type==="set_budget"&&clash) return {ok:false,msg:`หมวดซ้ำกับงบ "${clash.category}"`};
-    const ex=budgets.find(x=>x.enabled!==false&&budgetKey(x)===key);
-    if(a.type==="delete_budget"){ if(!ex) return {ok:false,msg:"ไม่พบงบนี้"}; budgets=budgets.filter(x=>x!==ex); }
-    else if(ex){ ex.amount=a.amount; ex.name=a.name; ex.category=a.name||a.categories.join(" + "); ex.updatedAt=now; }
+    const ex=budgets.find(x=>x.enabled!==false&&budgetKey(x)===key), prev=ex?JSON.parse(JSON.stringify(ex)):null;
+    if(a.type==="delete_budget"){ if(!ex) return {ok:false,msg:"ไม่พบงบนี้"}; budgets=budgets.filter(x=>x!==ex); saveBudgets(); return {ok:true,undo:{kind:"budget",key,prev}}; }
+    if(ex){ ex.amount=a.amount; ex.name=a.name; ex.category=a.name||a.categories.join(" + "); ex.updatedAt=now; }
     else budgets.push({id:makeId(),category:a.name||a.categories.join(" + "),categories:a.categories,name:a.name,amount:a.amount,period:"monthly",month:a.month,enabled:true,createdAt:now,updatedAt:now});
-    saveBudgets();
-  } else {
-    let o={}; try{o=JSON.parse(localStorage.getItem(BRAIN_TARGETS_KEY)||"{}");}catch(e){} o.months=o.months||{};
-    if(a.type==="set_brain_targets") o.months[a.month]={savingsRatePct:a.savingsRatePct,essentialMaxPct:a.essentialMaxPct,discretionaryMaxPct:a.discretionaryMaxPct}; else delete o.months[a.month];
-    localStorage.setItem(BRAIN_TARGETS_KEY,JSON.stringify(o));
+    saveBudgets(); return {ok:true,undo:{kind:"budget",key,prev}};
   }
-  return {ok:true,undo:before};
+  if(a.type==="set_brain_targets"||a.type==="reset_brain_targets"){
+    const o=__readTargets(), prev=o.months[a.month]||null;
+    if(a.type==="set_brain_targets") o.months[a.month]={savingsRatePct:a.savingsRatePct,essentialMaxPct:a.essentialMaxPct,discretionaryMaxPct:a.discretionaryMaxPct}; else delete o.months[a.month];
+    localStorage.setItem(BRAIN_TARGETS_KEY,JSON.stringify(o)); return {ok:true,undo:{kind:"targets",month:a.month,prev}};
+  }
+  if(a.type==="add_entry"){
+    const acc=__aiAcct(a.account), r=commitEntry({type:a.entryType,category:a.category,accountId:acc?acc.id:UNASSIGNED_ACCOUNT_ID,amount:a.amount,date:a.date,note:a.note});
+    if(!r||!r.ok) return {ok:false,msg:"บันทึกรายการไม่สำเร็จ"}; return {ok:true,undo:{kind:"entry",id:r.entry.id}};
+  }
+  if(a.type==="edit_entry"||a.type==="delete_entry"){
+    const idx=entries.findIndex(x=>x.id===a.id); if(idx<0) return {ok:false,msg:"ไม่พบรายการนี้แล้ว"};
+    const prev=JSON.parse(JSON.stringify(entries[idx]));
+    if(a.type==="delete_entry") entries.splice(idx,1); else Object.assign(entries[idx],a.changes);
+    saveEntries(); return {ok:true,undo:{kind:a.type,prev,idx}};
+  }
+  if(a.type==="add_recurring"){
+    const acc=__aiAcct(a.account); if(!acc) return {ok:false,msg:"ยังไม่มีบัญชี"};
+    const id=makeId(); recurringExpenses.push({id,name:a.name,amount:a.amount,category:a.category,accountId:acc.id,frequency:a.frequency,nextDueDate:a.nextDueDate,startDate:a.nextDueDate,endDate:"",note:"",status:"active",reservedItemId:"",lastPaidDate:""});
+    saveRecurring(); return {ok:true,undo:{kind:"recurring",id}};
+  }
+  if(a.type==="set_emergency_target"){ const prev=emergencyFundConfig.targetMonths; emergencyFundConfig=normalizeEmergencyConfig({targetMonths:a.targetMonths,essentialCategories:emergencyFundConfig.essentialCategories}); saveEmergencyFundConfig(); return {ok:true,undo:{kind:"emergency",prev}}; }
+  return {ok:false,msg:"ไม่รู้จักคำสั่ง"};
 }
-function undoAiAction(u){ budgets=JSON.parse(u.budgets).map(normalizeBudget).filter(Boolean); saveBudgets(); if(u.targets==null) localStorage.removeItem(BRAIN_TARGETS_KEY); else localStorage.setItem(BRAIN_TARGETS_KEY,u.targets); }
+function undoAiAction(u){
+  if(u.kind==="budget"){ budgets=budgets.filter(x=>!(x.enabled!==false&&budgetKey(x)===u.key)); if(u.prev) budgets.push(normalizeBudget(u.prev)); saveBudgets(); }
+  else if(u.kind==="targets"){ const o=__readTargets(); if(u.prev) o.months[u.month]=u.prev; else delete o.months[u.month]; localStorage.setItem(BRAIN_TARGETS_KEY,JSON.stringify(o)); }
+  else if(u.kind==="entry"){ entries=entries.filter(e=>e.id!==u.id); saveEntries(); }
+  else if(u.kind==="delete_entry"){ if(!entries.some(e=>e.id===u.prev.id)) entries.splice(Math.min(u.idx,entries.length),0,u.prev); saveEntries(); }
+  else if(u.kind==="edit_entry"){ const i=entries.findIndex(e=>e.id===u.prev.id); if(i>=0) entries[i]=u.prev; saveEntries(); }
+  else if(u.kind==="recurring"){ recurringExpenses=recurringExpenses.filter(r=>r.id!==u.id); saveRecurring(); }
+  else if(u.kind==="emergency"){ emergencyFundConfig=normalizeEmergencyConfig({targetMonths:u.prev,essentialCategories:emergencyFundConfig.essentialCategories}); saveEmergencyFundConfig(); }
+}
 function renderAiActionCard(m,idx){
   if(!Array.isArray(m.actions)||!m.actions.length) return "";
   const st={pending:"",done:" ✓ ทำแล้ว",cancelled:" (ยกเลิก)",undone:" (ย้อนกลับแล้ว)",failed:" ✗ ทำไม่ได้"};
