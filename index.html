@@ -6667,8 +6667,12 @@ syncLoanRepaymentEntries();
 // ===== Milestone 5: Debt Management Engine — UI =====
 function renderDebtsManageList(){
   const el = document.getElementById("debtsManageList");
+  let seeded=false;
+  debts.forEach(d=>{ if(!Array.isArray(d.quick)){ d.quick = /^กยศ/.test(d.name||"") ? [{amount:3000,note:"ค่าครองชีพ"},{amount:9250,note:"ค่าเทอม"}] : []; seeded=true; } });
+  if(seeded) saveDebts();
+  const eff = h => h.type==="repayment" ? -Math.abs(h.amount) : h.type==="increase" ? Math.abs(h.amount) : Number(h.amount)||0;
   if(!debts.length){
-    el.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลหนี้สิน</div>`;
+    el.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลหนี้สิน กด "+ เพิ่มหนี้ใหม่" ด้านล่าง</div>`;
   }else{
     el.innerHTML = debts.map(d => `
       <div class="debt-card" data-id="${d.id}">
@@ -6677,25 +6681,29 @@ function renderDebtsManageList(){
             <div class="debt-name">${escapeHtml(d.name)}${d.gracePeriod ? `<span class="debt-grace-badge">Grace Period</span>` : ""}</div>
             <div class="debt-balance mono">฿${fmt(d.outstandingBalance)}</div>
           </div>
-          <button class="icon-btn delete-debt-btn" data-id="${d.id}" aria-label="ลบ">🗑</button>
+          <button class="icon-btn delete-debt-btn" data-id="${d.id}" aria-label="ลบหนี้นี้" title="ลบหนี้นี้ทั้งก้อน">🗑</button>
         </div>
         <div class="debt-quick-row">
-          <button class="debt-quick-btn" data-id="${d.id}" data-amount="3000" data-note="ค่าครองชีพ">+3,000 (ค่าครองชีพ)</button>
-          <button class="debt-quick-btn" data-id="${d.id}" data-amount="9250" data-note="ค่าเทอม">+9,250 (ค่าเทอม)</button>
+          <button class="debt-quick-btn" data-act="increase" data-id="${d.id}">＋ เพิ่มยอด</button>
+          <button class="debt-quick-btn" data-act="repayment" data-id="${d.id}">− ชำระคืน</button>
+          <button class="debt-quick-btn" data-act="set" data-id="${d.id}">✎ แก้ยอด</button>
+        </div>
+        <div class="debt-quick-row" style="flex-wrap:wrap;align-items:center">
+          ${d.quick.map((x,i)=>`<span class="cat-chip-wrap"><button type="button" class="cat-chip-label" data-qi="${i}" data-id="${d.id}">+${fmt(x.amount)} ${escapeHtml(x.note||"")}</button><button type="button" class="cat-chip-del" data-qd="${i}" data-id="${d.id}" aria-label="ลบปุ่มลัด">×</button></span>`).join("")}
+          <button type="button" class="cat-chip add-chip" data-act="addq" data-id="${d.id}">+ ปุ่มลัด</button>
         </div>
         <div class="debt-history">
-          ${d.history.length ? d.history.slice(0,8).map(h => `
-            <div class="debt-history-row">
-              <span>${dayLabel(h.date)} · ${debtHistoryLabel(h.type)}${h.note ? " · "+escapeHtml(h.note) : ""}</span>
-              <span class="mono" style="color:${h.type==='repayment' ? 'var(--income)' : 'var(--expense)'}">${h.type==='repayment' ? '−' : '+'}฿${fmt(Math.abs(h.amount))}</span>
-            </div>
-          `).join("") : `<div class="empty-state" style="padding:6px 0;">ยังไม่มีประวัติ</div>`}
+          ${d.history.length ? d.history.slice(0,8).map(h => { const e=eff(h); return `
+            <div class="debt-history-row" style="align-items:center">
+              <span style="flex:1">${dayLabel(h.date)} · ${debtHistoryLabel(h.type)}${h.note ? " · "+escapeHtml(h.note) : ""}</span>
+              <span class="mono" style="color:${e>0 ? 'var(--expense)' : 'var(--income)'}">${e>=0?'+':'−'}฿${fmt(Math.abs(e))}</span>
+              ${h.entryId ? `<span title="เชื่อมกับรายการ กยศ. — ลบที่รายการนั้น" style="width:28px;text-align:center">🔗</span>` : `<button type="button" class="icon-btn" data-undo="${h.id}" data-id="${d.id}" aria-label="ยกเลิกรายการนี้" title="ยกเลิกรายการนี้" style="width:28px">↶</button>`}
+            </div>`; }).join("") : `<div class="empty-state" style="padding:6px 0;">ยังไม่มีประวัติ</div>`}
         </div>
       </div>
     `).join("");
   }
 
-  // Sync ตัวเลือกฟอร์มด้านล่างให้ตรงกับ debts ปัจจุบันเสมอ
   const select = document.getElementById("debtActionSelect");
   const prevSelected = select.value;
   select.innerHTML = debts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("");
@@ -6703,29 +6711,45 @@ function renderDebtsManageList(){
   document.getElementById("debtActionAmount").value = "";
   document.getElementById("debtActionNote").value = "";
 
-  el.querySelectorAll(".debt-quick-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      addDebtHistory(btn.dataset.id, "increase", btn.dataset.amount, btn.dataset.note);
-      renderDebtsManageList();
-      render();
-      showToast("บันทึกยอดหนี้เพิ่มแล้ว");
-    });
-  });
-  el.querySelectorAll(".delete-debt-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const debtId=btn.dataset.id;
-      const linkedEntries=entries.filter(e=>e.debtId===debtId && Number(e.debtPrincipalImpact||0)!==0);
-      if(linkedEntries.length){
-        showToast("ลบหนี้นี้ไม่ได้ เพราะยังมีรายการ กยศ. เชื่อมอยู่ — ให้ลบ/แก้รายการ กยศ. ก่อน");
-        return;
-      }
-      if(!confirm("ลบข้อมูลหนี้นี้ทั้งหมด (รวมประวัติ) ใช่ไหม?")) return;
-      debts = debts.filter(x => x.id !== debtId);
-      saveDebts();
-      renderDebtsManageList();
-      render();
-      showToast("ลบข้อมูลหนี้แล้ว");
-    });
+  if(el._bound) return; el._bound = true;
+  el.addEventListener("click", ev => {
+    const btn = ev.target.closest("button"); if(!btn) return;
+    const d = debts.find(x => x.id === btn.dataset.id); if(!d) return;
+    const done = msg => { renderDebtsManageList(); render(); if(msg) showToast(msg); };
+    if(btn.dataset.qi !== undefined){               // ปุ่มลัด: ถามยืนยันกันกดพลาด
+      const q = d.quick[+btn.dataset.qi]; if(!q) return;
+      if(confirm(`เพิ่มหนี้ "${d.name}" +฿${fmt(q.amount)} (${q.note||"ไม่มีโน้ต"}) ใช่ไหม?`)){ addDebtHistory(d.id,"increase",q.amount,q.note); done("บันทึกยอดหนี้เพิ่มแล้ว (กด ↶ ถ้าพลาดได้)"); }
+    }else if(btn.dataset.qd !== undefined){
+      const q = d.quick[+btn.dataset.qd];
+      if(q && confirm(`ลบปุ่มลัด "+${fmt(q.amount)} ${q.note||""}" ?`)){ d.quick.splice(+btn.dataset.qd,1); saveDebts(); done(); }
+    }else if(btn.dataset.act === "addq"){
+      const amt = parseFloat(prompt(`ปุ่มลัดของ "${d.name}" — จำนวนเงิน (บาท):`)); if(!amt || amt<=0) return;
+      const note = prompt("ชื่อปุ่ม/โน้ต เช่น ค่าเทอม:","") || "";
+      d.quick.push({amount:amt,note:note.trim()}); saveDebts(); done();
+    }else if(btn.dataset.act){                       // เพิ่มยอด / ชำระคืน / แก้ยอด -> ชี้ฟอร์มด้านล่างมาที่หนี้นี้
+      const t = btn.dataset.act;
+      document.getElementById("debtActionSelect").value = d.id;
+      document.getElementById("debtActionType").value = t;
+      const lb = document.querySelector(".debt-action-row .field-label");
+      if(lb) lb.textContent = `${{increase:"เพิ่มยอด",repayment:"ชำระคืน",set:"แก้ยอดคงค้างของ"}[t]} · ${d.name}`;
+      const inp = document.getElementById("debtActionAmount");
+      inp.scrollIntoView({block:"center",behavior:"smooth"}); setTimeout(()=>inp.focus(),300);
+    }else if(btn.dataset.undo){                      // ยกเลิกรายการประวัติ (ย้อนยอดกลับ)
+      const h = d.history.find(x => x.id === btn.dataset.undo); if(!h) return;
+      const e = eff(h);
+      if(!confirm(`ยกเลิกรายการนี้?\n${debtHistoryLabel(h.type)} ${e>=0?"+":"−"}฿${fmt(Math.abs(e))}${h.note?" ("+h.note+")":""}\nยอดหนี้จะย้อนกลับ ${e>=0?"ลดลง":"เพิ่มขึ้น"} ฿${fmt(Math.abs(e))}`)) return;
+      d.outstandingBalance = Math.max(0, toCents(d.outstandingBalance) - toCents(e)) / 100;
+      d.history = d.history.filter(x => x.id !== h.id); saveDebts(); done("ยกเลิกรายการแล้ว");
+    }else if(btn.classList.contains("delete-debt-btn")){
+      const linked = entries.filter(e => e.debtId===d.id && Number(e.debtPrincipalImpact||0)!==0);
+      const msg = linked.length
+        ? `หนี้ "${d.name}" เชื่อมกับ ${linked.length} รายการรับเงิน กยศ.\\nถ้าลบ รายการรับเงินเหล่านั้นจะยังอยู่ แต่เลิกเชื่อมกับหนี้นี้\\nลบหนี้พร้อมประวัติทั้งหมดใช่ไหม?`
+        : `ลบหนี้ "${d.name}" พร้อมประวัติทั้งหมดใช่ไหม?`;
+      if(!confirm(msg.replace(/\\n/g,"\n"))) return;
+      linked.forEach(e => { e.debtId = null; e.debtPrincipalImpact = 0; });
+      if(linked.length) saveEntries();
+      debts = debts.filter(x => x.id !== d.id); saveDebts(); done("ลบหนี้แล้ว");
+    }
   });
 }
 document.getElementById("manageDebtsBtn").addEventListener("click", () => {
